@@ -1,0 +1,61 @@
+{% extends 'candidate/base.html' %}
+{% block content %}
+<div class="container">
+  <h2 class="text-center alert alert-info">Show Candidate Information</h2>
+  {% for message in messages %}
+    <div class="alert alert-success">
+    <a class="close" href="#" data-dismiss="alert">×</a>
+    {{ message }}
+    </div>
+{% endfor %}
+  {% if candidate_list %}
+   <table class="table table-hover">
+     <thead>
+       <tr>
+         <th scope="col">Name</th>
+         <th scope="col">Email</th>
+         <th scope="col">Phone Number</th>
+         <th scope="col">Skill</th>
+         <th scope="col">Status</th>
+         <th scope="col">Actions</th>
+       </tr>
+     </thead>
+     <tbody>
+      {% for candidate in candidate_list %}
+       <tr>
+         <td>{{candidate.first_name}} {{candidate.last_name}}</td>
+         <td>{{candidate.email}}</td>
+         <td>{{candidate.phone}}</td>
+         <td>{{candidate.skill}}</td>
+         <td>{{candidate.status}}</td>
+         <td>
+             <a href="#" class="btn btn-warning btn-sm">Edit</a>
+             <a href="#" class="btn btn-warning btn-sm">Delete</a>
+         </td>
+       </tr>
+      {% endfor %}
+     </tbody>
+   </table>
+    {% else %}
+        <h2 class="text-center alert alert-warning">No Records</h2>
+    {% endif %}
+<!--    Now the pagination section-->
+
+    {% if is_paginated %}
+        <div class="pagination" >
+            <span class="page-links" >
+                {% if page_obj.has_previous %}
+                <button class="btn btn-outline-primary" type="button"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></button>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                <button class="btn btn-outline-primary" type="button"><a href="?page={{ page_obj.next_page_number }}">Next</a></button>
+                {% endif %}
+            </span>
+        </div>
+    <br>
+    {% endif %}
+</div>
+{% endblock content %}
