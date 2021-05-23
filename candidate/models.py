@@ -3,6 +3,8 @@ from django.utils.encoding import smart_text
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
+from employee.models import Employee
+from django.core.files.storage import FileSystemStorage
 
 # Create your models here.
 class Candidate(models.Model):
@@ -20,6 +22,7 @@ class Candidate(models.Model):
     noticeperiod = models.IntegerField(verbose_name='Notice Period', blank=False, null=False,help_text='Please enter in months')
     source = models.CharField(verbose_name='Source', max_length=10, choices=source_choices, default='Walk In')
     skill = models.CharField(max_length=10, default='Python', choices=skill_choices, null=False, blank=False)
+    resume = models.FileField(verbose_name='Resume', upload_to='documents/')
     created_at = models.DateTimeField(verbose_name='Created At', auto_now=False, auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='Updated At', auto_now=True, auto_now_add=False)
     status = models.CharField(verbose_name='Status', default='Pending',choices=result_choice , max_length= 50)
@@ -36,11 +39,17 @@ class Candidate(models.Model):
         return smart_text(self.username)
 
 class CandidateResult(models.Model):
-    result_choice = (('Selected','Selected'),('Rejected','Rejected'),('Pending','Pending'))
-    candidate_id = models.ForeignKey(Candidate,related_name='+',on_delete=models.CASCADE)
-    status_l1 = models.CharField(verbose_name='L1 Status', default='Pending',choices=result_choice , max_length= 50)
-    status_l2 = models.CharField(verbose_name='L2 Status', default='Pending',choices=result_choice , max_length= 50)
-    status_hr = models.CharField(verbose_name='HR Status', default='Pending',choices=result_choice , max_length= 50)
+    result_choice   = (('Selected','Selected'),('Rejected','Rejected'),('Pending','Pending'))
+    candidate_id    = models.ForeignKey(Candidate,related_name='+',on_delete=models.CASCADE)
+    status_l1       = models.CharField(verbose_name='L1 Status', default='Pending',choices=result_choice , max_length= 50)
+    feedback_l1     = models.TextField(verbose_name='L1 Feedback', null=True, blank=True)
+    l1_by           = models.ForeignKey(Employee,related_name='+',on_delete=models.CASCADE, null=True, blank=True)
+    status_l2       = models.CharField(verbose_name='L2 Status', default='Pending',choices=result_choice , max_length= 50)
+    feedback_l2     = models.TextField(verbose_name='L2 Feedback', null=True, blank=True)
+    l2_by           = models.ForeignKey(Employee, related_name='+', on_delete=models.CASCADE, null=True, blank=True)
+    status_hr       = models.CharField(verbose_name='HR Status', default='Pending',choices=result_choice , max_length= 50)
+    feedback_hr     = models.TextField(verbose_name='HR Feedback', null=True, blank=True)
+    hr_by           = models.ForeignKey(Employee, related_name='+', on_delete=models.CASCADE, null=True, blank=True)
 
 # method for updating
 @receiver(post_save, sender=Candidate)

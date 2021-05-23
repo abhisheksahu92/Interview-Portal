@@ -9,7 +9,7 @@ class CandidateCreateForm(forms.ModelForm):
     class Meta:
         model = Candidate
         fields = ['first_name', 'last_name', 'email', 'phone', 'dateofbirth','experience',
-                    'noticeperiod','source','skill']
+                    'noticeperiod','source','skill','resume']
         widgets = {
             'dateofbirth': DateInput(),
         }

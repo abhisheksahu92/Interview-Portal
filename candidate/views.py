@@ -1,8 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import CreateView,ListView,TemplateView
-from django.urls import reverse_lazy
-from django.contrib.auth.models import User
-from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth.models import User,Group
 from django.contrib.auth import authenticate,login,logout
 from django.http import HttpResponseRedirect,Http404
 from django.contrib.auth.decorators import login_required
@@ -10,19 +8,18 @@ from django.contrib import messages
 from django.urls import reverse
 from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm
 from .models import Candidate
+import os
 
 class CandidateIndexView(TemplateView):
     template_name = 'candidate/index.html'
 
-class CandidateListView(ListView):
-    template_name = 'candidate/list.html'
-    model = Candidate
-    context_object_name = 'candidate-list'
-    paginate_by = 10
-
 def candidateProfileView(request):
-    form = CandidateCreateForm(request.POST or None)
+    file = None
+    form = CandidateCreateForm(request.POST or None,request.FILES)
     qs = Candidate.objects.filter(username=request.user)
+    if qs.exists():
+        file = str(qs.first().resume).split('/')[-1]
+
     if form.is_valid():
         user = User.objects.get(username=request.user)
         first_name = form.cleaned_data['first_name']
@@ -43,11 +40,12 @@ def candidateProfileView(request):
                                  experience=experience,
                                  noticeperiod=noticeperiod,
                                  source=source,
-                                 skill=skill)
+                                 skill=skill,
+                                 resume = request.FILES['resume'])
         messages.success(request, 'Profile is completed.')
-        return HttpResponseRedirect(reverse('candidate:candidate-list'))
+        return HttpResponseRedirect(reverse('candidate:candidate-profile'))
     else:
-        return render(request, 'Candidate/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first()})
+        return render(request, 'Candidate/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'file':file})
 
 
 def candidateSignupView(request):
@@ -59,6 +57,8 @@ def candidateSignupView(request):
             username = username,
             password=password
         )
+        group = Group.objects.get(name='Candidate')
+        group.user_set.add(User.objects.get(username=username))
         messages.success(request,'Signup is Done.')
         return HttpResponseRedirect(reverse('candidate:candidate-login'))
     else:
@@ -67,12 +67,20 @@ def candidateSignupView(request):
 def candidateLoginView(request):
     form = CandidateLoginForm(request.POST or None)
     if form.is_valid():
-        user = authenticate(username = form.cleaned_data.get('username'),password = form.cleaned_data.get('password'))
-        if user:
-            login(request,user)
-            return HttpResponseRedirect(reverse('candidate:candidate-index'))
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password')
+        django_user = User.objects.get(username=username)
+        group = django_user.groups.filter(name='Candidate').exists()
+        if group:
+            user = authenticate(username=username, password=password)
+            if user:
+                login(request, user)
+                return HttpResponseRedirect(reverse('candidate:candidate-index'))
+            else:
+                messages.error(request, 'Invalid Credentials')
+                return HttpResponseRedirect(reverse('candidate:candidate-login'))
         else:
-            messages.error(request,'Invalid Credentials')
+            messages.error(request, 'Please register as Candidate and login again.')
             return HttpResponseRedirect(reverse('candidate:candidate-login'))
     return render(request,'candidate/login.html',{'form':form})
 

@@ -1,11 +1,14 @@
 from django.urls import path
-from .views import candidateProfileView,CandidateListView,CandidateIndexView,candidateSignupView,candidateLoginView,candidateLogoutView
+from .views import candidateProfileView,\
+    CandidateIndexView,\
+    candidateSignupView,\
+    candidateLoginView,\
+    candidateLogoutView
 
 app_name = 'candidate'
 urlpatterns = [
     path('',CandidateIndexView.as_view(),name='candidate-index'),
     path('profile/',candidateProfileView,name='candidate-profile'),
-    path('list/?page=n',CandidateListView.as_view(),name='candidate-list'),
     path('signup/',candidateSignupView,name='candidate-signup'),
     path('login/',candidateLoginView,name='candidate-login'),
     path('logout/',candidateLogoutView,name='candidate-logout'),
