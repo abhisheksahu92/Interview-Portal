@@ -1,0 +1,74 @@
+{% extends 'Employee/base.html' %}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% block content %}
+{% for message in messages %}
+    <div class="alert alert-success">
+    <a class="close" href="#" data-dismiss="alert">×</a>
+    {{ message }}
+    </div>
+{% endfor %}
+<table class="table table-hover table-dark table-bordered">
+ <thead>
+   <tr>
+     <th scope="col">Name</th>
+     <th scope="col">Phone Number</th>
+     <th scope="col">Email</th>
+     <th scope="col">Date of Birth</th>
+     <th scope="col">Experience</th>
+     <th scope="col">Notice Period</th>
+     <th scope="col">Source</th>
+     <th scope="col">Skill</th>
+     <th scope="col">Resume</th>
+   </tr>
+ </thead>
+ <tbody>
+   <tr>
+     <td>{{candidate.first_name}} {{candidate.last_name}}</td>
+     <td>{{candidate.phone}}</td>
+     <td>{{candidate.email}}</td>
+     <td>{{candidate.dateofbirth}}</td>
+     <td>{{candidate.experience}}</td>
+     <td>{{candidate.noticeperiod}}</td>
+     <td>{{candidate.source}}</td>
+     <td>{{candidate.skill}}</td>
+     <td>
+         <a href="{{candidate.resume.url}}" class="btn btn-warning btn-sm">View</a>
+     </td>
+   </tr>
+ </tbody>
+</table>
+{% if candidate_result.status_l1 == 'Selected' and candidate_result.status_l2 == 'Pending' and candidate_result.status_hr == 'Pending' %}
+    <table class="table table-hover table-dark table-bordered">
+ <thead>
+   <tr>
+     <th scope="col">L1 Feedback</th>
+   </tr>
+ </thead>
+ <tbody>
+   <tr>
+     <td>{{candidate_result.feedback_l1}}</td>
+   </tr>
+ </tbody>
+</table>
+{% elif candidate_result.status_l1 == 'Selected' and candidate_result.status_l2 == 'Selected' and candidate_result.status_hr == 'Pending' %}
+<table class="table table-hover table-dark table-bordered">
+ <thead>
+   <tr>
+     <th scope="col">L1 Feedback</th>
+     <th scope="col">L2 Feedback</th>
+   </tr>
+ </thead>
+ <tbody>
+   <tr>
+     <td>{{candidate_result.feedback_l1}}</td>
+     <td>{{candidate_result.feedback_l2}}</td>
+   </tr>
+ </tbody>
+</table>
+{% endif %}
+<form method = 'POST' enctype="multipart/form-data"> {% csrf_token %}
+{{form|crispy}}
+<input type="submit" class="btn btn-primary" value="Register"></input>
+</form>
+{% endblock content %}

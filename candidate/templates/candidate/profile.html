@@ -1,0 +1,70 @@
+{% extends 'candidate/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class ='cover-container d-flex w-50 h-100 p-5 mx-auto flex-column'>
+    <br>
+    {% for message in messages %}
+        <div class="alert alert-success">
+        <a class="close" href="#" data-dismiss="alert">×</a>
+        {{ message }}
+        </div>
+    {% endfor %}
+    {% if not done %}
+    <h2 class="text-center alert alert-info">Create Profile</h2>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form | crispy }}
+        <br><button class="w-100 btn btn-lg btn-primary" type="submit">Create</button>
+    </form>
+    {% else %}
+        <h2 class="text-center alert alert-warning">Profile is completed.</h2>
+        <table class="table table-dark table-bordered">
+          <tbody>
+            <tr>
+              <td>First Name</td>
+              <td>{{ qs.first_name }}</td>
+            </tr>
+          <tr>
+              <td>last Name</td>
+              <td>{{ qs.last_name }}</td>
+            </tr>
+          <tr>
+              <td>Email</td>
+              <td>{{ qs.email }}</td>
+            </tr>
+          <tr>
+              <td>Phone</td>
+              <td>{{ qs.phone }}</td>
+            </tr>
+          <tr>
+              <td>Date of Birth</td>
+              <td>{{ qs.dateofbirth }}</td>
+            </tr>
+          <tr>
+              <td>Experience</td>
+              <td>{{ qs.experience }}</td>
+            </tr>
+          <tr>
+              <td>Notice Period</td>
+              <td>{{ qs.noticeperiod }}</td>
+            </tr>
+          <tr>
+              <td>Source</td>
+              <td>{{ qs.source }}</td>
+            </tr>
+          <tr>
+              <td>Skill</td>
+              <td>{{ qs.skill }}</td>
+            </tr><tr>
+              <td>Status</td>
+              <td>{{ qs.status }}</td>
+            </tr>
+          <tr>
+              <td>Resume</td>
+              <td><a href="{{qs.resume.url}}">{{ file }}</a></td>
+            </tr>
+          </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}
