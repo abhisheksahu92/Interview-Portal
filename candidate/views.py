@@ -10,8 +10,14 @@ from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm
 from .models import Candidate
 import os
 
-class CandidateIndexView(TemplateView):
-    template_name = 'candidate/index.html'
+def candidateIndexView(request):
+    if request.user.is_anonymous:
+        status = 'Yes'
+    else:
+        qs = Candidate.objects.filter(username=request.user)
+        if qs.exists():
+            status = qs.first().status
+    return render(request, 'Candidate/index.html', {'status':status})
 
 def candidateProfileView(request):
     file = None
