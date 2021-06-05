@@ -143,11 +143,15 @@ def employeeFeedback(request,id=None):
                                    feedback_l1=form.cleaned_data.get('feedback'),
                                    status_l1=form.cleaned_data.get('status'),
                                    l1_by=qs_employee)
+                if form.cleaned_data.get('status') == 'Rejected':
+                    Candidate.objects.filter(id=id).update(status='Rejected')
             elif level == 'L2':
                 qs_candidate_result.update(
                     feedback_l2=form.cleaned_data.get('feedback'),
                     status_l2=form.cleaned_data.get('status'),
                     l2_by=qs_employee)
+                if form.cleaned_data.get('status') == 'Rejected':
+                    Candidate.objects.filter(id=id).update(status='Rejected')
             elif level == 'HR':
                 qs_candidate_result.update(
                     feedback_hr=form.cleaned_data.get('feedback'),

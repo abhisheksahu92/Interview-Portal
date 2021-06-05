@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    {% for message in messages %}
+        <div class="alert alert-success">
+        <a class="close" href="#" data-dismiss="alert">×</a>
+        {{ message }}
+        </div>
+    {% endfor %}
+    <h1>Interview Portal for Candidate and Employee</h1>
+    <p></p>
+    <p class="lead">This portal helps the employee and candidate to sign up and login to portal.And employee can list down all the candidates and candidate can track their status.</p>
+    <br>
+    <p class="lead">
+      <a href="#" class="btn btn-lg btn-secondary fw-bold border-white bg-white">Source Code</a>
+    </p>
+{% endblock %}
