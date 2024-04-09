@@ -21,11 +21,11 @@ RUN mkdir /interview
 # Every command after this will be run from the /code directory.
 WORKDIR /interview
 
-#clone private repository
-RUN git clone https://abhisheksahu92:${GIT_ACCESS_TOKEN}@github.com/abhisheksahu92/Interview-Portal.git
+#Copy the requirements.txt file.
+COPY . /interview/
 
 # Upgrade pip
 RUN pip install --upgrade pip
 
 # Install the requirements.
-RUN pip install -r /interview/Interview-Portal/requirements.txt
+RUN pip install -r requirements.txt

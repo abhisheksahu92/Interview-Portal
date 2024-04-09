@@ -100,7 +100,13 @@
    {% block content %}
     {% endblock %}
   <footer class="mt-auto text-white-50">
-    <p>Copyright 2021 Phone Directory.</p>
+    <div>
+      &copy;
+      <span id="copyright">
+          <script>document.getElementById('copyright').appendChild(document.createTextNode(new Date().getFullYear()))</script>
+      </span>
+      Interview Portal
+  </div>
     <p><a>Designed by Abhishek Sahu</a></p>
   </footer>
 </div>
