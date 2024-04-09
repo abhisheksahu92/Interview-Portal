@@ -17,6 +17,8 @@ def candidateIndexView(request):
         qs = Candidate.objects.filter(username=request.user)
         if qs.exists():
             status = qs.first().status
+        else:
+            status = 'No Status'
     return render(request, 'Candidate/index.html', {'status':status})
 
 def candidateProfileView(request):
