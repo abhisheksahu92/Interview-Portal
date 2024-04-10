@@ -10,7 +10,15 @@ from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm
 from .models import Candidate
 import os
 
+def is_user_group_correct(user):
+    query_set = Group.objects.filter(user = user)
+    return query_set.values()[0].get('name') == 'Candidate'
+
 def candidateIndexView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     if request.user.is_anonymous:
         status = 'NOTLOGGED'
     else:
@@ -21,7 +29,12 @@ def candidateIndexView(request):
             status = 'No Status'
     return render(request, 'Candidate/index.html', {'status':status})
 
+@login_required(login_url="/candidate/login/") 
 def candidateProfileView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     file = None
     form = CandidateCreateForm(request.POST or None,request.FILES)
     qs = Candidate.objects.filter(username=request.user)
@@ -55,8 +68,11 @@ def candidateProfileView(request):
     else:
         return render(request, 'Candidate/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'file':file})
 
-
 def candidateSignupView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     form = CandidateSignupForm(request.POST or None)
     if form.is_valid():
         username = form.cleaned_data.get('username')
@@ -73,6 +89,10 @@ def candidateSignupView(request):
         return render(request,'Candidate/signup.html',{'form':form})
 
 def candidateLoginView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     form = CandidateLoginForm(request.POST or None)
     if form.is_valid():
         username = form.cleaned_data.get('username')
@@ -92,7 +112,7 @@ def candidateLoginView(request):
             return HttpResponseRedirect(reverse('candidate:candidate-login'))
     return render(request,'candidate/login.html',{'form':form})
 
-@login_required
+@login_required(login_url="/candidate/login/") 
 def candidateLogoutView(request):
     logout(request)
     messages.success(request, 'Logout Done.')
