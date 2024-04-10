@@ -23,7 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',TemplateView.as_view(template_name='home.html'),name='index'),
     path('candidate/',include('candidate.urls',namespace='candidate')),
-    path('employee/',include('employee.urls',namespace='employee'))
+    path('employee/',include('employee.urls',namespace='employee')),
+    path('dashboard/',include('dashboard.urls',namespace='dashboard'))
 ]
 
 if settings.DEBUG:
