@@ -12,7 +12,7 @@ import os
 
 def candidateIndexView(request):
     if request.user.is_anonymous:
-        status = 'Yes'
+        status = 'NOTLOGGED'
     else:
         qs = Candidate.objects.filter(username=request.user)
         if qs.exists():
