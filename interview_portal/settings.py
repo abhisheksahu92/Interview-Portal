@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'candidate',
     'employee',
     'dashboard',
+    'widget_tweaks',
     'django_extensions',
     'crispy_bootstrap4',
     'crispy_forms',
