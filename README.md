@@ -73,3 +73,16 @@ The scope of a project focusing on the interview process for both employers and 
 
 ![Untitled (1)](https://github.com/abhisheksahu92/Interview-Portal/assets/70888785/8e955bd0-0d08-4b77-8799-4f7ec0c568ef)
 
+## There are two steps to follow:
+1. Navigate to Interview-Portal directory.
+2. Run pip install -r requirements.txt
+3. Run python manage.py runserver
+4. Open your web browser and enter http://127.0.0.1:8000/.
+5. After sending the request you will recieve the response.  
+
+## OR
+
+1. Navigate to Interview-Portal directory.
+2. Download and install Docker and docker-compose using https://www.docker.com/products/docker-desktop.
+3. Run docker compose up --build
+4. Go to the browser and enter http://127.0.0.1:8000/.
