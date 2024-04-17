@@ -96,7 +96,7 @@ def employeeSignupView(request):
         messages.success(request,'Signup is Done.')
         return HttpResponseRedirect(reverse('employee:employee-login'))
     else:
-        return render(request,'Employee/signup.html',{'form':form})
+        return render(request,'employee/signup.html',{'form':form})
 
 def employeeLoginView(request):
     if not request.user.is_anonymous and not is_user_group_correct(request.user):

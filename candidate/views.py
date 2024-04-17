@@ -27,7 +27,7 @@ def candidateIndexView(request):
             status = qs.first().status
         else:
             status = 'No Status'
-    return render(request, 'Candidate/index.html', {'status':status})
+    return render(request, 'candidate/index.html', {'status':status})
 
 @login_required(login_url="/candidate/login/") 
 def candidateProfileView(request):
@@ -66,7 +66,7 @@ def candidateProfileView(request):
         messages.success(request, 'Profile is completed.')
         return HttpResponseRedirect(reverse('candidate:candidate-profile'))
     else:
-        return render(request, 'Candidate/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'file':file})
+        return render(request, 'candidate/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'file':file})
 
 def candidateSignupView(request):
     if not request.user.is_anonymous and not is_user_group_correct(request.user):
@@ -86,7 +86,7 @@ def candidateSignupView(request):
         messages.success(request,'Signup is Done.')
         return HttpResponseRedirect(reverse('candidate:candidate-login'))
     else:
-        return render(request,'Candidate/signup.html',{'form':form})
+        return render(request,'candidate/signup.html',{'form':form})
 
 def candidateLoginView(request):
     if not request.user.is_anonymous and not is_user_group_correct(request.user):
