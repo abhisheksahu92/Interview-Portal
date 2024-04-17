@@ -84,5 +84,6 @@ The scope of a project focusing on the interview process for both employers and 
 
 1. Navigate to Interview-Portal directory.
 2. Download and install Docker and docker-compose using https://www.docker.com/products/docker-desktop.
-3. Run docker compose up --build
-4. Go to the browser and enter http://127.0.0.1:8000/.
+3. Run docker-compose build --no-cache --pull
+4. Run docker compose up --build
+5. Go to the browser and enter http://127.0.0.1:8000/.
