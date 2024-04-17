@@ -3,14 +3,15 @@
 {% block content %}
     {% for message in messages %}
         <div class="alert alert-success">
-        <a class="close" href="#" data-dismiss="alert">×</a>
         {{ message }}
         </div>
     {% endfor %}
     <h1>Interview Portal for Candidates</h1>
-    <p class="lead">This portal helps the candidate to sign up and login to portal.And keep track of their application.</p>
+    <p class="lead">This innovative online platform designed to streamline and optimize the interview process for both recruiters and candidates. It serves as a centralized hub where recruiters can manage and conduct interviews efficiently, while candidates can easily signup, attend, and follow up on their interviews.</p>
     <br>
+    {% if status != 'NOTLOGGED' %}
     <p class="lead">
       <a href="#" class="btn btn-lg btn-secondary fw-bold border-white bg-white">Status: {{status}}</a>
     </p>
+    {% endif %}
 {% endblock %}

@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 from .forms import EmployeeLoginForm,EmployeeSignupForm,EmployeeProfileForm,EmployeeFeedbackForm
@@ -15,14 +16,26 @@ def isEmployee(employee):
     emp_qs = Employee.objects.filter(employee_username=employee)
     return emp_qs.exists()
 
+def is_user_group_correct(user):
+    query_set = Group.objects.filter(user = user)
+    return query_set.values()[0].get('name') == 'Employee'
+
 def employeeIndexView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+
     registered = False
     if request.user.is_authenticated:
         registered = True
-
     return render(request, 'employee/index.html', {'registered': registered})
 
+@login_required(login_url="/employee/login/")
 def employeeListView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+
     registered = False
     qs_employee = Employee.objects.filter(employee_username=request.user).first()
     if qs_employee:
@@ -36,8 +49,13 @@ def employeeListView(request):
     elif level == 'HR':
         candidate_list = CandidateResult.objects.filter(status_l1='Selected',status_l2='Selected',status_hr='Pending')
     return render(request, 'employee/list.html', {'candidate_list': candidate_list,'registered':registered})
-    
+
+@login_required(login_url="/employee/login/") 
 def employeeProfileView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     registered = False
     form = EmployeeProfileForm(request.POST or None)
     qs = Employee.objects.filter(employee_username=request.user)
@@ -61,6 +79,10 @@ def employeeProfileView(request):
         return render(request, 'employee/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'registered':registered})
 
 def employeeSignupView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     form = EmployeeSignupForm(request.POST or None)
     if form.is_valid():
         username = form.cleaned_data.get('username')
@@ -77,6 +99,10 @@ def employeeSignupView(request):
         return render(request,'Employee/signup.html',{'form':form})
 
 def employeeLoginView(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     form = EmployeeLoginForm(request.POST or None)
     if form.is_valid():
         username = form.cleaned_data.get('username')
@@ -96,7 +122,12 @@ def employeeLoginView(request):
             return HttpResponseRedirect(reverse('employee:employee-login'))
     return render(request,'employee/login.html',{'form':form})
 
+@login_required(login_url="/employee/login/") 
 def employeeSelected(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     registered = False
     if isEmployee(request.user):
         registered = True
@@ -112,7 +143,12 @@ def employeeSelected(request):
             candidate_list = CandidateResult.objects.filter(status_hr='Selected',hr_by=qs_employee)
             return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
 
+@login_required(login_url="/employee/login/") 
 def employeeRejected(request):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     registered = False
     if isEmployee(request.user):
         registered = True
@@ -128,7 +164,12 @@ def employeeRejected(request):
             candidate_list = CandidateResult.objects.filter(status_hr='Rejected',hr_by=qs_employee)
             return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
 
+@login_required(login_url="/employee/login/") 
 def employeeFeedback(request,id=None):
+    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    
     form = EmployeeFeedbackForm(request.POST or None)
     candidate = Candidate.objects.filter(id=id).first()
     qs_candidate_result = CandidateResult.objects.filter(candidate_id=candidate)
@@ -164,7 +205,7 @@ def employeeFeedback(request,id=None):
             return HttpResponseRedirect(reverse('employee:employee-list'))
     return render(request, 'employee/feedback.html',{'form': form, 'registered': registered,'candidate':candidate,'candidate_result':qs_candidate_result.first()})
 
-@login_required
+@login_required(login_url="/employee/login/") 
 def employeeLogoutView(request):
     logout(request)
     messages.success(request, 'Logout Done.')
