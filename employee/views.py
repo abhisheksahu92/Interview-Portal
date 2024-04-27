@@ -139,15 +139,9 @@ def employeeSelected(request):
         registered = True
         qs_employee = Employee.objects.filter(employee_username=request.user).first()
         level = qs_employee.employee_level
-        if level == 'L1':
-            candidate_list = CandidateResult.objects.filter(status_l1='Selected',l1_by=qs_employee)
-            return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
-        elif level == 'L2':
-            candidate_list = CandidateResult.objects.filter(status_l2='Selected',l2_by=qs_employee)
-            return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
-        elif level == 'HR':
-            candidate_list = CandidateResult.objects.filter(status_hr='Selected',hr_by=qs_employee)
-            return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
+        filters_selected = {f'status_{level.lower()}':'Selected',f'{level.lower()}_by': qs_employee}
+        candidate_list = CandidateResult.objects.filter(**filters_selected)
+        return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
 
 @login_required(login_url="/employee/login/") 
 def employeeRejected(request):
@@ -160,15 +154,9 @@ def employeeRejected(request):
         registered = True
         qs_employee = Employee.objects.filter(employee_username=request.user).first()
         level = qs_employee.employee_level
-        if level == 'L1':
-            candidate_list = CandidateResult.objects.filter(status_l1='Rejected',l1_by=qs_employee)
-            return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
-        elif level == 'L2':
-            candidate_list = CandidateResult.objects.filter(status_l2='Rejected',l2_by=qs_employee)
-            return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
-        elif level == 'HR':
-            candidate_list = CandidateResult.objects.filter(status_hr='Rejected',hr_by=qs_employee)
-            return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
+        filters_rejected = {f'status_{level.lower()}':'Rejected',f'{level.lower()}_by': qs_employee}
+        candidate_list = CandidateResult.objects.filter(**filters_rejected)
+        return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
 
 @login_required(login_url="/employee/login/") 
 def employeeFeedback(request,id=None):
