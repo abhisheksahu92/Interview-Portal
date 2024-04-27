@@ -51,7 +51,10 @@ class EmployeeLoginForm(forms.Form):
             raise forms.ValidationError('Username not exists')
 
 class EmployeeFeedbackForm(forms.Form):
-    feedback = forms.CharField(label = 'Feedback', max_length= 300, required=True)
-    status   = forms.ChoiceField(label = 'Status', choices=(('Selected','Selected'),('Rejected','Rejected')), required=True)
+    status   = forms.ChoiceField(label = 'Status', 
+                                 choices=(('Selected','Selected'),('Rejected','Rejected')), 
+                                 required=True)
+    feedback = forms.CharField(label = 'Feedback', max_length= 1000, required=True,widget=forms.Textarea)
+    
 
 
