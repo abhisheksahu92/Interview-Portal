@@ -57,9 +57,15 @@ def employeeProfileView(request):
         return HttpResponseRedirect(reverse('index'))
     
     registered = False
+    candidate_selected,candidate_rejected = 0,0
     form = EmployeeProfileForm(request.POST or None)
     qs = Employee.objects.filter(employee_username=request.user)
     if qs.exists():
+        level = qs.first().employee_level
+        filters_selected = {f'status_{level.lower()}':'Selected',f'{level.lower()}_by': qs.first()}
+        filters_rejected = {f'status_{level.lower()}':'Rejected',f'{level.lower()}_by': qs.first()}
+        candidate_selected = CandidateResult.objects.filter(**filters_selected).count()
+        candidate_rejected = CandidateResult.objects.filter(**filters_rejected).count()
         registered = True
 
     if form.is_valid():
@@ -76,7 +82,7 @@ def employeeProfileView(request):
         messages.success(request, 'Profile is completed.')
         return HttpResponseRedirect(reverse('employee:employee-list'))
     else:
-        return render(request, 'employee/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'registered':registered})
+        return render(request, 'employee/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'registered':registered,'candidate_selected':candidate_selected,'candidate_rejected':candidate_rejected})
 
 def employeeSignupView(request):
     if not request.user.is_anonymous and not is_user_group_correct(request.user):
