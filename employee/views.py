@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
+import datetime
 from .forms import EmployeeLoginForm,EmployeeSignupForm,EmployeeProfileForm,EmployeeFeedbackForm
 from .models import Employee
 from candidate.models import Candidate,CandidateResult
@@ -141,7 +142,7 @@ def employeeSelected(request):
         level = qs_employee.employee_level
         filters_selected = {f'status_{level.lower()}':'Selected',f'{level.lower()}_by': qs_employee}
         candidate_list = CandidateResult.objects.filter(**filters_selected)
-        return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
+        return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered,'level':level.lower()})
 
 @login_required(login_url="/employee/login/") 
 def employeeRejected(request):
@@ -156,7 +157,7 @@ def employeeRejected(request):
         level = qs_employee.employee_level
         filters_rejected = {f'status_{level.lower()}':'Rejected',f'{level.lower()}_by': qs_employee}
         candidate_list = CandidateResult.objects.filter(**filters_rejected)
-        return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered})
+        return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered,'level':level.lower()})
 
 @login_required(login_url="/employee/login/") 
 def employeeFeedback(request,id=None):
@@ -177,21 +178,24 @@ def employeeFeedback(request,id=None):
                 qs_candidate_result.update(
                                    feedback_l1=form.cleaned_data.get('feedback'),
                                    status_l1=form.cleaned_data.get('status'),
-                                   l1_by=qs_employee)
+                                   l1_by=qs_employee,
+                                   l1_at=datetime.datetime.now()  )
                 if form.cleaned_data.get('status') == 'Rejected':
                     Candidate.objects.filter(id=id).update(status='Rejected')
             elif level == 'L2':
                 qs_candidate_result.update(
                     feedback_l2=form.cleaned_data.get('feedback'),
                     status_l2=form.cleaned_data.get('status'),
-                    l2_by=qs_employee)
+                    l2_by=qs_employee,
+                    l2_at=datetime.datetime.now()  )
                 if form.cleaned_data.get('status') == 'Rejected':
                     Candidate.objects.filter(id=id).update(status='Rejected')
             elif level == 'HR':
                 qs_candidate_result.update(
                     feedback_hr=form.cleaned_data.get('feedback'),
                     status_hr=form.cleaned_data.get('status'),
-                    hr_by=qs_employee)
+                    hr_by=qs_employee,
+                    hr_at = datetime.datetime.now()  )
                 if form.cleaned_data.get('status') == 'Selected':
                     Candidate.objects.filter(id=id).update(status='Selected')
                 elif form.cleaned_data.get('status') == 'Rejected':

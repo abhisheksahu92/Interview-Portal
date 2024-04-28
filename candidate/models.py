@@ -44,12 +44,15 @@ class CandidateResult(models.Model):
     status_l1       = models.CharField(verbose_name='L1 Status', default='Pending',choices=result_choice , max_length= 50)
     feedback_l1     = models.TextField(verbose_name='L1 Feedback', null=True, blank=True)
     l1_by           = models.ForeignKey(Employee,related_name='+',on_delete=models.CASCADE, null=True, blank=True)
+    l1_at           = models.DateTimeField(verbose_name='L1 Date',null=True)
     status_l2       = models.CharField(verbose_name='L2 Status', default='Pending',choices=result_choice , max_length= 50)
     feedback_l2     = models.TextField(verbose_name='L2 Feedback', null=True, blank=True)
     l2_by           = models.ForeignKey(Employee, related_name='+', on_delete=models.CASCADE, null=True, blank=True)
+    l2_at           = models.DateTimeField(verbose_name='L2 Date',null=True)
     status_hr       = models.CharField(verbose_name='HR Status', default='Pending',choices=result_choice , max_length= 50)
     feedback_hr     = models.TextField(verbose_name='HR Feedback', null=True, blank=True)
     hr_by           = models.ForeignKey(Employee, related_name='+', on_delete=models.CASCADE, null=True, blank=True)
+    hr_at           = models.DateTimeField(verbose_name='HR Date',null=True)
 
 # method for updating
 @receiver(post_save, sender=Candidate)

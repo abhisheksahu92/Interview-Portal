@@ -7,6 +7,7 @@
 </div>
 {% endfor %}
 {% if candidate_list %}
+<div class="container mt-auto">
 <table class="table table-hover table-dark table-bordered" id="userTable">
  <thead>
    <tr>
@@ -16,6 +17,7 @@
      <th scope="col">Experience</th>
      <th scope="col">Notice Period</th>
      <th scope="col">Source</th>
+     <th scope="col">Date</th>
    </tr>
  </thead>
  <tbody>
@@ -27,6 +29,15 @@
      <td>{{candidate.candidate_id.experience}}</td>
      <td>{{candidate.candidate_id.noticeperiod}}</td>
      <td>{{candidate.candidate_id.source}}</td>
+     {% if level == 'l1' %}
+        <td>{{candidate.l1_at|date:'Y-m-d H:i'}}</td>
+      {% elif level == 'l2' %}
+        <td>{{candidate.l2_at|date:'Y-m-d H:i'}}</td>
+      {% elif level == 'hr' %}
+        <td>{{candidate.hr_at|date:'Y-m-d H:i'}}</td>
+      {% else %}
+      <td>{{ ''}}</td>
+      {% endif %}
    </tr>
   {% endfor %}
  </tbody>
@@ -52,4 +63,5 @@
     </div>
 <br>
 {% endif %}
+</div>
 {% endblock content %}
