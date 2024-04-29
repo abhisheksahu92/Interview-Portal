@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 from django.views.generic import CreateView,ListView,TemplateView
 from django.contrib.auth.models import User,Group
 from django.contrib.auth import authenticate,login,logout
@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect,Http404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
-from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm
+from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm,CandidateUpdateForm
 from .models import Candidate
 import os
 
@@ -63,7 +63,7 @@ def candidateProfileView(request):
                                  source=source,
                                  skill=skill,
                                  resume = request.FILES['resume'])
-        messages.success(request, 'Profile is completed.')
+        messages.success(request, 'Candidate registration is completed.')
         return HttpResponseRedirect(reverse('candidate:candidate-profile'))
     else:
         return render(request, 'candidate/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'file':file})
@@ -83,7 +83,7 @@ def candidateSignupView(request):
         )
         group = Group.objects.get(name='Candidate')
         group.user_set.add(User.objects.get(username=username))
-        messages.success(request,'Signup is Done.')
+        messages.success(request,'Canidate signup is done.')
         return HttpResponseRedirect(reverse('candidate:candidate-login'))
     else:
         return render(request,'candidate/signup.html',{'form':form})
@@ -118,4 +118,15 @@ def candidateLogoutView(request):
     messages.success(request, 'Logout Done.')
     return HttpResponseRedirect(reverse('candidate:candidate-index'))
 
+@login_required(login_url="/candidate/login/") 
+def candidateUpdateView(request,pk=None):
+    qs_update = get_object_or_404(Candidate,id=pk)
+    form = CandidateUpdateForm(request.POST or None,request.FILES or None,instance=qs_update)
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.save(update_fields=['first_name', 'last_name', 'dateofbirth','experience',
+                    'noticeperiod','source','skill','resume'])
+        return HttpResponseRedirect(reverse('candidate:candidate-profile'))
+    context = {'form': form}
+    return render(request, template_name='candidate/edit.html', context=context)
 

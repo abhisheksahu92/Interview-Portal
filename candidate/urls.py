@@ -3,7 +3,8 @@ from .views import candidateProfileView,\
     candidateIndexView,\
     candidateSignupView,\
     candidateLoginView,\
-    candidateLogoutView
+    candidateLogoutView, \
+    candidateUpdateView
 
 app_name = 'candidate'
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
     path('signup/',candidateSignupView,name='candidate-signup'),
     path('login/',candidateLoginView,name='candidate-login'),
     path('logout/',candidateLogoutView,name='candidate-logout'),
+    path('edit/<int:pk>',candidateUpdateView,name='candidate-edit'),
 ]

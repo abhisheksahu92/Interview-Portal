@@ -14,6 +14,15 @@ class CandidateCreateForm(forms.ModelForm):
             'dateofbirth': DateInput(),
         }
 
+class CandidateUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Candidate
+        fields = ['first_name', 'last_name', 'dateofbirth','experience',
+                    'noticeperiod','source','skill','resume']
+        widgets = {
+            'dateofbirth': DateInput(),
+        }
+
 class CandidateSignupForm(forms.ModelForm):
     password = forms.CharField(label='Password', max_length=120, required=True,
                                        widget=forms.PasswordInput())
