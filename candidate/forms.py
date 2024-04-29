@@ -19,8 +19,15 @@ class CandidateUpdateForm(forms.ModelForm):
         model = Candidate
         fields = ['first_name', 'last_name', 'dateofbirth','experience',
                     'noticeperiod','source','skill','resume']
+        NOTICEPERIOD_CHOICES = (
+                ('', 'Select Notice Period'),
+                (1,1), #First one is the value of select option and second is the displayed value in option
+                (2,2),
+                (3,3),
+                )
         widgets = {
             'dateofbirth': DateInput(),
+            'noticeperiod': forms.Select(choices=NOTICEPERIOD_CHOICES,attrs={'class': 'form-control'}),
         }
 
 class CandidateSignupForm(forms.ModelForm):
