@@ -57,5 +57,5 @@ class CandidateResult(models.Model):
 # method for updating
 @receiver(post_save, sender=Candidate)
 def update_stock(sender, instance, **kwargs):
-    CandidateResult.objects.create(candidate_id=instance)
+    CandidateResult.objects.get_or_create(candidate_id=instance)
 
