@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm,CandidateUpdateForm
-from .models import Candidate
+from .models import Candidate,CandidateResult
 import os
 
 def is_user_group_correct(user):
@@ -15,6 +15,7 @@ def is_user_group_correct(user):
     return query_set.values()[0].get('name') == 'Candidate'
 
 def candidateIndexView(request):
+    candidate = {}
     if not request.user.is_anonymous and not is_user_group_correct(request.user):
         logout(request)
         return HttpResponseRedirect(reverse('index'))
@@ -23,11 +24,13 @@ def candidateIndexView(request):
         status = 'NOTLOGGED'
     else:
         qs = Candidate.objects.filter(username=request.user)
+        qs_result = CandidateResult.objects.filter(candidate_id=qs.first())
+        candidate = qs_result.first()
         if qs.exists():
             status = qs.first().status
         else:
             status = 'No Status'
-    return render(request, 'candidate/index.html', {'status':status})
+    return render(request, 'candidate/index.html', {'status':status,'candidate':candidate})
 
 @login_required(login_url="/candidate/login/") 
 def candidateProfileView(request):
