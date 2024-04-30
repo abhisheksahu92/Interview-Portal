@@ -4,11 +4,13 @@ from .views import candidateProfileView,\
     candidateSignupView,\
     candidateLoginView,\
     candidateLogoutView, \
-    candidateUpdateView
+    candidateUpdateView, \
+    candidateAssessmentView
 
 app_name = 'candidate'
 urlpatterns = [
     path('',candidateIndexView,name='candidate-index'),
+    path('assessment/',candidateAssessmentView,name='candidate-assessment'),
     path('profile/',candidateProfileView,name='candidate-profile'),
     path('signup/',candidateSignupView,name='candidate-signup'),
     path('login/',candidateLoginView,name='candidate-login'),

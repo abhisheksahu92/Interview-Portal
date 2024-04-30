@@ -1,0 +1,805 @@
+{
+    "title": "Candidate Python Questionnaire",
+    "questions": [
+    {
+        "question":"Which of the following is NOT a valid Python data type?",
+        "option1":"int",
+        "option2":"float",
+        "option3":"boolean",
+        "option4":"string",
+        "answer":"boolean"
+    },
+    {
+        "question":"What is the purpose of the len() function in Python?",
+        "option1":"To return the number of elements in an object or length of a string",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To return the number of elements in an object or length of a string"
+    },
+    {
+        "question":"Which of the following is used to define a function in Python?",
+        "option1":"def",
+        "option2":"function",
+        "option3":"define",
+        "option4":"func",
+        "answer":"def"
+    },
+    {
+        "question":"What is the purpose of the import statement in Python?",
+        "option1":"To include a module and make its functions available",
+        "option2":"To declare a variable",
+        "option3":"To define a conditional statement",
+        "option4":"To exit a loop or switch statement",
+        "answer":"To include a module and make its functions available"
+    },
+    {
+        "question":"Which operator is used for exponentiation in Python?",
+        "option1":"**",
+        "option2":"^",
+        "option3":"*",
+        "option4":"//",
+        "answer":"**"
+    },
+    {
+        "question":"What is the purpose of the if statement in Python?",
+        "option1":"To execute a block of code based on a condition",
+        "option2":"To perform string concatenation",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To execute a block of code based on a condition"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python loop statement?",
+        "option1":"for",
+        "option2":"while",
+        "option3":"until",
+        "option4":"do-while",
+        "answer":"until"
+    },
+    {
+        "question":"What is the purpose of the append() method in Python lists?",
+        "option1":"To add an element to the end of a list",
+        "option2":"To remove an element from a list",
+        "option3":"To sort the elements in a list",
+        "option4":"To reverse the order of elements in a list",
+        "answer":"To add an element to the end of a list"
+    },
+    {
+        "question":"Which of the following is used to define a comment in Python?",
+        "option1":"#",
+        "option2":"//",
+        "option3":"/* */",
+        "option4":"<!-- -->",
+        "answer":"#"
+    },
+    {
+        "question":"What is the purpose of the range() function in Python?",
+        "option1":"To generate a sequence of numbers",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To exit a loop or switch statement",
+        "answer":"To generate a sequence of numbers"
+    },
+    {
+        "question":"What is the purpose of the split() method in Python strings?",
+        "option1":"To split a string into a list of substrings based on a delimiter",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two strings",
+        "answer":"To split a string into a list of substrings based on a delimiter"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python conditional statement?",
+        "option1":"if",
+        "option2":"else",
+        "option3":"case",
+        "option4":"elif",
+        "answer":"case"
+    },
+    {
+        "question":"What is the purpose of the random module in Python?",
+        "option1":"To generate random numbers and perform related operations",
+        "option2":"To manipulate strings",
+        "option3":"To define a class",
+        "option4":"To import modules from external sources",
+        "answer":"To generate random numbers and perform related operations"
+    },
+    {
+        "question":"Which keyword is used to exit a loop prematurely in Python?",
+        "option1":"break",
+        "option2":"continue",
+        "option3":"return",
+        "option4":"exit",
+        "answer":"break"
+    },
+    {
+        "question":"What is the purpose of the open() function in Python?",
+        "option1":"To open a file and return a file object",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To open a file and return a file object"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python list method?",
+        "option1":"append()",
+        "option2":"insert()",
+        "option3":"delete()",
+        "option4":"remove()",
+        "answer":"delete()"
+    },
+    {
+        "question":"What is the purpose of the try-except block in Python?",
+        "option1":"To handle exceptions and prevent program crashes",
+        "option2":"To concatenate strings",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To handle exceptions and prevent program crashes"
+    },
+    {
+        "question":"Which operator is used for string concatenation in Python?",
+        "option1":"+",
+        "option2":"-",
+        "option3":"*",
+        "option4":"/",
+        "answer":"+"
+    },
+    {
+        "question":"What is the purpose of the format() method in Python strings?",
+        "option1":"To format and insert values into placeholders within a string",
+        "option2":"To perform bitwise operations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To format and insert values into placeholders within a string"
+    },
+    {
+        "question":"Which of the following is used to define an empty Python dictionary?",
+        "option1":"{}",
+        "option2":"()",
+        "option3":"[]",
+        "option4":"<>",
+        "answer":"{}"
+    },
+    {
+        "question":"What is the purpose of the set() function in Python?",
+        "option1":"To create an unordered collection of unique elements",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To create an unordered collection of unique elements"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python comparison operator?",
+        "option1":">",
+        "option2":"<",
+        "option3":"=",
+        "option4":">=",
+        "answer":"="
+    },
+    {
+        "question":"What is the purpose of the strip() method in Python strings?",
+        "option1":"To remove leading and trailing whitespace from a string",
+        "option2":"To split a string into a list of substrings based on a delimiter",
+        "option3":"To define a loop construct",
+        "option4":"To compare two strings",
+        "answer":"To remove leading and trailing whitespace from a string"
+    },
+    {
+        "question":"Which keyword is used to define a class in Python?",
+        "option1":"class",
+        "option2":"def",
+        "option3":"object",
+        "option4":"new",
+        "answer":"class"
+    },
+    {
+        "question":"What is the purpose of the join() method in Python strings?",
+        "option1":"To concatenate elements of an iterable with a specified separator",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To concatenate elements of an iterable with a specified separator"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python numeric data type?",
+        "option1":"int",
+        "option2":"float",
+        "option3":"double",
+        "option4":"complex",
+        "answer":"double"
+    },
+    {
+        "question":"What is the purpose of the with statement in Python?",
+        "option1":"To ensure proper resource cleanup by automatically closing files",
+        "option2":"To manipulate strings",
+        "option3":"To define a class",
+        "option4":"To import modules from external sources",
+        "answer":"To ensure proper resource cleanup by automatically closing files"
+    },
+    {
+        "question":"Which operator is used for floor division in Python?",
+        "option1":"//",
+        "option2":"%",
+        "option3":"/",
+        "option4":"**",
+        "answer":"//"
+    },
+    {
+        "question":"What is the purpose of the sys module in Python?",
+        "option1":"To provide access to system-specific parameters and functions",
+        "option2":"To perform bitwise operations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To provide access to system-specific parameters and functions"
+    },
+    {
+        "question":"Which of the following is used to define a tuple in Python?",
+        "option1":"()",
+        "option2":"{}",
+        "option3":"[]",
+        "option4":"<>",
+        "answer":"()"
+    },
+    {
+        "question":"What is the purpose of the lambda keyword in Python?",
+        "option1":"To create anonymous functions",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To create anonymous functions"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python string method?",
+        "option1":"upper()",
+        "option2":"lower()",
+        "option3":"capitalize()",
+        "option4":"reverse()",
+        "answer":"reverse()"
+    },
+    {
+        "question":"What is the purpose of the self parameter in Python class methods?",
+        "option1":"To refer to the instance of the class",
+        "option2":"To perform type conversion",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To refer to the instance of the class"
+    },
+    {
+        "question":"Which operator is used for membership testing in Python?",
+        "option1":"in",
+        "option2":"not",
+        "option3":"is",
+        "option4":"and",
+        "answer":"in"
+    },
+    {
+        "question":"What is the purpose of the super() function in Python?",
+        "option1":"To call a method in the parent class",
+        "option2":"To concatenate strings",
+        "option3":"To define a loop construct",
+        "option4":"To compare two strings",
+        "answer":"To call a method in the parent class"
+    },
+    {
+        "question":"Which of the following is used to define a constant in Python?",
+        "option1":"All uppercase letters with underscores separating words",
+        "option2":"All lowercase letters with underscores separating words",
+        "option3":"A combination of uppercase and lowercase letters",
+        "option4":"A single character",
+        "answer":"All uppercase letters with underscores separating words"
+    },
+    {
+        "question":"What is the purpose of the os module in Python?",
+        "option1":"To provide a way of using operating system dependent functionality",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a class",
+        "option4":"To import modules from external sources",
+        "answer":"To provide a way of using operating system dependent functionality"
+    },
+    {
+        "question":"Which operator is used for logical AND in Python?",
+        "option1":"and",
+        "option2":"or",
+        "option3":"not",
+        "option4":"xor",
+        "answer":"and"
+    },
+    {
+        "question":"What is the purpose of the map() function in Python?",
+        "option1":"To apply a function to each item in an iterable",
+        "option2":"To perform bitwise operations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To apply a function to each item in an iterable"
+    },
+    {
+        "question":"Which of the following is used to define an empty Python set?",
+        "option1":"set()",
+        "option2":"{}",
+        "option3":"()",
+        "option4":"<>",
+        "answer":"set()"
+    },
+    {
+        "question":"What is the purpose of the enumerate() function in Python?",
+        "option1":"To iterate over a sequence while keeping track of the index",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To iterate over a sequence while keeping track of the index"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python file mode?",
+        "option1":"open()",
+        "option2":"r",
+        "option3":"w",
+        "option4":"a",
+        "answer":"open()"
+    },
+    {
+        "question":"What is the purpose of the format() function in Python?",
+        "option1":"To format a value with specified format specifiers",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two strings",
+        "answer":"To format a value with specified format specifiers"
+    },
+    {
+        "question":"Which operator is used for logical OR in Python?",
+        "option1":"or",
+        "option2":"and",
+        "option3":"not",
+        "option4":"xor",
+        "answer":"or"
+    },
+    {
+        "question":"What is the purpose of the replace() method in Python strings?",
+        "option1":"To replace occurrences of a substring with another substring",
+        "option2":"To split a string into a list of substrings based on a delimiter",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To replace occurrences of a substring with another substring"
+    },
+    {
+        "question":"Which of the following is used to define a list comprehension in Python?",
+        "option1":"[expression for item in iterable]",
+        "option2":"{key: value for item in iterable}",
+        "option3":"(expression for item in iterable)",
+        "option4":"<expression> for item in iterable",
+        "answer":"[expression for item in iterable]"
+    },
+    {
+        "question":"What is the purpose of the zip() function in Python?",
+        "option1":"To combine multiple iterables into a single iterable of tuples",
+        "option2":"To perform bitwise operations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To combine multiple iterables into a single iterable of tuples"
+    },
+    {
+        "question":"Which operator is used for string repetition in Python?",
+        "option1":"*",
+        "option2":"+",
+        "option3":"-",
+        "option4":"/",
+        "answer":"*"
+    },
+    {
+        "question":"What is the purpose of the sorted() function in Python?",
+        "option1":"To return a sorted version of a sequence or iterable",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To return a sorted version of a sequence or iterable"
+    },
+    {
+        "question":"What is the order of precedence in python?",
+        "option1":"Exponential, Parentheses, Multiplication, Division, Addition, Subtraction",
+        "option2":"Exponential, Parentheses, Division, Multiplication, Addition, Subtraction",
+        "option3":"Parentheses, Exponential, Multiplication, Division, Subtraction, Addition",
+        "option4":"Parentheses, Exponential, Multiplication, Division, Addition, Subtraction",
+        "answer":"Parentheses, Exponential, Multiplication, Division, Addition, Subtraction"
+    },
+    {
+        "question":"What is the purpose of the filter() function in Python?",
+        "option1":"To filter elements from an iterable based on a given condition",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To filter elements from an iterable based on a given condition"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python data type?",
+        "option1":"boolean",
+        "option2":"string",
+        "option3":"integer",
+        "option4":"list",
+        "answer":"boolean"
+    },
+    {
+        "question":"What is the purpose of the len() function in Python?",
+        "option1":"To return the length of an object",
+        "option2":"To manipulate strings",
+        "option3":"To define a class",
+        "option4":"To import modules from external sources",
+        "answer":"To return the length of an object"
+    },
+    {
+        "question":"Which keyword is used to define a function in Python?",
+        "option1":"def",
+        "option2":"function",
+        "option3":"method",
+        "option4":"return",
+        "answer":"def"
+    },
+    {
+        "question":"What is the purpose of the sorted() method in Python lists?",
+        "option1":"To return a new sorted list",
+        "option2":"To split a list into multiple sublists",
+        "option3":"To define a loop construct",
+        "option4":"To compare two lists",
+        "answer":"To return a new sorted list"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python string formatting method?",
+        "option1":"% operator",
+        "option2":"format() method",
+        "option3":"concatenation",
+        "option4":"f-strings",
+        "answer":"concatenation"
+    },
+    {
+        "question":"What is the purpose of the import statement in Python?",
+        "option1":"To import modules or packages into a Python script",
+        "option2":"To perform bitwise operations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To import modules or packages into a Python script"
+    },
+    {
+        "question":"Which operator is used for exponentiation in Python?",
+        "option1":"**",
+        "option2":"^",
+        "option3":"*",
+        "option4":"//",
+        "answer":"**"
+    },
+    {
+        "question":"What is the purpose of the strip() method in Python lists?",
+        "option1":"To remove specified elements from a list",
+        "option2":"To split a list into multiple sublists",
+        "option3":"To define a loop construct",
+        "option4":"To compare two lists",
+        "answer":"To remove specified elements from a list"
+    },
+    {
+        "question":"Which of the following is used to check if an element is present in a Python set?",
+        "option1":"in",
+        "option2":"not",
+        "option3":"is",
+        "option4":"and",
+        "answer":"in"
+    },
+    {
+        "question":"What is the purpose of the isinstance() function in Python?",
+        "option1":"To check if an object belongs to a specified class or its subclasses",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To check if an object belongs to a specified class or its subclasses"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python control flow statement?",
+        "option1":"if",
+        "option2":"for",
+        "option3":"switch",
+        "option4":"while",
+        "answer":"switch"
+    },
+    {
+        "question":"What is the purpose of the min() function in Python?",
+        "option1":"To return the minimum value from a sequence or a set of arguments",
+        "option2":"To manipulate strings",
+        "option3":"To define a class",
+        "option4":"To compare two variables",
+        "answer":"To return the minimum value from a sequence or a set of arguments"
+    },
+    {
+        "question":"Which keyword is used to exit a loop in Python?",
+        "option1":"break",
+        "option2":"continue",
+        "option3":"return",
+        "option4":"exit",
+        "answer":"break"
+    },
+    {
+        "question":"What is the purpose of the zip() function in Python?",
+        "option1":"To combine multiple iterables into a single iterable of tuples",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two strings",
+        "answer":"To combine multiple iterables into a single iterable of tuples"
+    },
+    {
+        "question":"Which of the following is used to define a dictionary in Python?",
+        "option1":"{}",
+        "option2":"()",
+        "option3":"[]",
+        "option4":"<>",
+        "answer":"{}"
+    },
+    {
+        "question":"What is the purpose of the datetime module in Python?",
+        "option1":"To work with dates and times",
+        "option2":"To perform bitwise operations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To work with dates and times"
+    },
+    {
+        "question":"Which operator is used for string concatenation in Python?",
+        "option1":"+",
+        "option2":"-",
+        "option3":"*",
+        "option4":"/",
+        "answer":"+"
+    },
+    {
+        "question":"What is the purpose of the random module in Python?",
+        "option1":"To generate random numbers and perform random selection",
+        "option2":"To perform string manipulations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two lists",
+        "answer":"To generate random numbers and perform random selection"
+    },
+    {
+        "question":"Which of the following is used to define a generator function in Python?",
+        "option1":"yield",
+        "option2":"return",
+        "option3":"def",
+        "option4":"generator",
+        "answer":"yield"
+    },
+    {
+        "question":"What is the purpose of the any() function in Python?",
+        "option1":"To check if any element in an iterable is true",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To check if any element in an iterable is true"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python comparison operator?",
+        "option1":"<>",
+        "option2":"==",
+        "option3":">",
+        "option4":"<=",
+        "answer":"<>"
+    },
+    {
+        "question":"What is the purpose of the chr() function in Python?",
+        "option1":"To return a character from an ASCII value",
+        "option2":"To manipulate strings",
+        "option3":"To define a class",
+        "option4":"To import modules from external sources",
+        "answer":"To return a character from an ASCII value"
+    },
+    {
+        "question":"Which keyword is used to define a variable in Python?",
+        "option1":"var",
+        "option2":"N/A (variables are not explicitly declared)",
+        "option3":"int",
+        "option4":"def",
+        "answer":"N/A (variables are not explicitly declared)"
+    },
+    {
+        "question":"What is the purpose of the random.choice() function in Python?",
+        "option1":"To select a random element from a sequence",
+        "option2":"To split a string into a list of substrings based on a delimiter",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To select a random element from a sequence"
+    },
+    {
+        "question":"Which of the following is used to convert a string to uppercase in Python?",
+        "option1":"upper()",
+        "option2":"lower()",
+        "option3":"capitalize()",
+        "option4":"casefold()",
+        "answer":"upper()"
+    },
+    {
+        "question":"What is the purpose of the math module in Python?",
+        "option1":"To perform mathematical operations",
+        "option2":"To perform bitwise operations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To perform mathematical operations"
+    },
+    {
+        "question":"Which operator is used for floor division in Python?",
+        "option1":"//",
+        "option2":"%",
+        "option3":"**",
+        "option4":"/",
+        "answer":"//"
+    },
+    {
+        "question":"What is the purpose of the os.path module in Python?",
+        "option1":"To work with file paths and directories",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two strings",
+        "answer":"To work with file paths and directories"
+    },
+    {
+        "question":"Which of the following is used to define a tuple in Python?",
+        "option1":"()",
+        "option2":"{}",
+        "option3":"[]",
+        "option4":"<>",
+        "answer":"()"
+    },
+    {
+        "question":"What is the purpose of the map() function in Python?",
+        "option1":"To apply a function to each element in an iterable",
+        "option2":"To perform string manipulations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two lists",
+        "answer":"To apply a function to each element in an iterable"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python list method?",
+        "option1":"push()",
+        "option2":"append()",
+        "option3":"extend()",
+        "option4":"remove()",
+        "answer":"push()"
+    },
+    {
+        "question":"What is the purpose of the str() function in Python?",
+        "option1":"To convert a value to a string",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To convert a value to a string"
+    },
+    {
+        "question":"Which keyword is used to handle exceptions in Python?",
+        "option1":"try",
+        "option2":"throw",
+        "option3":"catch",
+        "option4":"finally",
+        "answer":"try"
+    },
+    {
+        "question":"What is the purpose of the split() method in Python strings?",
+        "option1":"To split a string into a list of substrings based on a delimiter",
+        "option2":"To combine two strings",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To split a string into a list of substrings based on a delimiter"
+    },
+    {
+        "question":"Which of the following is used to define a tuple comprehension in Python?",
+        "option1":"(expression for item in iterable)",
+        "option2":"[expression for item in iterable]",
+        "option3":"{key: value for item in iterable}",
+        "option4":"<expression> for item in iterable",
+        "answer":"(expression for item in iterable)"
+    },
+    {
+        "question":"What is the purpose of the time module in Python?",
+        "option1":"To work with time-related functions and values",
+        "option2":"To perform bitwise operations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To work with time-related functions and values"
+    },
+    {
+        "question":"Which operator is used for string concatenation in Python?",
+        "option1":"+",
+        "option2":"-",
+        "option3":"*",
+        "option4":"/",
+        "answer":"+"
+    },
+    {
+        "question":"What is the purpose of the sys module in Python?",
+        "option1":"To provide access to system-specific parameters and functions",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To provide access to system-specific parameters and functions"
+    },
+    {
+        "question":"Which of the following is used to define a set in Python?",
+        "option1":"{}",
+        "option2":"()",
+        "option3":"[]",
+        "option4":"<>",
+        "answer":"{}"
+    },
+    {
+        "question":"What is the purpose of the eval() function in Python?",
+        "option1":"To evaluate a string as a Python expression",
+        "option2":"To perform mathematical calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two variables",
+        "answer":"To evaluate a string as a Python expression"
+    },
+    {
+        "question":"Which of the following is NOT a valid Python string method?",
+        "option1":"replace()",
+        "option2":"lower()",
+        "option3":"split()",
+        "option4":"append()",
+        "answer":"append()"
+    },
+    {
+        "question":"What is the purpose of the ord() function in Python?",
+        "option1":"To return the Unicode code point of a character",
+        "option2":"To manipulate strings",
+        "option3":"To define a class",
+        "option4":"To import modules from external sources",
+        "answer":"To return the Unicode code point of a character"
+    },
+    {
+        "question":"Which keyword is used to define a class in Python?",
+        "option1":"class",
+        "option2":"struct",
+        "option3":"object",
+        "option4":"instance",
+        "answer":"class"
+    },
+    {
+        "question":"What is the purpose of the json module in Python?",
+        "option1":"To work with JSON data",
+        "option2":"To perform string manipulations",
+        "option3":"To manage memory allocation for objects",
+        "option4":"To define a base class",
+        "answer":"To work with JSON data"
+    },
+    {
+        "question":"Which of the following is used to convert a string to lowercase in Python?",
+        "option1":"lower()",
+        "option2":"upper()",
+        "option3":"capitalize()",
+        "option4":"casefold()",
+        "answer":"lower()"
+    },
+    {
+        "question":"What is the purpose of the logging module in Python?",
+        "option1":"To provide a flexible and powerful logging system",
+        "option2":"To perform bitwise operations",
+        "option3":"To handle file operations",
+        "option4":"To define a base class",
+        "answer":"To provide a flexible and powerful logging system"
+    },
+    {
+        "question":"Which operator is used for exponentiation in Python?",
+        "option1":"**",
+        "option2":"^",
+        "option3":"*",
+        "option4":"/",
+        "answer":"**"
+    },
+    {
+        "question":"What is the purpose of the zip() function in Python?",
+        "option1":"To combine multiple iterables into a single iterable of tuples",
+        "option2":"To perform arithmetic calculations",
+        "option3":"To define a loop construct",
+        "option4":"To compare two strings",
+        "answer":"To combine multiple iterables into a single iterable of tuples"
+    },
+    {
+        "question":"Which of the following is used to check if a key exists in a Python dictionary?",
+        "option1":"in",
+        "option2":"not",
+        "option3":"is",
+        "option4":"and",
+        "answer":"in"
+    }
+]
+}

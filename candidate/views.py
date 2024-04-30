@@ -11,8 +11,8 @@ from django.utils.html import strip_tags
 from django.conf import settings
 from django.urls import reverse
 from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm,CandidateUpdateForm
-from .models import Candidate,CandidateResult
-import os
+from .models import Candidate,CandidateResult,CandidateQuestionModel
+import json
 
 def is_user_group_correct(user):
     query_set = Group.objects.filter(user = user)
@@ -28,6 +28,7 @@ def send_mail_candidate(mail_template,context,email,subject='Interview Update'):
 
 def candidateIndexView(request):
     candidate = {}
+    assessment = False
     if not request.user.is_anonymous and not is_user_group_correct(request.user):
         logout(request)
         return HttpResponseRedirect(reverse('index'))
@@ -40,9 +41,10 @@ def candidateIndexView(request):
         candidate = qs_result.first()
         if qs.exists():
             status = qs.first().status
+            assessment = qs.first().assessment_result
         else:
             status = 'No Status'
-    return render(request, 'candidate/index.html', {'status':status,'candidate':candidate})
+    return render(request, 'candidate/index.html', {'status':status,'candidate':candidate,'assessment':assessment})
 
 @login_required(login_url="/candidate/login/") 
 def candidateProfileView(request):
@@ -157,3 +159,41 @@ def candidateUpdateView(request,pk=None):
     context = {'form': form}
     return render(request, template_name='candidate/edit.html', context=context)
 
+@login_required(login_url="/candidate/login/") 
+def candidateAssessmentView(request):
+    if request.method == 'POST':
+        score=0
+        wrong=0
+        correct=0
+        total=25
+        for key,value in request.POST.items():
+            if key in ['csrfmiddlewaretoken','timer']:
+                pass
+            else:
+                question_data = CandidateQuestionModel.objects.filter(question = key).first()
+                if question_data.answer == value:
+                    score+=10
+                    correct+=1
+                else:
+                    wrong+=1
+
+        percent = score/(total*10) *100
+        context = {
+            'score':score,
+            'correct':correct,
+            'wrong':wrong,
+            'percent':percent,
+            'total':total
+        }
+        candidate = Candidate.objects.get(username=request.user)
+        candidate.assessment_data = json.dumps(context)
+        candidate.assessment_result = True
+        candidate.save()
+        return render(request,'candidate/result.html',context)
+    else:
+        candidate = Candidate.objects.get(username=request.user)
+        if candidate.assessment_result == True:
+            return render(request,'candidate/result.html',context=json.loads(candidate.assessment_data))
+        questions=CandidateQuestionModel.objects.all().order_by('?')[:25]
+        skill = questions.first().skill
+        return render(request, template_name='candidate/questionnaire.html', context={'questions':questions,'skill':skill})

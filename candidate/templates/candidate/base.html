@@ -22,6 +22,9 @@
           <a class="nav-link" aria-current="page" href="{% url 'candidate:candidate-index' %}">Home</a>
           {% if user.is_authenticated %}
           <a class="nav-link" href="{% url 'candidate:candidate-profile' %}">Profile</a>
+          {% if status != 'No Status' or assessment %}
+          <a class="nav-link" href="{% url 'candidate:candidate-assessment' %}">Assessment</a>
+          {% endif %}
           <a class="nav-link" href="{% url 'candidate:candidate-logout' %}">Logout</a>
           {% else %}
           <a class="nav-link" href="{% url 'candidate:candidate-signup' %}">Signup</a>
