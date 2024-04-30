@@ -5,6 +5,10 @@ from django.contrib.auth import authenticate,login,logout
 from django.http import HttpResponseRedirect,Http404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
 from django.urls import reverse
 from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm,CandidateUpdateForm
 from .models import Candidate,CandidateResult
@@ -13,6 +17,14 @@ import os
 def is_user_group_correct(user):
     query_set = Group.objects.filter(user = user)
     return query_set.values()[0].get('name') == 'Candidate'
+
+def send_mail_candidate(mail_template,context,email):
+    subject = 'Interview Update'
+    html_message = render_to_string(f'candidate/{mail_template}.html', context)
+    plain_message = strip_tags(html_message)
+    from_email = settings.EMAIL_HOST_USER
+    to = email
+    send_mail(subject, plain_message, from_email, [to], html_message=html_message)
 
 def candidateIndexView(request):
     candidate = {}
@@ -67,6 +79,7 @@ def candidateProfileView(request):
                                  skill=skill,
                                  resume = request.FILES['resume'])
         messages.success(request, 'Candidate registration is completed.')
+        send_mail_candidate('registration',{'first_name':first_name,'last_name':last_name},email)
         return HttpResponseRedirect(reverse('candidate:candidate-profile'))
     else:
         return render(request, 'candidate/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'file':file})
@@ -106,6 +119,8 @@ def candidateLoginView(request):
             user = authenticate(username=username, password=password)
             if user:
                 login(request, user)
+                qs = Candidate.objects.filter(username_id=django_user).first()
+                send_mail_candidate('login_mail',{'first_name':qs.first_name,'last_name':qs.last_name},qs.email)
                 return HttpResponseRedirect(reverse('candidate:candidate-index'))
             else:
                 messages.error(request, 'Invalid Credentials')
