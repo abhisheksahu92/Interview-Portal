@@ -12,6 +12,7 @@ import datetime
 from .forms import EmployeeLoginForm,EmployeeSignupForm,EmployeeProfileForm,EmployeeFeedbackForm
 from .models import Employee
 from candidate.models import Candidate,CandidateResult
+from candidate.views import send_mail_candidate
 
 def isEmployee(employee):
     emp_qs = Employee.objects.filter(employee_username=employee)
@@ -174,32 +175,18 @@ def employeeFeedback(request,id=None):
         registered = True
         level = qs_employee.employee_level
         if form.is_valid():
-            if level == 'L1':
-                qs_candidate_result.update(
-                                   feedback_l1=form.cleaned_data.get('feedback'),
-                                   status_l1=form.cleaned_data.get('status'),
-                                   l1_by=qs_employee,
-                                   l1_at=datetime.datetime.now()  )
-                if form.cleaned_data.get('status') == 'Rejected':
-                    Candidate.objects.filter(id=id).update(status='Rejected')
-            elif level == 'L2':
-                qs_candidate_result.update(
-                    feedback_l2=form.cleaned_data.get('feedback'),
-                    status_l2=form.cleaned_data.get('status'),
-                    l2_by=qs_employee,
-                    l2_at=datetime.datetime.now()  )
-                if form.cleaned_data.get('status') == 'Rejected':
-                    Candidate.objects.filter(id=id).update(status='Rejected')
-            elif level == 'HR':
-                qs_candidate_result.update(
-                    feedback_hr=form.cleaned_data.get('feedback'),
-                    status_hr=form.cleaned_data.get('status'),
-                    hr_by=qs_employee,
-                    hr_at = datetime.datetime.now()  )
-                if form.cleaned_data.get('status') == 'Selected':
-                    Candidate.objects.filter(id=id).update(status='Selected')
-                elif form.cleaned_data.get('status') == 'Rejected':
-                    Candidate.objects.filter(id=id).update(status='Rejected')
+            status = form.cleaned_data.get('status')
+            feedback = form.cleaned_data.get('feedback')
+            data = {f'feedback_{level.lower()}':feedback,
+                    f'status_{level.lower()}':status,
+                    f'{level.lower()}_by': qs_employee,
+                    f'{level.lower()}_at': datetime.datetime.now()}
+            qs_candidate_result.update(**data)
+            if level == 'HR' and status == 'Selected':
+                Candidate.objects.filter(id=id).update(status='Selected')
+            elif status == 'Rejected':
+                Candidate.objects.filter(id=id).update(status='Rejected')
+            send_mail_candidate(f'{status.lower()}_mail',{'first_name':candidate.first_name,'last_name':candidate.last_name,'level':level.upper()},candidate.email)
             return HttpResponseRedirect(reverse('employee:employee-list'))
     return render(request, 'employee/feedback.html',{'form': form, 'registered': registered,'candidate':candidate,'candidate_result':qs_candidate_result.first()})
 
