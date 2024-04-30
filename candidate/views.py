@@ -183,12 +183,20 @@ def candidateAssessmentView(request):
             'correct':correct,
             'wrong':wrong,
             'percent':percent,
-            'total':total
+            'total':total,
+            'status':'Cleared' if score > 180 else 'Not Cleared'
         }
         candidate = Candidate.objects.get(username=request.user)
         candidate.assessment_data = json.dumps(context)
         candidate.assessment_result = True
+        if score < 180:
+            candidate.status = 'Rejected'
         candidate.save()
+        if score > 180:
+            send_mail_candidate('test_clear_mail',{'first_name':candidate.first_name,'last_name':candidate.last_name},candidate.email)
+        else:
+            send_mail_candidate('rejected_mail',{'first_name':candidate.first_name,'last_name':candidate.last_name},candidate.email)
+
         return render(request,'candidate/result.html',context)
     else:
         candidate = Candidate.objects.get(username=request.user)
