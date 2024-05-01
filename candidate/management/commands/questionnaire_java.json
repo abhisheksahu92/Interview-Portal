@@ -1,0 +1,1005 @@
+{
+    "questions": [
+      {
+        "question": "What is the latest stable version of Java?",
+        "options": ["Java 7", "Java 8", "Java 9", "Java 10"],
+        "answer": "Java 8"
+      },
+      {
+        "question": "Which keyword is used to define a constant in Java?",
+        "options": ["final", "const", "static", "var"],
+        "answer": "final"
+      },
+      {
+        "question": "Which of the following is not a valid identifier in Java?",
+        "options": ["_myVariable", "123variable", "myVariable", "$myVariable"],
+        "answer": "123variable"
+      },
+      {
+        "question": "What does JVM stand for?",
+        "options": ["Java Virtual Machine", "Java Virtual Memory", "Java Virtual Method", "Java Visual Machine"],
+        "answer": "Java Virtual Machine"
+      },
+      {
+        "question": "Which of the following is a marker interface in Java?",
+        "options": ["Serializable", "Runnable", "Comparable", "Iterable"],
+        "answer": "Serializable"
+      },
+      {
+        "question": "What is the default value of an instance variable in Java?",
+        "options": ["0", "null", "false", "Depends on the type of variable"],
+        "answer": "Depends on the type of variable"
+      },
+      {
+        "question": "Which collection class allows null values in Java?",
+        "options": ["ArrayList", "LinkedList", "HashSet", "TreeSet"],
+        "answer": "ArrayList"
+      },
+      {
+        "question": "What does the 'synchronized' keyword do in Java?",
+        "options": ["Ensures that a method can be accessed by only one thread at a time", "Prevents inheritance", "Defines a static method", "Specifies that a variable can be accessed by multiple threads"],
+        "answer": "Ensures that a method can be accessed by only one thread at a time"
+      },
+      {
+        "question": "What is the range of byte data type in Java?",
+        "options": ["-128 to 127", "0 to 255", "-32768 to 32767", "Depends on the system architecture"],
+        "answer": "-128 to 127"
+      },
+      {
+        "question": "Which of the following operators is used to allocate memory to an array in Java?",
+        "options": ["new", "malloc", "allocate", "alloc"],
+        "answer": "new"
+      },
+      {
+        "question": "What is the superclass of all exception classes in Java?",
+        "options": ["Throwable", "Exception", "Error", "RuntimeException"],
+        "answer": "Throwable"
+      },
+      {
+        "question": "Which keyword is used to explicitly call the superclass constructor?",
+        "options": ["super()", "this()", "extends", "super"],
+        "answer": "super"
+      },
+      {
+        "question": "What is the output of 'System.out.println(3*4+'a'+\"abc\")' in Java?",
+        "options": ["12abc", "7abc", "12aabc", "34abc"],
+        "answer": "12aabc"
+      },
+      {
+        "question": "Which loop is guaranteed to execute at least once in Java?",
+        "options": ["for loop", "while loop", "do-while loop", "enhanced for loop"],
+        "answer": "do-while loop"
+      },
+      {
+        "question": "Which of the following is not a primitive data type in Java?",
+        "options": ["int", "float", "double", "String"],
+        "answer": "String"
+      },
+      {
+        "question": "Which of the following access specifiers restricts access the most?",
+        "options": ["public", "protected", "default", "private"],
+        "answer": "private"
+      },
+      {
+        "question": "Which method must be implemented by a class implementing the 'Runnable' interface?",
+        "options": ["run()", "start()", "execute()", "thread()"],
+        "answer": "run()"
+      },
+      {
+        "question": "Which of the following is a way to create a thread in Java?",
+        "options": ["Extend the Thread class", "Implement the Runnable interface", "Both of the above", "None of the above"],
+        "answer": "Both of the above"
+      },
+      {
+        "question": "Which of the following is true about the 'break' statement in Java?",
+        "options": ["It is used to terminate a loop prematurely", "It is used to exit from a method", "It is used to skip the current iteration of a loop", "It is used to indicate the end of a case in switch statement"],
+        "answer": "It is used to terminate a loop prematurely"
+      },
+      {
+        "question": "What does the 'this' keyword refer to in Java?",
+        "options": ["Current object", "Parent class object", "Child class object", "No object"],
+        "answer": "Current object"
+      },
+      {
+        "question": "Which of the following statements is true about Java?",
+        "options": ["Java is a purely object-oriented programming language.", "Java does not support multithreading.", "Java programs need to be compiled into machine language before execution.", "Java does not allow for platform-independent development."],
+        "answer": "Java is a purely object-oriented programming language."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\" + 2 + 3)' in Java?",
+        "options": ["Hello23", "Hello5", "Hello 2 3", "Compile-time error"],
+        "answer": "Hello23"
+      },
+      {
+        "question": "Which of the following modifiers can be used with an interface in Java?",
+        "options": ["private", "protected", "final", "abstract"],
+        "answer": "abstract"
+      },
+      {
+        "question": "What is the purpose of the 'default' keyword in a switch statement in Java?",
+        "options": ["To specify a default value", "To indicate a default case", "To declare a default method", "To break out of the switch statement"],
+        "answer": "To indicate a default case"
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.ceil(-3.14))' in Java?",
+        "options": ["-3", "-4", "3", "4"],
+        "answer": "-3.0"
+      },
+      {
+        "question": "Which method is used to explicitly request the garbage collector in Java?",
+        "options": ["collect()", "finalize()", "dispose()", "clean()"],
+        "answer": "finalize()"
+      },
+      {
+        "question": "Which of the following is not a valid type of constructor in Java?",
+        "options": ["Default constructor", "Parameterized constructor", "Copy constructor", "Derived constructor"],
+        "answer": "Derived constructor"
+      },
+      {
+        "question": "What is the size of 'char' data type in Java?",
+        "options": ["4 bits", "8 bits", "16 bits", "32 bits"],
+        "answer": "16 bits"
+      },
+      {
+        "question": "What does the 'static' keyword mean in Java?",
+        "options": ["The variable or method is shared among all instances of the class", "The variable or method belongs to the instance of the class", "The variable or method cannot be accessed outside the class", "The variable or method can only be accessed within the same package"],
+        "answer": "The variable or method is shared among all instances of the class"
+      },
+      {
+        "question": "What is the return type of the 'main' method in Java?",
+        "options": ["void", "int", "String", "main"],
+        "answer": "void"
+      },
+      {
+        "question": "What is the purpose of the 'finally' block in a try-catch-finally statement in Java?",
+        "options": ["To handle exceptions", "To execute cleanup code", "To specify default behavior", "To exit the program"],
+        "answer": "To execute cleanup code"
+      },
+      {
+        "question": "Which of the following is true about the 'protected' access modifier in Java?",
+        "options": ["It restricts access to the class members within the same package.", "It allows access from any class in the same package.", "It restricts access to the class members only to the subclass.", "It allows access from any class in any package."],
+        "answer": "It allows access from any class in the same package."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"abc\".indexOf('b'))' in Java?",
+        "options": ["0", "1", "2", "-1"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following statements is true about Java arrays?",
+        "options": ["Java arrays can hold objects of different types.", "Java arrays are dynamically sized.", "Java arrays can be resized after initialization.", "Java arrays are objects."],
+        "answer": "Java arrays are objects."
+      },
+      {
+        "question": "What is the purpose of the 'transient' keyword in Java?",
+        "options": ["To make a variable unmodifiable", "To make a variable invisible", "To exclude a variable from serialization", "To make a variable static"],
+        "answer": "To exclude a variable from serialization"
+      },
+      {
+        "question": "Which of the following statements is true about Java packages?",
+        "options": ["Packages are used for organizing classes and interfaces into namespaces.", "A class can belong to only one package.", "Packages are only used for importing classes from the standard Java library.", "Packages are used for creating GUI components."],
+        "answer": "Packages are used for organizing classes and interfaces into namespaces."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\".substring(0, 3))' in Java?",
+        "options": ["Hell", "Hello", "ell", "lo"],
+        "answer": "Hel"
+      },
+      {
+        "question": "Which of the following is true about Java enums?",
+        "options": ["Enums can have constructors.", "Enums cannot have methods.", "Enums can be extended.", "Enums can implement interfaces."],
+        "answer": "Enums can implement interfaces."
+      },
+      {
+        "question": "What does the 'volatile' keyword mean in Java?",
+        "options": ["The variable is not stored in memory.", "The variable may be changed asynchronously.", "The variable is thread-local.", "The variable is immutable."],
+        "answer": "The variable may be changed asynchronously."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\".equals(\"hello\"))' in Java?",
+        "options": ["true", "false", "compile-time error", "runtime error"],
+        "answer": "false"
+      },
+      {
+        "question": "What is the purpose of the 'throws' keyword in Java?",
+        "options": ["To handle exceptions within a method", "To specify the exceptions that a method might throw", "To catch exceptions in a try-catch block", "To define custom exceptions"],
+        "answer": "To specify the exceptions that a method might throw"
+      },
+      {
+        "question": "Which of the following statements is true about method overloading in Java?",
+        "options": ["Method overloading is not allowed in Java.", "Method overloading is resolved at compile-time.", "Method overloading is resolved at runtime.", "Method overloading only works for static methods."],
+        "answer": "Method overloading is resolved at compile-time."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.pow(2, 3))' in Java?",
+        "options": ["5", "6", "8", "Compile-time error"],
+        "answer": "8.0"
+      },
+      {
+        "question": "Which of the following is a valid declaration of a two-dimensional array in Java?",
+        "options": ["int[][] arr = new int[3,3];", "int[][] arr = new int[3][3];", "int[3][3] arr = new int[];", "int[3,3] arr = new int[];"],
+        "answer": "int[][] arr = new int[3][3];"
+      },
+      {
+        "question": "What is the purpose of the 'super' keyword in Java?",
+        "options": ["To refer to the current object", "To call the superclass constructor", "To create an instance of a class", "To access static members of a class"],
+        "answer": "To call the superclass constructor"
+      },
+      {
+        "question": "Which of the following statements is true about abstract classes in Java?",
+        "options": ["An abstract class cannot have constructors.", "An abstract class cannot have abstract methods.", "An abstract class can be instantiated.", "An abstract class cannot have static methods."],
+        "answer": "An abstract class cannot be instantiated."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\".charAt(2))' in Java?",
+        "options": ["e", "l", "o", "Compile-time error"],
+        "answer": "l"
+      },
+      {
+        "question": "Which of the following statements is true about Java interfaces?",
+        "options": ["Interfaces can have instance variables.", "Interfaces can have constructors.", "Interfaces can have static methods.", "Interfaces can have private methods."],
+        "answer": "Interfaces can have static methods."
+      },
+      {
+        "question": "What is the purpose of the 'continue' statement in Java?",
+        "options": ["To exit from a loop", "To skip the current iteration of a loop", "To terminate a loop prematurely", "To resume execution of a loop"],
+        "answer": "To skip the current iteration of a loop"
+      },
+      {
+        "question": "What is the output of 'System.out.println(10/0)' in Java?",
+        "options": ["0", "Infinity", "Compile-time error", "Runtime error"],
+        "answer": "Runtime error"
+      },
+      {
+        "question": "Which of the following is not a valid method modifier in Java?",
+        "options": ["strictfp", "native", "static", "constant"],
+        "answer": "constant"
+      },
+      {
+        "question": "What is the purpose of the 'static' block in Java?",
+        "options": ["To declare static variables", "To initialize static variables", "To execute code before the main method", "To execute code after the main method"],
+        "answer": "To execute code before the main method"
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"java\".toUpperCase())' in Java?",
+        "options": ["java", "Java", "JAVA", "Compile-time error"],
+        "answer": "JAVA"
+      },
+      {
+        "question": "Which of the following is true about method overriding in Java?",
+        "options": ["Method overriding is not allowed in Java.", "Method overriding is resolved at compile-time.", "Method overriding is resolved at runtime.", "Method overriding only works for static methods."],
+        "answer": "Method overriding is resolved at runtime."
+      },
+      {
+        "question": "What is the purpose of the 'instanceof' operator in Java?",
+        "options": ["To check if an object is of a specific class", "To check if two objects are the same", "To cast an object to a subclass", "To create a new instance of a class"],
+        "answer": "To check if an object is of a specific class"
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\".replace('l', 'w'))' in Java?",
+        "options": ["Hewwo", "Hewlo", "Hewwo", "Hewwo"],
+        "answer": "Hewwo"
+      },
+      {
+        "question": "Which of the following statements is true about Java garbage collection?",
+        "options": ["Garbage collection can be explicitly triggered by the programmer.", "Garbage collection guarantees that all unused objects will be immediately removed from memory.", "Garbage collection can lead to memory leaks.", "Garbage collection can be disabled."],
+        "answer": "Garbage collection can be explicitly triggered by the programmer."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.round(3.5))' in Java?",
+        "options": ["3", "4", "3.5", "4.0"],
+        "answer": "4"
+      },
+      {
+        "question": "Which of the following statements is true about Java constructors?",
+        "options": ["Constructors can have a return type.", "Constructors can be overloaded.", "Constructors can be inherited.", "Constructors can be marked as abstract."],
+        "answer": "Constructors can be overloaded."
+      },
+      {
+        "question": "What is the purpose of the 'this' keyword in Java?",
+        "options": ["To refer to the current object", "To call the superclass constructor", "To create an instance of a class", "To access static members of a class"],
+        "answer": "To refer to the current object"
+      },
+      {
+        "question": "Which of the following is true about Java exceptions?",
+        "options": ["Checked exceptions must be caught or declared.", "Unchecked exceptions must be caught or declared.", "Error is a checked exception.", "RuntimeException is a checked exception."],
+        "answer": "Checked exceptions must be caught or declared."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\" + null)' in Java?",
+        "options": ["Hello", "null", "Compile-time error", "Runtime error"],
+        "answer": "Hellonull"
+      },
+      {
+        "question": "Which of the following statements is true about Java threads?",
+        "options": ["A thread can be restarted once it has completed execution.", "A thread's priority can be set to any integer value.", "A thread's priority is guaranteed to determine its execution order.", "A thread's name cannot be changed after it is created."],
+        "answer": "A thread's name cannot be changed after it is created."
+      },
+      {
+        "question": "What is the purpose of the 'yield' method in Java?",
+        "options": ["To suspend the current thread temporarily", "To terminate the current thread", "To start a new thread", "To pause the current thread indefinitely"],
+        "answer": "To suspend the current thread temporarily"
+      },
+      {
+        "question": "Which of the following is true about Java synchronization?",
+        "options": ["Synchronization prevents deadlocks.", "Synchronization guarantees thread safety.", "Synchronization can only be applied to methods.", "Synchronization can only be applied to static methods."],
+        "answer": "Synchronization guarantees thread safety."
+      },
+      {
+        "question": "What is the purpose of the 'volatile' keyword in Java?",
+        "options": ["To make a variable immutable", "To ensure that a variable is visible to all threads", "To prevent a variable from being garbage collected", "To synchronize access to a variable"],
+        "answer": "To ensure that a variable is visible to all threads"
+      },
+      {
+        "question": "Which of the following is not a valid state in the lifecycle of a thread in Java?",
+        "options": ["Running", "Sleeping", "Blocked", "Inactive"],
+        "answer": "Inactive"
+      },
+      {
+        "question": "What is the purpose of the 'interrupt' method in Java?",
+        "options": ["To terminate a thread", "To interrupt a sleeping thread", "To start a new thread", "To synchronize access to a variable"],
+        "answer": "To interrupt a sleeping thread"
+      },
+      {
+        "question": "Which of the following statements is true about Java garbage collection?",
+        "options": ["Garbage collection can be explicitly triggered by calling the System.gc() method.", "Garbage collection guarantees that all unused objects will be immediately removed from memory.", "Garbage collection can lead to memory leaks.", "Garbage collection can be disabled."],
+        "answer": "Garbage collection can be explicitly triggered by calling the System.gc() method."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"abc\".substring(1, 2))' in Java?",
+        "options": ["a", "b", "bc", "Compile-time error"],
+        "answer": "b"
+      },
+      {
+        "question": "Which of the following is true about Java enums?",
+        "options": ["Enums can have constructors.", "Enums can have fields and methods.", "Enums cannot implement interfaces.", "Enums cannot override methods from java.lang.Enum."],
+        "answer": "Enums can have fields and methods."
+      },
+      {
+        "question": "What is the purpose of the 'static' keyword in Java?",
+        "options": ["To make a variable immutable", "To ensure that a variable is visible to all instances of a class", "To prevent a variable from being garbage collected", "To synchronize access to a variable"],
+        "answer": "To ensure that a variable is visible to all instances of a class"
+      },
+      {
+        "question": "Which of the following statements is true about Java inheritance?",
+        "options": ["Java supports multiple inheritance.", "A class can inherit from multiple classes.", "Java only supports single inheritance.", "A subclass cannot override methods from its superclass."],
+        "answer": "Java only supports single inheritance."
+      },
+      {
+        "question": "What is the output of 'System.out.println(10 % 3)' in Java?",
+        "options": ["3", "1", "0", "10/3"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java serialization?",
+        "options": ["All objects in Java are serializable by default.", "Transient variables are serialized.", "Externalizable interface provides default serialization behavior.", "Serialization can be prevented by marking a class as final."],
+        "answer": "Transient variables are serialized."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.max(2.0, 3))' in Java?",
+        "options": ["2.0", "3", "Compile-time error", "3.0"],
+        "answer": "3.0"
+      },
+      {
+        "question": "Which of the following is true about Java generics?",
+        "options": ["Generics allow for type casting at runtime.", "Generics provide compile-time type safety.", "Generics are limited to primitive types.", "Generics cannot be used with collections."],
+        "answer": "Generics provide compile-time type safety."
+      },
+      {
+        "question": "What is the purpose of the 'finally' block in a try-catch-finally statement in Java?",
+        "options": ["To handle exceptions", "To execute cleanup code", "To specify default behavior", "To exit the program"],
+        "answer": "To execute cleanup code"
+      },
+      {
+        "question": "Which of the following is true about Java annotations?",
+        "options": ["Annotations can only be applied to classes.", "Annotations are used to provide metadata about program elements.", "Annotations cannot have attributes.", "Annotations are only available in Java SE."],
+        "answer": "Annotations are used to provide metadata about program elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\".startsWith(\"H\"))' in Java?",
+        "options": ["true", "false", "Compile-time error", "Runtime error"],
+        "answer": "true"
+      },
+      {
+        "question": "Which of the following is true about Java streams?",
+        "options": ["Java streams are used for file input/output operations only.", "Java streams can only handle byte-oriented data.", "Java streams support both byte-oriented and character-oriented data.", "Java streams cannot be used for network communication."],
+        "answer": "Java streams support both byte-oriented and character-oriented data."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.min(2, 3.0))' in Java?",
+        "options": ["2.0", "3.0", "Compile-time error", "2"],
+        "answer": "2.0"
+      },
+      {
+        "question": "Which of the following statements is true about Java ArrayList?",
+        "options": ["ArrayList can only store primitive data types.", "ArrayList is synchronized by default.", "ArrayList allows for random access.", "ArrayList can have duplicate elements."],
+        "answer": "ArrayList allows for random access."
+      },
+      {
+        "question": "What is the purpose of the 'autoboxing' feature in Java?",
+        "options": ["To automatically convert primitive data types to their corresponding wrapper classes", "To automatically convert wrapper classes to their corresponding primitive data types", "To automatically generate wrapper classes", "To automatically generate primitive data types"],
+        "answer": "To automatically convert primitive data types to their corresponding wrapper classes"
+      },
+      {
+        "question": "Which of the following is not a valid type of exception in Java?",
+        "options": ["IOException", "RuntimeException", "SQLException", "LogicException"],
+        "answer": "LogicException"
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".replace(\"a\", \"\"))' in Java?",
+        "options": ["Jav", "Jva", "Ja", "Jav"],
+        "answer": "Jv"
+      },
+      {
+        "question": "Which of the following is true about Java lambda expressions?",
+        "options": ["Lambda expressions are anonymous methods.", "Lambda expressions cannot capture variables from their surrounding scope.", "Lambda expressions must have a return type specified.", "Lambda expressions cannot be passed as arguments."],
+        "answer": "Lambda expressions are anonymous methods."
+      },
+      {
+        "question": "What is the purpose of the 'forEach' method in Java streams?",
+        "options": ["To filter elements based on a predicate", "To perform an action for each element in the stream", "To transform elements in the stream", "To sort elements in the stream"],
+        "answer": "To perform an action for each element in the stream"
+      },
+      {
+        "question": "Which of the following statements is true about Java interfaces?",
+        "options": ["An interface can have instance variables.", "An interface can have constructors.", "An interface can have static methods.", "An interface can have private methods."],
+        "answer": "An interface can have static methods."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".substring(0, 2))' in Java?",
+        "options": ["J", "a", "Ja", "Jav"],
+        "answer": "Ja"
+      },
+      {
+        "question": "Which of the following is true about Java annotations?",
+        "options": ["Annotations can only be applied to methods.", "Annotations can be used to provide metadata about program elements.", "Annotations cannot have attributes.", "Annotations are only available in Java EE."],
+        "answer": "Annotations can be used to provide metadata about program elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"abc\".equals(\"ABC\"))' in Java?",
+        "options": ["true", "false", "Compile-time error", "Runtime error"],
+        "answer": "false"
+      },
+      {
+        "question": "Which of the following is true about Java packages?",
+        "options": ["A package can contain classes from multiple namespaces.", "A package cannot have sub-packages.", "A package name must be unique within a project.", "A package can only contain interface definitions."],
+        "answer": "A package name must be unique within a project."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".concat(\" is awesome\"))' in Java?",
+        "options": ["Java", " is awesome", "Java is awesome", "Compile-time error"],
+        "answer": "Java is awesome"
+      },
+      {
+        "question": "Which of the following is true about Java generics?",
+        "options": ["Generics allow for type casting at runtime.", "Generics provide compile-time type safety.", "Generics are limited to primitive types.", "Generics cannot be used with collections."],
+        "answer": "Generics provide compile-time type safety."
+      },
+      {
+        "question": "What is the purpose of the 'peek' method in Java streams?",
+        "options": ["To filter elements based on a predicate", "To perform an action for each element in the stream", "To transform elements in the stream", "To sort elements in the stream"],
+        "answer": "To perform an action for each element in the stream"
+      },
+      {
+        "question": "Which of the following statements is true about Java strings?",
+        "options": ["Java strings are mutable.", "Java strings can contain null characters.", "Java strings can only be created using the 'new' keyword.", "Java strings cannot be compared using the '==' operator."],
+        "answer": "Java strings can contain null characters."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".indexOf('a'))' in Java?",
+        "options": ["0", "1", "-1", "Compile-time error"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java collections?",
+        "options": ["A collection can contain primitive data types.", "A collection can have duplicate elements.", "A collection can be used as a replacement for arrays.", "A collection cannot be resized after initialization."],
+        "answer": "A collection can have duplicate elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.abs(-5.5))' in Java?",
+        "options": ["-5", "-5.0", "5", "5.0"],
+        "answer": "5.5"
+      },
+      {
+        "question": "Which of the following is true about Java enums?",
+        "options": ["Enums can have constructors.", "Enums cannot have fields and methods.", "Enums cannot implement interfaces.", "Enums cannot be used in switch statements."],
+        "answer": "Enums can have constructors."
+      },
+      {
+        "question": "What is the purpose of the 'assert' statement in Java?",
+        "options": ["To check for syntax errors", "To handle exceptions", "To perform unit testing", "To improve performance"],
+        "answer": "To perform unit testing"
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\".length())' in Java?",
+        "options": ["5", "6", "Hello", "Compile-time error"],
+        "answer": "5"
+      },
+      {
+        "question": "Which of the following is true about Java interfaces?",
+        "options": ["An interface can have instance variables.", "An interface can have constructors.", "An interface can have private methods.", "An interface can have default methods."],
+        "answer": "An interface can have default methods."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.sqrt(9))' in Java?",
+        "options": ["3", "9", "Compile-time error", "3.0"],
+        "answer": "3.0"
+      },
+      {
+        "question": "Which of the following statements is true about Java garbage collection?",
+        "options": ["Garbage collection guarantees that all unused objects will be immediately removed from memory.", "Garbage collection can only be triggered manually by the programmer.", "Garbage collection can lead to memory leaks.", "Garbage collection is guaranteed to free memory immediately."],
+        "answer": "Garbage collection guarantees that all unused objects will be immediately removed from memory."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".toUpperCase())' in Java?",
+        "options": ["java", "JAVA", "Compile-time error", "Runtime error"],
+        "answer": "JAVA"
+      },
+      {
+        "question": "Which of the following is true about Java arrays?",
+        "options": ["Arrays in Java are dynamically sized.", "Arrays in Java can hold objects of different types.", "Arrays in Java can be resized after initialization.", "Arrays in Java are objects."],
+        "answer": "Arrays in Java are objects."
+      },
+      {
+        "question": "What is the purpose of the 'super' keyword in Java?",
+        "options": ["To refer to the current object", "To call the superclass constructor", "To create an instance of a class", "To access static members of a class"],
+        "answer": "To call the superclass constructor"
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".substring(0, 2))' in Java?",
+        "options": ["J", "a", "Ja", "Jav"],
+        "answer": "Ja"
+      },
+      {
+        "question": "Which of the following is true about Java method overriding?",
+        "options": ["Method overriding is resolved at compile-time.", "A subclass cannot override methods from its superclass.", "A subclass must override all methods of its superclass.", "Method overriding allows a subclass to provide a specific implementation of a method that is already provided by its superclass."],
+        "answer": "Method overriding allows a subclass to provide a specific implementation of a method that is already provided by its superclass."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\" + 2 + 3)' in Java?",
+        "options": ["Hello23", "Hello5", "Hello 2 3", "Compile-time error"],
+        "answer": "Hello23"
+      },
+      {
+        "question": "Which of the following is true about Java constructors?",
+        "options": ["Constructors can have a return type.", "Constructors can be inherited.", "Constructors can be marked as abstract.", "Constructors are called explicitly by the programmer."],
+        "answer": "Constructors can be marked as abstract."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".charAt(2))' in Java?",
+        "options": ["J", "a", "v", "Compile-time error"],
+        "answer": "v"
+      },
+      {
+        "question": "Which of the following is true about Java annotations?",
+        "options": ["Annotations can only be applied to methods.", "Annotations can have default values.", "Annotations can only be used at runtime.", "Annotations cannot have attributes."],
+        "answer": "Annotations can have default values."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".replace('a', 'e'))' in Java?",
+        "options": ["Java", "Jeva", "Jeve", "Jevae"],
+        "answer": "Jeve"
+      },
+      {
+        "question": "Which of the following is true about Java generics?",
+        "options": ["Generics allow for type casting at runtime.", "Generics provide compile-time type safety.", "Generics are limited to primitive types.", "Generics cannot be used with collections."],
+        "answer": "Generics provide compile-time type safety."
+      },
+      {
+        "question": "What is the purpose of the 'break' statement in Java?",
+        "options": ["To exit a loop or switch statement", "To continue to the next iteration of a loop", "To terminate the program", "To return a value from a method"],
+        "answer": "To exit a loop or switch statement"
+      },
+      {
+        "question": "What is the output of 'System.out.println(10 % 3)' in Java?",
+        "options": ["3", "1", "0", "10/3"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java enums?",
+        "options": ["Enums can have constructors.", "Enums cannot have fields and methods.", "Enums cannot implement interfaces.", "Enums cannot be used in switch statements."],
+        "answer": "Enums can have constructors."
+      },
+      {
+        "question": "Which of the following is true about Java interfaces?",
+        "options": ["An interface can have instance variables.", "An interface can have constructors.", "An interface can have private methods.", "An interface can extend multiple interfaces."],
+        "answer": "An interface can extend multiple interfaces."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".indexOf('a'))' in Java?",
+        "options": ["0", "1", "-1", "Compile-time error"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java method overloading?",
+        "options": ["Method overloading allows a subclass to provide a specific implementation of a method that is already provided by its superclass.", "Method overloading is resolved at runtime.", "Method overloading must have the same return type.", "Method overloading allows methods with the same name but different parameter lists."],
+        "answer": "Method overloading allows methods with the same name but different parameter lists."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".equals(\"JAVA\"))' in Java?",
+        "options": ["true", "false", "Compile-time error", "Runtime error"],
+        "answer": "false"
+      },
+      {
+        "question": "Which of the following is true about Java packages?",
+        "options": ["A package can contain classes from multiple namespaces.", "A package cannot have sub-packages.", "A package name must be unique within a project.", "A package can only contain interface definitions."],
+        "answer": "A package name must be unique within a project."
+      },
+      {
+        "question": "What is the purpose of the 'finalize' method in Java?",
+        "options": ["To make an object immutable", "To clean up resources before an object is garbage collected", "To prevent garbage collection of an object", "To synchronize access to an object"],
+        "answer": "To clean up resources before an object is garbage collected"
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\".substring(1))' in Java?",
+        "options": ["H", "e", "ello", "Compile-time error"],
+        "answer": "ello"
+      },
+      {
+        "question": "Which of the following is true about Java inheritance?",
+        "options": ["Java supports multiple inheritance.", "A class can inherit from multiple classes.", "Java only supports single inheritance.", "A subclass cannot override methods from its superclass."],
+        "answer": "Java only supports single inheritance."
+      },
+      {
+        "question": "What is the purpose of the 'continue' statement in Java?",
+        "options": ["To exit from a loop", "To skip the current iteration of a loop", "To terminate a loop prematurely", "To resume execution of a loop"],
+        "answer": "To skip the current iteration of a loop"
+      },
+      {
+        "question": "What is the output of 'System.out.println(10 / 0)' in Java?",
+        "options": ["0", "Infinity", "Compile-time error", "Runtime error"],
+        "answer": "Runtime error"
+      },
+      {
+        "question": "Which of the following is true about Java strings?",
+        "options": ["Java strings are mutable.", "Java strings can contain null characters.", "Java strings can only be created using the 'new' keyword.", "Java strings cannot be compared using the '==' operator."],
+        "answer": "Java strings can contain null characters."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.abs(-5))' in Java?",
+        "options": ["-5", "5", "-5.0", "5.0"],
+        "answer": "5"
+      },
+      {
+        "question": "Which of the following is true about Java enums?",
+        "options": ["Enums can have constructors.", "Enums cannot have fields and methods.", "Enums cannot implement interfaces.", "Enums cannot be used in switch statements."],
+        "answer": "Enums can have constructors."
+      },
+      {
+        "question": "What is the purpose of the 'static' block in Java?",
+        "options": ["To declare static variables", "To initialize static variables", "To execute code before the main method", "To execute code after the main method"],
+        "answer": "To execute code before the main method"
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".startsWith(\"H\"))' in Java?",
+        "options": ["true", "false", "Compile-time error", "Runtime error"],
+        "answer": "false"
+      },
+      {
+        "question": "Which of the following is true about Java collections?",
+        "options": ["A collection can contain primitive data types.", "A collection can have duplicate elements.", "A collection can be used as a replacement for arrays.", "A collection cannot be resized after initialization."],
+        "answer": "A collection can have duplicate elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.round(3.5))' in Java?",
+        "options": ["3", "4", "3.5", "4.0"],
+        "answer": "4"
+      },
+      {
+        "question": "Which of the following is true about Java streams?",
+        "options": ["Java streams are used for file input/output operations only.", "Java streams can only handle byte-oriented data.", "Java streams support both byte-oriented and character-oriented data.", "Java streams cannot be used for network communication."],
+        "answer": "Java streams support both byte-oriented and character-oriented data."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.pow(2, 3))' in Java?",
+        "options": ["5", "6", "8", "Compile-time error"],
+        "answer": "8.0"
+      },
+      {
+        "question": "Which of the following is true about Java serialization?",
+        "options": ["All objects in Java are serializable by default.", "Transient variables are serialized.", "Externalizable interface provides default serialization behavior.", "Serialization can be prevented by marking a class as final."],
+        "answer": "Transient variables are serialized."
+      },
+      {
+        "question": "Which of the following is true about Java threads?",
+        "options": ["A thread can be restarted once it has completed execution.", "A thread's priority can be set to any integer value.", "A thread's priority is guaranteed to determine its execution order.", "A thread's name cannot be changed after it is created."],
+        "answer": "A thread's name cannot be changed after it is created."
+      },
+      {
+        "question": "What is the purpose of the 'yield' method in Java?",
+        "options": ["To suspend the current thread temporarily", "To terminate the current thread", "To start a new thread", "To pause the current thread indefinitely"],
+        "answer": "To suspend the current thread temporarily"
+      },
+      {
+        "question": "Which of the following is true about Java synchronization?",
+        "options": ["Synchronization prevents deadlocks.", "Synchronization guarantees thread safety.", "Synchronization can only be applied to methods.", "Synchronization can only be applied to static methods."],
+        "answer": "Synchronization guarantees thread safety."
+      },
+      {
+        "question": "What is the purpose of the 'volatile' keyword in Java?",
+        "options": ["To make a variable immutable", "To ensure that a variable is visible to all threads", "To prevent a variable from being garbage collected", "To synchronize access to a variable"],
+        "answer": "To ensure that a variable is visible to all threads"
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"abc\".substring(1, 2))' in Java?",
+        "options": ["a", "b", "bc", "Compile-time error"],
+        "answer": "b"
+      },
+      {
+        "question": "Which of the following is true about Java enums?",
+        "options": ["Enums can have constructors.", "Enums can have fields and methods.", "Enums cannot implement interfaces.", "Enums cannot override methods from java.lang.Enum."],
+        "answer": "Enums can have fields and methods."
+      },
+      {
+        "question": "What is the purpose of the 'static' keyword in Java?",
+        "options": ["To make a variable immutable", "To ensure that a variable is visible to all instances of a class", "To prevent a variable from being garbage collected", "To synchronize access to a variable"],
+        "answer": "To ensure that a variable is visible to all instances of a class"
+      },
+      {
+        "question": "Which of the following statements is true about Java inheritance?",
+        "options": ["Java supports multiple inheritance.", "A class can inherit from multiple classes.", "Java only supports single inheritance.", "A subclass cannot override methods from its superclass."],
+        "answer": "Java only supports single inheritance."
+      },
+      {
+        "question": "What is the output of 'System.out.println(10 % 3)' in Java?",
+        "options": ["3", "1", "0", "10/3"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java serialization?",
+        "options": ["All objects in Java are serializable by default.", "Transient variables are serialized.", "Externalizable interface provides default serialization behavior.", "Serialization can be prevented by marking a class as final."],
+        "answer": "Transient variables are serialized."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.max(2.0, 3))' in Java?",
+        "options": ["2.0", "3", "Compile-time error", "3.0"],
+        "answer": "3.0"
+      },
+      {
+        "question": "Which of the following is true about Java generics?",
+        "options": ["Generics allow for type casting at runtime.", "Generics provide compile-time type safety.", "Generics are limited to primitive types.", "Generics cannot be used with collections."],
+        "answer": "Generics provide compile-time type safety."
+      },
+      {
+        "question": "What is the purpose of the 'finally' block in a try-catch-finally statement in Java?",
+        "options": ["To handle exceptions", "To execute cleanup code", "To specify default behavior", "To exit the program"],
+        "answer": "To execute cleanup code"
+      },
+      {
+        "question": "Which of the following is true about Java annotations?",
+        "options": ["Annotations can only be applied to classes.", "Annotations are used to provide metadata about program elements.", "Annotations cannot have attributes.", "Annotations are only available in Java SE."],
+        "answer": "Annotations are used to provide metadata about program elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Hello\".startsWith(\"H\"))' in Java?",
+        "options": ["true", "false", "Compile-time error", "Runtime error"],
+        "answer": "true"
+      },
+      {
+        "question": "Which of the following is true about Java streams?",
+        "options": ["Java streams are used for file input/output operations only.", "Java streams can only handle byte-oriented data.", "Java streams support both byte-oriented and character-oriented data.", "Java streams cannot be used for network communication."],
+        "answer": "Java streams support both byte-oriented and character-oriented data."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.min(2, 3.0))' in Java?",
+        "options": ["2.0", "3.0", "Compile-time error", "2"],
+        "answer": "2.0"
+      },
+      {
+        "question": "Which of the following statements is true about Java ArrayList?",
+        "options": ["ArrayList can only store primitive data types.", "ArrayList is synchronized by default.", "ArrayList allows for random access.", "ArrayList can have duplicate elements."],
+        "answer": "ArrayList allows for random access."
+      },
+      {
+        "question": "What is the purpose of the 'autoboxing' feature in Java?",
+        "options": ["To automatically convert primitive data types to their corresponding wrapper classes", "To automatically convert wrapper classes to their corresponding primitive data types", "To automatically generate wrapper classes", "To automatically generate primitive data types"],
+        "answer": "To automatically convert primitive data types to their corresponding wrapper classes"
+      },
+      {
+        "question": "Which of the following is not a valid type of exception in Java?",
+        "options": ["IOException", "RuntimeException", "SQLException", "LogicException"],
+        "answer": "LogicException"
+      },
+      {
+        "question": "Which of the following is true about Java lambda expressions?",
+        "options": ["Lambda expressions are anonymous methods.", "Lambda expressions cannot capture variables from their surrounding scope.", "Lambda expressions must have a return type specified.", "Lambda expressions cannot be passed as arguments."],
+        "answer": "Lambda expressions are anonymous methods."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".replace(\"a\", \"\"))' in Java?",
+        "options": ["Jav", "Jva", "Ja", "Jav"],
+        "answer": "Jv"
+      },
+      {
+        "question": "Which of the following is true about Java annotations?",
+        "options": ["Annotations can only be applied to methods.", "Annotations can be used to provide metadata about program elements.", "Annotations cannot have attributes.", "Annotations are only available in Java EE."],
+        "answer": "Annotations can be used to provide metadata about program elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".substring(0, 2))' in Java?",
+        "options": ["J", "a", "Ja", "Jav"],
+        "answer": "Ja"
+      },
+      {
+        "question": "Which of the following is true about Java strings?",
+        "options": ["Java strings are mutable.", "Java strings can contain null characters.", "Java strings can only be created using the 'new' keyword.", "Java strings cannot be compared using the '==' operator."],
+        "answer": "Java strings can contain null characters."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".indexOf('a'))' in Java?",
+        "options": ["0", "1", "-1", "Compile-time error"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java collections?",
+        "options": ["A collection can contain primitive data types.", "A collection can have duplicate elements.", "A collection can be used as a replacement for arrays.", "A collection cannot be resized after initialization."],
+        "answer": "A collection can have duplicate elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.abs(-5.5))' in Java?",
+        "options": ["-5", "-5.0", "5", "5.0"],
+        "answer": "5.5"
+      },
+      {
+        "question": "What is the purpose of the 'peek' method in Java streams?",
+        "options": ["To filter elements based on a predicate", "To perform an action for each element in the stream", "To transform elements in the stream", "To sort elements in the stream"],
+        "answer": "To perform an action for each element in the stream"
+      },
+      {
+        "question": "Which of the following statements is true about Java strings?",
+        "options": ["Java strings are mutable.", "Java strings can contain null characters.", "Java strings can only be created using the 'new' keyword.", "Java strings cannot be compared using the '==' operator."],
+        "answer": "Java strings can contain null characters."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".equals(\"ABC\"))' in Java?",
+        "options": ["true", "false", "Compile-time error", "Runtime error"],
+        "answer": "false"
+      },
+      {
+        "question": "Which of the following is true about Java packages?",
+        "options": ["A package can contain classes from multiple namespaces.", "A package cannot have sub-packages.", "A package name must be unique within a project.", "A package can only contain interface definitions."],
+        "answer": "A package name must be unique within a project."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".concat(\" is awesome\"))' in Java?",
+        "options": ["Java", " is awesome", "Java is awesome", "Compile-time error"],
+        "answer": "Java is awesome"
+      },
+      {
+        "question": "Which of the following is true about Java generics?",
+        "options": ["Generics allow for type casting at runtime.", "Generics provide compile-time type safety.", "Generics are limited to primitive types.", "Generics cannot be used with collections."],
+        "answer": "Generics provide compile-time type safety."
+      },
+      {
+        "question": "What is the purpose of the 'peek' method in Java streams?",
+        "options": ["To filter elements based on a predicate", "To perform an action for each element in the stream", "To transform elements in the stream", "To sort elements in the stream"],
+        "answer": "To perform an action for each element in the stream"
+      },
+      {
+        "question": "Which of the following statements is true about Java strings?",
+        "options": ["Java strings are mutable.", "Java strings can contain null characters.", "Java strings can only be created using the 'new' keyword.", "Java strings cannot be compared using the '==' operator."],
+        "answer": "Java strings can contain null characters."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".indexOf('a'))' in Java?",
+        "options": ["0", "1", "-1", "Compile-time error"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java collections?",
+        "options": ["A collection can contain primitive data types.", "A collection can have duplicate elements.", "A collection can be used as a replacement for arrays.", "A collection cannot be resized after initialization."],
+        "answer": "A collection can have duplicate elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.abs(-5.5))' in Java?",
+        "options": ["-5", "-5.0", "5", "5.0"],
+        "answer": "5.5"
+      },
+      {
+        "question": "What is the purpose of the 'peek' method in Java streams?",
+        "options": ["To filter elements based on a predicate", "To perform an action for each element in the stream", "To transform elements in the stream", "To sort elements in the stream"],
+        "answer": "To perform an action for each element in the stream"
+      },
+      {
+        "question": "Which of the following is true about Java lambda expressions?",
+        "options": ["Lambda expressions are anonymous methods.", "Lambda expressions cannot capture variables from their surrounding scope.", "Lambda expressions must have a return type specified.", "Lambda expressions cannot be passed as arguments."],
+        "answer": "Lambda expressions are anonymous methods."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".replace(\"a\", \"\"))' in Java?",
+        "options": ["Jav", "Jva", "Ja", "Jav"],
+        "answer": "Jv"
+      },
+      {
+        "question": "Which of the following is true about Java annotations?",
+        "options": ["Annotations can only be applied to methods.", "Annotations can be used to provide metadata about program elements.", "Annotations cannot have attributes.", "Annotations are only available in Java EE."],
+        "answer": "Annotations can be used to provide metadata about program elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".substring(0, 2))' in Java?",
+        "options": ["J", "a", "Ja", "Jav"],
+        "answer": "Ja"
+      },
+      {
+        "question": "Which of the following is true about Java strings?",
+        "options": ["Java strings are mutable.", "Java strings can contain null characters.", "Java strings can only be created using the 'new' keyword.", "Java strings cannot be compared using the '==' operator."],
+        "answer": "Java strings can contain null characters."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".indexOf('a'))' in Java?",
+        "options": ["0", "1", "-1", "Compile-time error"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java collections?",
+        "options": ["A collection can contain primitive data types.", "A collection can have duplicate elements.", "A collection can be used as a replacement for arrays.", "A collection cannot be resized after initialization."],
+        "answer": "A collection can have duplicate elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.abs(-5.5))' in Java?",
+        "options": ["-5", "-5.0", "5", "5.0"],
+        "answer": "5.5"
+      },
+      {
+        "question": "What is the purpose of the 'peek' method in Java streams?",
+        "options": ["To filter elements based on a predicate", "To perform an action for each element in the stream", "To transform elements in the stream", "To sort elements in the stream"],
+        "answer": "To perform an action for each element in the stream"
+      },
+      {
+        "question": "Which of the following statements is true about Java strings?",
+        "options": ["Java strings are mutable.", "Java strings can contain null characters.", "Java strings can only be created using the 'new' keyword.", "Java strings cannot be compared using the '==' operator."],
+        "answer": "Java strings can contain null characters."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".equals(\"ABC\"))' in Java?",
+        "options": ["true", "false", "Compile-time error", "Runtime error"],
+        "answer": "false"
+      },
+      {
+        "question": "Which of the following is true about Java packages?",
+        "options": ["A package can contain classes from multiple namespaces.", "A package cannot have sub-packages.", "A package name must be unique within a project.", "A package can only contain interface definitions."],
+        "answer": "A package name must be unique within a project."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".concat(\" is awesome\"))' in Java?",
+        "options": ["Java", " is awesome", "Java is awesome", "Compile-time error"],
+        "answer": "Java is awesome"
+      },
+      {
+        "question": "Which of the following is true about Java generics?",
+        "options": ["Generics allow for type casting at runtime.", "Generics provide compile-time type safety.", "Generics are limited to primitive types.", "Generics cannot be used with collections."],
+        "answer": "Generics provide compile-time type safety."
+      },
+      {
+        "question": "What is the purpose of the 'peek' method in Java streams?",
+        "options": ["To filter elements based on a predicate", "To perform an action for each element in the stream", "To transform elements in the stream", "To sort elements in the stream"],
+        "answer": "To perform an action for each element in the stream"
+      },
+      {
+        "question": "Which of the following statements is true about Java strings?",
+        "options": ["Java strings are mutable.", "Java strings can contain null characters.", "Java strings can only be created using the 'new' keyword.", "Java strings cannot be compared using the '==' operator."],
+        "answer": "Java strings can contain null characters."
+      },
+      {
+        "question": "What is the output of 'System.out.println(\"Java\".indexOf('a'))' in Java?",
+        "options": ["0", "1", "-1", "Compile-time error"],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is true about Java collections?",
+        "options": ["A collection can contain primitive data types.", "A collection can have duplicate elements.", "A collection can be used as a replacement for arrays.", "A collection cannot be resized after initialization."],
+        "answer": "A collection can have duplicate elements."
+      },
+      {
+        "question": "What is the output of 'System.out.println(Math.abs(-5.5))' in Java?",
+        "options": ["-5", "-5.0", "5", "5.0"],
+        "answer": "5.5"
+      },
+      {
+        "question": "What is the purpose of the 'peek' method in Java streams?",
+        "options": ["To filter elements based on a predicate", "To perform an action for each element in the stream", "To transform elements in the stream", "To sort elements in the stream"],
+        "answer": "To perform an action for each element in the stream"
+      }
+    ]
+  }
+  
