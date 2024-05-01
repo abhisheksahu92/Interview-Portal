@@ -5,8 +5,7 @@ app_name = 'employee'
 urlpatterns = [
     path('',views.employeeIndexView,name='employee-index'),
     path('profile/',views.employeeProfileView,name='employee-profile'),
-    path('selected/',views.employeeSelected,name='employee-selected'),
-    path('rejected/',views.employeeRejected,name='employee-rejected'),
+    path('status/<str:status>',views.employeeStatusList,name='employee-status'),
     path('list/?page=n',views.employeeListView,name='employee-list'),
     path('signup/',views.employeeSignupView,name='employee-signup'),
     path('feedback/<int:id>/',views.employeeFeedback,name='employee-feedback'),

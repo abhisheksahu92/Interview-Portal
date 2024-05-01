@@ -24,8 +24,8 @@
         {% if user.is_staff %}
         <a class="nav-link" href="{% url 'employee:employee-profile' %}">Profile</a>
         {% if registered %}
-        <a class="nav-link" href="{% url 'employee:employee-selected' %}">Selected</a>
-        <a class="nav-link" href="{% url 'employee:employee-rejected' %}">Rejected</a>
+        <a class="nav-link" href="{% url 'employee:employee-status' 'Selected' %}">Selected</a>
+        <a class="nav-link" href="{% url 'employee:employee-status' 'Rejected' %}">Rejected</a>
         <a class="nav-link" href="{% url 'employee:employee-list' %}">Candidate Lists</a>
         {% endif %}
         <a class="nav-link" href="{% url 'employee:employee-logout' %}">Logout</a>

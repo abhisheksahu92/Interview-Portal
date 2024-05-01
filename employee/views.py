@@ -130,7 +130,8 @@ def employeeLoginView(request):
     return render(request,'employee/login.html',{'form':form})
 
 @login_required(login_url="/employee/login/") 
-def employeeSelected(request):
+def employeeStatusList(request,status):
+    print(status)
     if not request.user.is_staff:
         logout(request)
         messages.warning(request, 'Access Denied.')
@@ -141,24 +142,8 @@ def employeeSelected(request):
         registered = True
         qs_employee = Employee.objects.filter(employee_username=request.user).first()
         level = qs_employee.employee_level
-        filters_selected = {f'status_{level.lower()}':'Selected',f'{level.lower()}_by': qs_employee}
-        candidate_list = CandidateResult.objects.filter(**filters_selected)
-        return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered,'level':level.lower()})
-
-@login_required(login_url="/employee/login/") 
-def employeeRejected(request):
-    if not request.user.is_staff:
-        logout(request)
-        messages.warning(request, 'Access Denied.')
-        return HttpResponseRedirect(reverse('index'))
-    
-    registered = False
-    if isEmployee(request.user):
-        registered = True
-        qs_employee = Employee.objects.filter(employee_username=request.user).first()
-        level = qs_employee.employee_level
-        filters_rejected = {f'status_{level.lower()}':'Rejected',f'{level.lower()}_by': qs_employee}
-        candidate_list = CandidateResult.objects.filter(**filters_rejected)
+        filters_status = {f'status_{level.lower()}':status,f'{level.lower()}_by': qs_employee}
+        candidate_list = CandidateResult.objects.filter(**filters_status)
         return render(request, 'employee/selected_list.html', {'candidate_list': candidate_list, 'registered': registered,'level':level.lower()})
 
 @login_required(login_url="/employee/login/") 
