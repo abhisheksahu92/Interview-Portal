@@ -12,7 +12,7 @@
  <thead>
    <tr>
      <th scope="col">Name</th>
-     <th scope="col">Phone Number</th>
+     <th scope="col">Email</th>
      <th scope="col">Skill</th>
      <th scope="col">Experience</th>
      <th scope="col">Notice Period</th>
@@ -24,7 +24,7 @@
   {% for candidate in candidate_list %}
    <tr>
      <td>{{candidate.candidate_id.first_name}} {{candidate.candidate_id.last_name}}</td>
-     <td>{{candidate.candidate_id.phone}}</td>
+     <td>{{candidate.candidate_id.email}}</td>
      <td>{{candidate.candidate_id.skill}}</td>
      <td>{{candidate.candidate_id.experience}}</td>
      <td>{{candidate.candidate_id.noticeperiod}}</td>
