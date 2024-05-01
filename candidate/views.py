@@ -12,7 +12,7 @@ from django.conf import settings
 from django.urls import reverse
 from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm,CandidateUpdateForm
 from .models import Candidate,CandidateResult,CandidateQuestionModel
-import json
+import json,random
 
 def is_user_group_correct(user):
     query_set = Group.objects.filter(user = user)
@@ -162,21 +162,26 @@ def candidateUpdateView(request,pk=None):
 @login_required(login_url="/candidate/login/") 
 def candidateAssessmentView(request):
     if request.method == 'POST':
+        print(request.POST)
         score=0
         wrong=0
         correct=0
         total=25
         for key,value in request.POST.items():
-            if key in ['csrfmiddlewaretoken','timer']:
+            if key in ['csrfmiddlewaretoken','timer','question']:
                 pass
             else:
-                question_data = CandidateQuestionModel.objects.filter(question = key).first()
+                question_data = CandidateQuestionModel.objects.filter(id = int(key)).first()
+                print(key,question_data.answer,value,end='')
                 if question_data.answer == value:
                     score+=10
                     correct+=1
+                    print('correct',end='\n')
                 else:
                     wrong+=1
+                    print('wrong',end='\n')
 
+                
         percent = score/(total*10) *100
         context = {
             'score':score,
@@ -184,7 +189,7 @@ def candidateAssessmentView(request):
             'wrong':wrong,
             'percent':percent,
             'total':total,
-            'status':'Cleared' if score > 180 else 'Not Cleared'
+            'status':'Cleared' if score >= 180 else 'Not Cleared'
         }
         candidate = Candidate.objects.get(username=request.user)
         candidate.assessment_data = json.dumps(context)
@@ -192,7 +197,7 @@ def candidateAssessmentView(request):
         if score < 180:
             candidate.status = 'Rejected'
         candidate.save()
-        if score > 180:
+        if score >= 180:
             send_mail_candidate('test_clear_mail',{'first_name':candidate.first_name,'last_name':candidate.last_name},candidate.email)
         else:
             send_mail_candidate('rejected_mail',{'first_name':candidate.first_name,'last_name':candidate.last_name},candidate.email)
@@ -202,6 +207,13 @@ def candidateAssessmentView(request):
         candidate = Candidate.objects.get(username=request.user)
         if candidate.assessment_result == True:
             return render(request,'candidate/result.html',context=json.loads(candidate.assessment_data))
-        questions=CandidateQuestionModel.objects.all().order_by('?')[:25]
-        skill = questions.first().skill
-        return render(request, template_name='candidate/questionnaire.html', context={'questions':questions,'skill':skill})
+        questions=CandidateQuestionModel.objects.filter(skill=candidate.skill)
+        questions = list(set(questions))
+
+        # Shuffle the list to ensure randomness
+        random.shuffle(questions)
+        # Get 25 random unique elements from the list
+        random_unique_elements = random.sample(questions, 25)
+
+        skill = candidate.skill
+        return render(request, template_name='candidate/questionnaire.html', context={'questions':random_unique_elements,'skill':skill})
