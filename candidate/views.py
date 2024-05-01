@@ -14,10 +14,6 @@ from .forms import CandidateCreateForm,CandidateSignupForm,CandidateLoginForm,Ca
 from .models import Candidate,CandidateResult,CandidateQuestionModel
 import json,random
 
-def is_user_group_correct(user):
-    query_set = Group.objects.filter(user = user)
-    return query_set.values()[0].get('name') == 'Candidate'
-
 def send_mail_candidate(mail_template,context,email,subject='Interview Update'):
     subject = subject
     html_message = render_to_string(f'candidate/{mail_template}.html', context)
@@ -29,8 +25,9 @@ def send_mail_candidate(mail_template,context,email,subject='Interview Update'):
 def candidateIndexView(request):
     candidate = {}
     assessment = False
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+    if request.user.is_staff:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
     
     if request.user.is_anonymous:
@@ -42,14 +39,13 @@ def candidateIndexView(request):
         if qs.exists():
             status = qs.first().status
             assessment = qs.first().assessment_result
-        else:
-            status = 'No Status'
     return render(request, 'candidate/index.html', {'status':status,'candidate':candidate,'assessment':assessment})
 
 @login_required(login_url="/candidate/login/") 
 def candidateProfileView(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+    if request.user.is_staff:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
     
     file = None
@@ -90,10 +86,6 @@ def candidateProfileView(request):
         return render(request, 'candidate/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'file':file})
 
 def candidateSignupView(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
-        logout(request)
-        return HttpResponseRedirect(reverse('index'))
-    
     form = CandidateSignupForm(request.POST or None)
     if form.is_valid():
         username = form.cleaned_data.get('username')
@@ -104,26 +96,19 @@ def candidateSignupView(request):
             password=password,
             email=email
         )
-        group = Group.objects.get(name='Candidate')
-        group.user_set.add(User.objects.get(username=username))
         send_mail_candidate('signup_mail',{'username':username},email)
         messages.success(request,'Candidate signup is done.')
         return HttpResponseRedirect(reverse('candidate:candidate-login'))
     else:
         return render(request,'candidate/signup.html',{'form':form})
 
-def candidateLoginView(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
-        logout(request)
-        return HttpResponseRedirect(reverse('index'))
-    
+def candidateLoginView(request):  
     form = CandidateLoginForm(request.POST or None)
     if form.is_valid():
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
         django_user = User.objects.get(username=username)
-        group = django_user.groups.filter(name='Candidate').exists()
-        if group:
+        if not django_user.is_staff:
             user = authenticate(username=username, password=password)
             if user:
                 login(request, user)
@@ -145,6 +130,10 @@ def candidateLogoutView(request):
 
 @login_required(login_url="/candidate/login/") 
 def candidateUpdateView(request,pk=None):
+    if request.user.is_staff:
+        logout(request)
+        messages.warning(request, 'Access Denied.')
+        return HttpResponseRedirect(reverse('index'))
     qs_update = get_object_or_404(Candidate,id=pk)
     user = User.objects.get(username=request.user)
     form = CandidateUpdateForm(request.POST or None,request.FILES or None,instance=qs_update)
@@ -161,6 +150,10 @@ def candidateUpdateView(request,pk=None):
 
 @login_required(login_url="/candidate/login/") 
 def candidateAssessmentView(request):
+    if request.user.is_staff:
+        logout(request)
+        messages.warning(request, 'Access Denied.')
+        return HttpResponseRedirect(reverse('index'))
     if request.method == 'POST':
         print(request.POST)
         score=0
@@ -172,16 +165,12 @@ def candidateAssessmentView(request):
                 pass
             else:
                 question_data = CandidateQuestionModel.objects.filter(id = int(key)).first()
-                print(key,question_data.answer,value,end='')
                 if question_data.answer == value:
                     score+=10
                     correct+=1
-                    print('correct',end='\n')
                 else:
                     wrong+=1
-                    print('wrong',end='\n')
 
-                
         percent = score/(total*10) *100
         context = {
             'score':score,

@@ -18,13 +18,10 @@ def isEmployee(employee):
     emp_qs = Employee.objects.filter(employee_username=employee)
     return emp_qs.exists()
 
-def is_user_group_correct(user):
-    query_set = Group.objects.filter(user = user)
-    return query_set.values()[0].get('name') == 'Employee'
-
 def employeeIndexView(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+    if not request.user.is_staff and request.user.is_authenticated:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
 
     registered = False
@@ -34,8 +31,9 @@ def employeeIndexView(request):
 
 @login_required(login_url="/employee/login/")
 def employeeListView(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+    if not request.user.is_staff:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
 
     registered = False
@@ -54,8 +52,9 @@ def employeeListView(request):
 
 @login_required(login_url="/employee/login/") 
 def employeeProfileView(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+    if not request.user.is_staff:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
     
     registered = False
@@ -86,18 +85,19 @@ def employeeProfileView(request):
     else:
         return render(request, 'employee/profile.html', {'form': form,'done':qs.exists(),'qs':qs.first(),'registered':registered,'candidate_selected':candidate_selected,'candidate_rejected':candidate_rejected})
 
-def employeeSignupView(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+def employeeSignupView(request):  
+    if not request.user.is_staff and request.user.is_authenticated:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
-    
     form = EmployeeSignupForm(request.POST or None)
     if form.is_valid():
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
         User.objects.create_user(
             username = username,
-            password=password
+            password=password,
+            is_staff = True
         )
         group = Group.objects.get(name='Employee')
         group.user_set.add(User.objects.get(username=username))
@@ -106,18 +106,17 @@ def employeeSignupView(request):
     else:
         return render(request,'employee/signup.html',{'form':form})
 
-def employeeLoginView(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+def employeeLoginView(request):  
+    if not request.user.is_staff and request.user.is_authenticated:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
-    
     form = EmployeeLoginForm(request.POST or None)
     if form.is_valid():
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
         django_user = User.objects.get(username=username)
-        group = django_user.groups.filter(name='Employee').exists()
-        if group:
+        if django_user.is_staff:
             user = authenticate(username = username,password = password)
             if user:
                 login(request,user)
@@ -132,8 +131,9 @@ def employeeLoginView(request):
 
 @login_required(login_url="/employee/login/") 
 def employeeSelected(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+    if not request.user.is_staff:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
     
     registered = False
@@ -147,8 +147,9 @@ def employeeSelected(request):
 
 @login_required(login_url="/employee/login/") 
 def employeeRejected(request):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+    if not request.user.is_staff:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
     
     registered = False
@@ -162,8 +163,9 @@ def employeeRejected(request):
 
 @login_required(login_url="/employee/login/") 
 def employeeFeedback(request,id=None):
-    if not request.user.is_anonymous and not is_user_group_correct(request.user):
+    if not request.user.is_staff:
         logout(request)
+        messages.warning(request, 'Access Denied.')
         return HttpResponseRedirect(reverse('index'))
     
     form = EmployeeFeedbackForm(request.POST or None)
