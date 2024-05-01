@@ -1,10 +1,8 @@
 from django.shortcuts import render
-from django.views.generic import CreateView,ListView,TemplateView
 from django.contrib.auth.models import User,Group
 from django.contrib.auth import authenticate,login,logout
 from django.db.models import Q
 from django.http import HttpResponseRedirect
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
@@ -43,7 +41,7 @@ def employeeListView(request):
     skill = qs_employee.employee_skill
     level = qs_employee.employee_level
     if level == 'L1':
-        candidate_list = CandidateResult.objects.filter(status_l1='Pending',candidate_id__skill=skill)
+        candidate_list = CandidateResult.objects.filter(status_l1='Pending',candidate_id__skill=skill,candidate_id__assessment_result=True,candidate_id__status='Pending')
     elif level == 'L2':
         candidate_list = CandidateResult.objects.filter(status_l1='Selected',status_l2='Pending',candidate_id__skill=skill)
     elif level == 'HR':
