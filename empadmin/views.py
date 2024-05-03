@@ -89,7 +89,7 @@ def adminExamUpdate(request,command,id):
     candidate = Candidate.objects.filter(id=id).first()
     if command == 'Reset':
         candidate.assessment_data = None
-        candidate.assessment_result = False
+        candidate.assessment_result = not candidate.assessment_result
     else:
         candidate.status = 'Pending'
     candidate.save()
