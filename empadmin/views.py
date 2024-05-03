@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 from employee.models import Employee
-from .forms import AdminLoginForm
+from .forms import AdminLoginForm,AdminUpdateForm
 from candidate.models import Candidate,CandidateResult
 from candidate.views import send_mail_candidate
 
@@ -95,3 +95,40 @@ def adminExamUpdate(request,command,id):
     candidate.save()
     return HttpResponseRedirect(reverse('admin:admin-feedback',args=[id]))
 
+@login_required(login_url="/admin/login/") 
+def adminUpdateView(request,id):
+    if not request.user.is_superuser:
+        logout(request)
+        messages.warning(request, 'Access Denied.')
+        return HttpResponseRedirect(reverse('index'))
+    
+    qs = Candidate.objects.filter(id=id).first()
+    form = AdminUpdateForm(request.POST or None,initial={'phone':qs.phone,'email':qs.email})
+    
+    if form.is_valid():
+        user = User.objects.get(username=request.user)
+        qs.phone = form.cleaned_data['phone']
+        qs.email = form.cleaned_data['email']
+        user.email = form.cleaned_data['email']
+        qs.save()
+        user.save()
+        messages.success(request, 'Candidate Updated.')
+        return HttpResponseRedirect(reverse('admin:admin-feedback',args=[id]))
+    else:
+        return render(request, 'admin/update_candidate.html', {'form': form,'qs':qs})
+    
+@login_required(login_url="/admin/login/") 
+def adminDeleteView(request,id):
+    if not request.user.is_superuser:
+        logout(request)
+        messages.warning(request, 'Access Denied.')
+        return HttpResponseRedirect(reverse('index'))
+    
+    qs = Candidate.objects.filter(id=id)
+
+    CandidateResult.objects.filter(candidate_id=id).delete()
+    User.objects.filter(id=qs.first().username_id).delete()
+    Candidate.objects.filter(id=id).delete()
+
+    messages.success(request, 'Candidate Deleted.')
+    return HttpResponseRedirect(reverse('admin:admin-candidate-list'))

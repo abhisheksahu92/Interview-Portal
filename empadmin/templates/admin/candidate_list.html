@@ -46,7 +46,9 @@
      <td>{{candidate.status}}</td>
      <td>{{candidate.assessment_result}}</td>
      <td>
+        <a href="{% url 'admin:admin-update' candidate.id %}" class="btn btn-warning btn-sm">Edit</a>
       <a href="{% url 'admin:admin-feedback' candidate.id %}" class="btn btn-warning btn-sm">View</a>
+      <a href="{% url 'admin:admin-delete' candidate.id %}" class="btn btn-warning btn-sm">Delete</a>
   </td>
    </tr>
   {% endfor %}
