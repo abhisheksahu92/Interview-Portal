@@ -1,0 +1,12 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    {% for message in messages %}
+        <div class="alert alert-success">
+        {{ message }}
+        </div>
+    {% endfor %}
+    <h1>Interview Portal for Admin</h1>
+    <p class="lead">This innovative online platform designed to streamline and optimize the interview process for both recruiters and candidates. It serves as a centralized hub where recruiters can manage and conduct interviews efficiently, while candidates can easily signup, attend, and follow up on their interviews.</p>
+    <br>
+{% endblock %}
