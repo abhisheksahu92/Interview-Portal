@@ -7,7 +7,18 @@
 </div>
 {% endfor %}
 {% if candidate_list %}
-<table class="table table-hover table-dark table-bordered" id="userTable">
+<table class="table table-striped table-dark table-bordered align-middle" id="userTable">
+    <colgroup>
+        <col span="1" style="width: 12%;">
+        <col span="1" style="width: 15%;">
+        <col span="1" style="width: 5%;">
+        <col span="1" style="width: 5%;">
+        <col span="1" style="width: 10%;">
+        <col span="1" style="width: 5%;">
+        <col span="1" style="width: 15%;">
+        <col span="1" style="width: 5%;">
+        <col span="1" style="width: 3%;">
+     </colgroup>
  <thead>
    <tr>
      <th scope="col">Name</th>
@@ -17,6 +28,8 @@
      <th scope="col">Notice Period</th>
      <th scope="col">Source</th>
      <th scope="col">Date</th>
+     <th scope="col">Status</th>
+     <th scope="col">Assessment</th>
      <th scope="col">Actions</th>
    </tr>
  </thead>
@@ -30,6 +43,8 @@
      <td>{{candidate.noticeperiod}}</td>
      <td>{{candidate.source}}</td>
      <td>{{candidate.created_at|date:'Y-m-d H:i'}}</td>
+     <td>{{candidate.status}}</td>
+     <td>{{candidate.assessment_result}}</td>
      <td>
       <a href="{% url 'admin:admin-feedback' candidate.id %}" class="btn btn-warning btn-sm">View</a>
   </td>

@@ -8,7 +8,17 @@
 {% endfor %}
 {% if candidate_list %}
 <div class="container mt-auto">
-<table class="table table-hover table-dark table-bordered" id="userTable">
+<table class="table table-striped table-dark table-bordered" id="userTable">
+  <colgroup>
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 16%;">
+    <col span="1" style="width: 3%;">
+    <col span="1" style="width: 5%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 5%;">
+    <col span="1" style="width: 20%;">
+    <col span="1" style="width: 3%;">
+ </colgroup>
  <thead>
    <tr>
      <th scope="col">Name</th>
@@ -30,7 +40,7 @@
      <td>{{candidate.experience}}</td>
      <td>{{candidate.noticeperiod}}</td>
      <td>{{candidate.source}}</td>
-     <td>{{candidate.updated_at|date:'Y-m-d H:i'}}</td>
+     <td>{{candidate.updated_at|date:'Y-m-d h:i'}}</td>
      <td>
       <a href="{% url 'admin:admin-feedback' candidate.id %}" class="btn btn-warning btn-sm">View</a>
     </td>
