@@ -69,7 +69,7 @@ def adminLogoutView(request):
     messages.success(request, 'Logout Done.')
     return HttpResponseRedirect(reverse('admin:admin-login'))
 
-@login_required(login_url="/employee/login/") 
+@login_required(login_url="/admin/login/") 
 def adminFeedback(request,id=None):
     if not request.user.is_superuser:
         logout(request)
@@ -77,6 +77,21 @@ def adminFeedback(request,id=None):
         return HttpResponseRedirect(reverse('index'))
     
     qs_candidate_result = CandidateResult.objects.get(candidate_id__id=id)
-    print(qs_candidate_result)
     return render(request, 'admin/feedback.html',{'candidate':qs_candidate_result})
+
+@login_required(login_url="/admin/login/") 
+def adminExamUpdate(request,command,id):
+    if not request.user.is_superuser:
+        logout(request)
+        messages.warning(request, 'Access Denied.')
+        return HttpResponseRedirect(reverse('index'))
+    
+    candidate = Candidate.objects.filter(id=id).first()
+    if command == 'Reset':
+        candidate.assessment_data = None
+        candidate.assessment_result = False
+    else:
+        candidate.status = 'Pending'
+    candidate.save()
+    return HttpResponseRedirect(reverse('admin:admin-feedback',args=[id]))
 

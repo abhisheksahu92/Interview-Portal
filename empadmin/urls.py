@@ -10,4 +10,5 @@ urlpatterns = [
     path('login/',views.adminLoginView,name='admin-login'),
     path('logout/',views.adminLogoutView,name='admin-logout'),
     path('feedback/<int:id>/',views.adminFeedback,name='admin-feedback'),
+    path('exam/<str:command>/<int:id>/',views.adminExamUpdate,name='admin-exam'),
 ]
