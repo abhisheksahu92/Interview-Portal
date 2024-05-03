@@ -90,7 +90,8 @@ def adminExamUpdate(request,command,id):
     if command == 'Reset':
         candidate.assessment_data = None
         candidate.assessment_result = not candidate.assessment_result
-    else:
+    elif command == 'Pass':
+        candidate.assessment_result = True
         candidate.status = 'Pending'
     candidate.save()
     return HttpResponseRedirect(reverse('admin:admin-feedback',args=[id]))
