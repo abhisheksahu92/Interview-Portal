@@ -177,3 +177,17 @@ def adminEmployeeDeleteView(request,id):
 
     messages.success(request, 'Employee Deleted.')
     return HttpResponseRedirect(reverse('admin:admin-employee-list'))
+
+@login_required(login_url="/admin/login/") 
+def adminEmployeeStatusView(request,status,id):
+    if not request.user.is_superuser:
+        logout(request)
+        messages.warning(request, 'Access Denied.')
+        return HttpResponseRedirect(reverse('index'))
+    
+    qs = Employee.objects.filter(id=id).first()
+    qs.employee_status = status
+    qs.save()
+
+    messages.success(request, f'Employee {status}.')
+    return HttpResponseRedirect(reverse('admin:admin-employee-list'))

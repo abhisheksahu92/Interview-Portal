@@ -15,4 +15,5 @@ urlpatterns = [
     path('delete/<int:id>/',views.adminDeleteView,name='admin-delete'),
     path('empupdate/<int:id>/',views.adminEmployeeUpdateView,name='admin-emp-update'),
     path('empdelete/<int:id>/',views.adminEmployeeDeleteView,name='admin-emp-delete'),
+    path('empstatusupdate/<str:status>/<int:id>/',views.adminEmployeeStatusView,name='admin-emp-status-update'),
 ]

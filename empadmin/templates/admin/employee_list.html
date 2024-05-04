@@ -15,6 +15,7 @@
      <th scope="col">Email</th>
      <th scope="col">Skill</th>
      <th scope="col">Level</th>
+     <th scope="col">Status</th>
      <th scope="col">Actions</th>
    </tr>
  </thead>
@@ -26,10 +27,18 @@
      <td>{{employee.employee_email}}</td>
      <td>{{employee.employee_skill}}</td>
      <td>{{employee.employee_level}}</td>
+     <td>{{employee.employee_status}}</td>
+     {% if employee.employee_status == 'Pending' %}
+     <td>
+        <a href="{% url 'admin:admin-emp-status-update' 'Approved' employee.id %}" class="btn btn-warning btn-sm" title="Approve" id="tooltip"><i class="fas fa-check-circle"></i></a>
+        <a href="{% url 'admin:admin-emp-status-update' 'Rejected' employee.id %}" class="btn btn-warning btn-sm" title="Reject"><i class="fas fa-times-circle"></i></a>
+    </td>
+     {% else %}
      <td>
       <a href="{% url 'admin:admin-emp-update' employee.id %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
       <a href="{% url 'admin:admin-emp-delete' employee.id %}" class="btn btn-warning btn-sm"><i class="fas fa-trash-alt"></i></a>
   </td>
+  {% endif %}
    </tr>
   {% endfor %}
  </tbody>
