@@ -15,16 +15,12 @@
         <br><button class="w-100 btn btn-lg btn-primary" type="submit">Create</button>
     </form>
     {% else %}
-        <h2 class="text-center alert alert-warning">Profile is completed.</h2>
+        <h2 class="text-center alert alert-warning">Profile completed.</h2>
         <table class="table table-dark table-bordered">
           <tbody>
             <tr>
               <td>Employee Name</td>
               <td>{{ qs.employee_name }}</td>
-            </tr>
-          <tr>
-              <td>Employee Email</td>
-              <td>{{ qs.employee_email }}</td>
             </tr>
           <tr>
               <td>Employee Skill</td>
@@ -41,6 +37,10 @@
             <tr>
               <td>Rejection Count</td>
               <td>{{ candidate_rejected }}</td>
+            </tr>
+            <tr>
+              <td>Approval Status</td>
+              <td>{{ qs.employee_status }}</td>
             </tr>
           </tbody>
         </table>
