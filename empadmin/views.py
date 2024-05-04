@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 from employee.models import Employee
-from .forms import AdminLoginForm,AdminUpdateForm
+from .forms import AdminLoginForm,AdminUpdateForm,AdminEmployeeUpdateForm
 from candidate.models import Candidate,CandidateResult
 from candidate.views import send_mail_candidate
 
@@ -133,3 +133,47 @@ def adminDeleteView(request,id):
 
     messages.success(request, 'Candidate Deleted.')
     return HttpResponseRedirect(reverse('admin:admin-candidate-list'))
+
+@login_required(login_url="/admin/login/") 
+def adminEmployeeUpdateView(request,id):
+    if not request.user.is_superuser:
+        logout(request)
+        messages.warning(request, 'Access Denied.')
+        return HttpResponseRedirect(reverse('index'))
+    
+    qs = Employee.objects.filter(id=id).first()
+    form = AdminEmployeeUpdateForm(request.POST or None,initial={
+        'employee_name': qs.employee_name,
+        'employee_email': qs.employee_email,
+        'employee_skill':qs.employee_skill,
+        'employee_level' : qs.employee_level
+    },instance=qs)
+    
+    if form.is_valid():
+        user = User.objects.get(username=qs.employee_username)
+        qs.employee_name = form.cleaned_data['employee_name']
+        qs.employee_email = form.cleaned_data['employee_email']
+        qs.employee_skill = form.cleaned_data['employee_skill']
+        qs.employee_level = form.cleaned_data['employee_level']
+        user.email = form.cleaned_data['employee_email']
+        qs.save()
+        user.save()
+        messages.success(request, 'Employee Updated.')
+        return HttpResponseRedirect(reverse('admin:admin-employee-list'))
+    else:
+        return render(request, 'admin/update_employee.html', {'form': form,'qs':qs})
+    
+@login_required(login_url="/admin/login/") 
+def adminEmployeeDeleteView(request,id):
+    if not request.user.is_superuser:
+        logout(request)
+        messages.warning(request, 'Access Denied.')
+        return HttpResponseRedirect(reverse('index'))
+    
+    qs = Employee.objects.filter(id=id)
+
+    User.objects.filter(id=qs.first().employee_username_id).delete()
+    Employee.objects.filter(id=id).delete()
+
+    messages.success(request, 'Employee Deleted.')
+    return HttpResponseRedirect(reverse('admin:admin-employee-list'))

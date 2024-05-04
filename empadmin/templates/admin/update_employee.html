@@ -1,0 +1,18 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class ='cover-container d-flex w-50 h-100 p-5 mx-auto flex-column'>
+    {% for message in messages %}
+        <div class="alert alert-success">
+        {{ message }}
+        </div>
+    {% endfor %}
+    <br>
+    <h2 class="text-center alert alert-info">Employee Update Form</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{ form | crispy }}
+        <br><button class="w-100 btn btn-lg btn-primary" type="submit">Update</button>
+    </form>
+</div>
+{% endblock %}

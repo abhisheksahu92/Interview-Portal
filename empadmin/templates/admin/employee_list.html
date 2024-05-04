@@ -27,9 +27,8 @@
      <td>{{employee.employee_skill}}</td>
      <td>{{employee.employee_level}}</td>
      <td>
-      <a href="" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
-      <a href="" class="btn btn-warning btn-sm"><i class="fas fa-eye"></i></a>
-      <a href="" class="btn btn-warning btn-sm"><i class="fas fa-trash-alt"></i></a>
+      <a href="{% url 'admin:admin-emp-update' employee.id %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+      <a href="{% url 'admin:admin-emp-delete' employee.id %}" class="btn btn-warning btn-sm"><i class="fas fa-trash-alt"></i></a>
   </td>
    </tr>
   {% endfor %}
