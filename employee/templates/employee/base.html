@@ -21,14 +21,27 @@
       <h3 class="float-md-start mb-0">Interview Portal</h3>
       <nav class="nav nav-masthead justify-content-center float-md-end">
         <a class="nav-link" aria-current="page" href="{% url 'employee:employee-index' %}">Home</a>
-        {% if user.is_staff %}
-        <a class="nav-link" href="{% url 'employee:employee-profile' %}">Profile</a>
         {% if registered %}
-        <a class="nav-link" href="{% url 'employee:employee-status' 'Selected' %}">Selected</a>
-        <a class="nav-link" href="{% url 'employee:employee-status' 'Rejected' %}">Rejected</a>
-        <a class="nav-link" href="{% url 'employee:employee-list' %}">Candidate Lists</a>
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Candidates
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+          <li><a class="dropdown-item" href="{% url 'employee:employee-list' %}">List</a></li>
+          <li><a class="dropdown-item" href="{% url 'employee:employee-status' 'Selected' %}">Selected</a></li>
+          <li><a class="dropdown-item" href="{% url 'employee:employee-status' 'Rejected' %}">Rejected</a></li>
+        </ul>
+        &nbsp;&nbsp;&nbsp;
         {% endif %}
-        <a class="nav-link" href="{% url 'employee:employee-logout' %}">Logout</a>
+        {% if user.is_staff %}
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          {{ request.user.username}}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+          <li><a class="dropdown-item" href="{% url 'employee:employee-profile' %}">Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'employee:employee-logout' %}">Logout</a></li>
+        </ul>
+        &nbsp;&nbsp;&nbsp;
+        
         {% else %}
         <a class="nav-link" href="{% url 'employee:employee-signup' %}">Signup</a>
         <a class="nav-link" href="{% url 'employee:employee-login' %}"> Login</a>
