@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'candidate',
     'employee',
     'empadmin',
+    'jobs',
     'django_extensions',
     'crispy_bootstrap4',
     'crispy_forms',

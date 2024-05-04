@@ -23,7 +23,9 @@ urlpatterns = [
     path('',TemplateView.as_view(template_name='home.html'),name='index'),
     path('candidate/',include('candidate.urls',namespace='candidate')),
     path('employee/',include('employee.urls',namespace='employee')),
-    path('admin/',include('empadmin.urls',namespace='admin'))
+    path('admin/',include('empadmin.urls',namespace='admin')),
+    path('jobs/',include('jobs.urls',namespace='jobs')),
+    
 ]
 
 if settings.DEBUG:

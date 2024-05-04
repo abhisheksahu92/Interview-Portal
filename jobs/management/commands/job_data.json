@@ -1,0 +1,166 @@
+{
+  "jobs": [
+    {
+      "title": "Senior Software Engineer",
+      "company": "TechSolutions India",
+      "location": "Bangalore, Karnataka, India",
+      "description": "TechSolutions India is a leading technology company specializing in software development and IT solutions. We are seeking a senior software engineer to join our dynamic team. The ideal candidate will have extensive experience in both Python and Java development, with a strong understanding of software architecture and design principles.",
+      "requirements": "Bachelor's degree in Computer Science or related field, 5+ years of experience in software development, proficiency in Python and Java, experience with web frameworks such as Django and Spring, strong problem-solving skills",
+      "posted_date": "2024-05-03",
+      "expiration_date": "2024-06-03"
+    },
+    {
+      "title": "Full Stack Developer",
+      "company": "CodeMasters India",
+      "location": "Mumbai, Maharashtra, India",
+      "description": "CodeMasters India is a leading provider of software solutions for businesses worldwide. We are looking for a talented full stack developer to join our team. The successful candidate will be responsible for developing and maintaining web applications using Python and Java technologies.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python and Java, experience with front-end and back-end development, familiarity with Agile methodologies",
+      "posted_date": "2024-05-04",
+      "expiration_date": "2024-06-04"
+    },
+    {
+      "title": "Software Development Engineer",
+      "company": "InnovativeTech India",
+      "location": "Hyderabad, Telangana, India",
+      "description": "InnovativeTech India is a cutting-edge technology company focused on innovation and excellence. We are seeking a software development engineer to join our team in Hyderabad. The ideal candidate will have strong programming skills in Python and Java, along with experience in building scalable and reliable software applications.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python and Java, knowledge of software development best practices, experience with cloud technologies such as AWS or Azure",
+      "posted_date": "2024-05-05",
+      "expiration_date": "2024-06-05"
+    },
+    {
+      "title": "Java Developer",
+      "company": "TechInnovate India",
+      "location": "Chennai, Tamil Nadu, India",
+      "description": "TechInnovate India is a leading IT solutions provider with a focus on Java development. We are looking for a skilled Java developer to join our team in Chennai. The successful candidate will work on exciting projects and collaborate with cross-functional teams to deliver high-quality software solutions.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Java programming, experience with Spring framework, knowledge of database technologies such as MySQL or PostgreSQL",
+      "posted_date": "2024-05-06",
+      "expiration_date": "2024-06-06"
+    },
+    {
+      "title": "Python Software Engineer",
+      "company": "DigitalSolutions India",
+      "location": "Pune, Maharashtra, India",
+      "description": "DigitalSolutions India is a leading provider of digital solutions for businesses worldwide. We are seeking a Python software engineer to join our team in Pune. The ideal candidate will have strong programming skills in Python, along with experience in software development and web technologies.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python programming, experience with web development frameworks such as Django or Flask, knowledge of SQL and NoSQL databases",
+      "posted_date": "2024-05-07",
+      "expiration_date": "2024-06-07"
+    },
+    {
+      "title": "Java Software Developer",
+      "company": "JavaSolutions India",
+      "location": "Noida, Uttar Pradesh, India",
+      "description": "JavaSolutions India is a leading software development company specializing in Java technologies. We are looking for a Java software developer to join our team in Noida. The successful candidate will work on challenging projects and collaborate with a talented team of developers.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Java programming, experience with Java EE technologies, familiarity with Agile software development practices",
+      "posted_date": "2024-05-08",
+      "expiration_date": "2024-06-08"
+    },
+    {
+      "title": "Python Developer",
+      "company": "PyTech India",
+      "location": "Gurgaon, Haryana, India",
+      "description": "PyTech India is a leading provider of Python-based solutions for businesses. We are seeking a Python developer to join our team in Gurgaon. The successful candidate will work on a variety of projects spanning web development, data analysis, and machine learning.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python programming, experience with web frameworks such as Django or Flask, familiarity with database systems",
+      "posted_date": "2024-05-09",
+      "expiration_date": "2024-06-09"
+    },
+    {
+      "title": "Java Software Engineer",
+      "company": "JavaInnovate India",
+      "location": "Kolkata, West Bengal, India",
+      "description": "JavaInnovate India is a leading software development company specializing in Java technologies. We are seeking a Java software engineer to join our team in Kolkata. The successful candidate will work on innovative projects and collaborate with a dynamic team of developers.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Java programming, experience with Spring framework, familiarity with microservices architecture",
+      "posted_date": "2024-05-10",
+      "expiration_date": "2024-06-10"
+    },
+    {
+      "title": "Python Software Developer",
+      "company": "PythonExperts India",
+      "location": "Ahmedabad, Gujarat, India",
+      "description": "PythonExperts India is a leading provider of Python-based solutions for businesses. We are seeking a Python software developer to join our team in Ahmedabad. The successful candidate will work on innovative projects and collaborate with cross-functional teams.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python programming, experience with web development frameworks such as Django or Flask, knowledge of cloud platforms",
+      "posted_date": "2024-05-11",
+      "expiration_date": "2024-06-11"
+    },
+    {
+      "title": "Java Developer",
+      "company": "JavaMasters India",
+      "location": "Jaipur, Rajasthan, India",
+      "description": "JavaMasters India is a leading provider of Java-based solutions for businesses. We are seeking a Java developer to join our team in Jaipur. The successful candidate will work on challenging projects and collaborate with a talented team of developers.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Java programming, experience with Java EE technologies, familiarity with cloud platforms",
+      "posted_date": "2024-05-12",
+      "expiration_date": "2024-06-12"
+    },
+    {
+      "title": "Python Engineer",
+      "company": "PyInnovate India",
+      "location": "Indore, Madhya Pradesh, India",
+      "description": "PyInnovate India is a leading provider of Python-based solutions for businesses. We are seeking a Python engineer to join our team in Indore. The successful candidate will work on exciting projects and collaborate with a dynamic team of developers.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python programming, experience with web development frameworks, familiarity with machine learning techniques",
+      "posted_date": "2024-05-13",
+      "expiration_date": "2024-06-13"
+    },
+    {
+      "title": "Java Software Developer",
+      "company": "JavaExperts India",
+      "location": "Lucknow, Uttar Pradesh, India",
+      "description": "JavaExperts India is a leading provider of Java-based solutions for businesses. We are seeking a Java software developer to join our team in Lucknow. The successful candidate will work on innovative projects and collaborate with cross-functional teams.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Java programming, experience with Java EE technologies, familiarity with microservices architecture",
+      "posted_date": "2024-05-14",
+      "expiration_date": "2024-06-14"
+    },
+    {
+      "title": "Python Software Engineer",
+      "company": "PySolutions India",
+      "location": "Surat, Gujarat, India",
+      "description": "PySolutions India is a leading provider of Python-based solutions for businesses. We are seeking a Python software engineer to join our team in Surat. The successful candidate will work on innovative projects and collaborate with cross-functional teams.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python programming, experience with web development frameworks such as Django or Flask, knowledge of cloud platforms",
+      "posted_date": "2024-05-15",
+      "expiration_date": "2024-06-15"
+    },
+    {
+      "title": "Java Software Architect",
+      "company": "JavaArchitects India",
+      "location": "Visakhapatnam, Andhra Pradesh, India",
+      "description": "JavaArchitects India is a leading provider of Java-based solutions for businesses. We are seeking a Java software architect to join our team in Visakhapatnam. The successful candidate will lead the design and architecture of software solutions.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Java programming, experience in software architecture and design, familiarity with cloud platforms",
+      "posted_date": "2024-05-16",
+      "expiration_date": "2024-06-16"
+    },
+    {
+      "title": "Senior Python Software Engineer",
+      "company": "PyMasters India",
+      "location": "Thane, Maharashtra, India",
+      "description": "PyMasters India is a leading provider of Python-based solutions for businesses. We are seeking a senior Python software engineer to join our team in Thane. The successful candidate will lead development projects and mentor junior developers.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python programming, experience in software engineering, familiarity with cloud platforms",
+      "posted_date": "2024-05-17",
+      "expiration_date": "2024-06-17"
+    },
+    {
+      "title": "Java Developer",
+      "company": "JavaInnovations India",
+      "location": "Nagpur, Maharashtra, India",
+      "description": "JavaInnovations India is a leading provider of Java-based solutions for businesses. We are seeking a Java developer to join our team in Nagpur. The successful candidate will work on challenging projects and collaborate with cross-functional teams.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Java programming, experience with Java EE technologies, familiarity with microservices architecture",
+      "posted_date": "2024-05-18",
+      "expiration_date": "2024-06-18"
+    },
+    {
+      "title": "Python Software Developer",
+      "company": "PyDevelopers India",
+      "location": "Pimpri-Chinchwad, Maharashtra, India",
+      "description": "PyDevelopers India is a leading provider of Python-based solutions for businesses. We are seeking a Python software developer to join our team in Pimpri-Chinchwad. The successful candidate will work on innovative projects and collaborate with cross-functional teams.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Python programming, experience with web development frameworks such as Django or Flask, familiarity with cloud platforms",
+      "posted_date": "2024-05-19",
+      "expiration_date": "2024-06-19"
+    },
+    {
+      "title": "Java Software Engineer",
+      "company": "JavaSolutions India",
+      "location": "Patna, Bihar, India",
+      "description": "JavaSolutions India is a leading provider of Java-based solutions for businesses. We are seeking a Java software engineer to join our team in Patna. The successful candidate will work on challenging projects and collaborate with cross-functional teams.",
+      "requirements": "Bachelor's degree in Computer Science or related field, proficiency in Java programming, experience with Java EE technologies, familiarity with microservices architecture",
+      "posted_date": "2024-05-20",
+      "expiration_date": "2024-06-20"
+    }
+  ]
+}

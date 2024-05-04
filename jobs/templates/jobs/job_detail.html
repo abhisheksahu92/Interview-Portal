@@ -1,0 +1,57 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% block content %}
+{% for message in messages %}
+    <div class="alert alert-success">
+    <a class="close" href="#" data-dismiss="alert">×</a>
+    {{ message }}
+    </div>
+{% endfor %}
+<table class="table table-hover table-dark table-bordered">
+  <colgroup>
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 25%;">
+    <col span="1" style="width: 10%;">
+ </colgroup>
+ <thead>
+    <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Company</th>
+        <th scope="col">Location</th>
+        <th scope="col">Posted Date</th>
+        <th scope="col">Expiration Date</th>
+        <th scope="col">Contact Info</th>
+        <th scope="col">Actions</th>
+      </tr>
+ </thead>
+ <tbody>
+   <tr>
+    <td>{{job.title}}</td>
+    <td>{{job.company}}</td>
+    <td>{{job.location}}</td>
+    <td>{{job.posted_date}}</td>
+    <td>{{job.expiration_date}}</td>
+    <td>{{job.contact_information}}</td>
+    <td>
+        <a href="{% url 'jobs:update-job' job.id %}" class="btn btn-warning btn-sm" title="Edit Job"><i class="fas fa-edit"></i></a>
+        <a href="{% url 'jobs:delete-job' job.id %}" class="btn btn-warning btn-sm" title="Delete Job"><i class="fas fa-trash-alt"></i></a>
+        </td>
+   </tr>
+ </tbody>
+</table>
+  <table class="table table-hover table-dark table-bordered">
+    <thead>
+      <tr>
+        <th scope="col" width="25%" >Description</th> <td>{{job.description}}</td>
+      </tr>
+      <tr>
+        <th scope="col" width="25%">Requirements</th><td>{{job.requirements}}</td>
+      </tr>
+    </thead>
+    </table>
+{% endblock content %}
