@@ -13,3 +13,9 @@ class Jobs(models.Model):
 
     def __str__(self) -> str:
         return self.title()
+
+
+class JobsExam(models.Model):
+    exam_choice = (('Python', 'Python'), ('Java', 'Java'))
+    job_id =  models.ForeignKey(Jobs,related_name='+',on_delete=models.CASCADE)
+    exam = models.CharField(max_length=10, default='Python', choices=exam_choice, null=False, blank=False)
