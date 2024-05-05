@@ -9,6 +9,7 @@ from django.urls import reverse
 from employee.models import Employee
 from .forms import AdminLoginForm,AdminUpdateForm,AdminEmployeeUpdateForm
 from candidate.models import Candidate,CandidateResult
+from django.http import JsonResponse
 from candidate.views import send_mail_candidate
 
 def adminIndexView(request):
@@ -120,19 +121,20 @@ def adminUpdateView(request,id):
     
 @login_required(login_url="/admin/login/") 
 def adminDeleteView(request,id):
-    if not request.user.is_superuser:
-        logout(request)
-        messages.warning(request, 'Access Denied.')
-        return HttpResponseRedirect(reverse('index'))
-    
-    qs = Candidate.objects.filter(id=id)
-
-    CandidateResult.objects.filter(candidate_id=id).delete()
-    User.objects.filter(id=qs.first().username_id).delete()
-    Candidate.objects.filter(id=id).delete()
-
-    messages.success(request, 'Candidate Deleted.')
-    return HttpResponseRedirect(reverse('admin:admin-candidate-list'))
+    try:
+        if not request.user.is_superuser:
+            logout(request)
+            messages.warning(request, 'Access Denied.')
+            return HttpResponseRedirect(reverse('index'))
+        
+        if request.method == 'POST':
+            qs = Candidate.objects.filter(id=id)
+            CandidateResult.objects.filter(candidate_id=id).delete()
+            User.objects.filter(id=qs.first().username_id).delete()
+            Candidate.objects.filter(id=id).delete()
+            return JsonResponse({'status': 'Success'}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 @login_required(login_url="/admin/login/") 
 def adminEmployeeUpdateView(request,id):
@@ -165,29 +167,33 @@ def adminEmployeeUpdateView(request,id):
     
 @login_required(login_url="/admin/login/") 
 def adminEmployeeDeleteView(request,id):
-    if not request.user.is_superuser:
-        logout(request)
-        messages.warning(request, 'Access Denied.')
-        return HttpResponseRedirect(reverse('index'))
-    
-    qs = Employee.objects.filter(id=id)
+    try:
+        if not request.user.is_superuser:
+            logout(request)
+            messages.warning(request, 'Access Denied.')
+            return HttpResponseRedirect(reverse('index'))
+        
+        if request.method == 'POST':    
+            qs = Employee.objects.filter(id=id)
 
-    User.objects.filter(id=qs.first().employee_username_id).delete()
-    Employee.objects.filter(id=id).delete()
-
-    messages.success(request, 'Employee Deleted.')
-    return HttpResponseRedirect(reverse('admin:admin-employee-list'))
+            User.objects.filter(id=qs.first().employee_username_id).delete()
+            Employee.objects.filter(id=id).delete()
+            return JsonResponse({'status': 'Success'}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 @login_required(login_url="/admin/login/") 
 def adminEmployeeStatusView(request,status,id):
-    if not request.user.is_superuser:
-        logout(request)
-        messages.warning(request, 'Access Denied.')
-        return HttpResponseRedirect(reverse('index'))
-    
-    qs = Employee.objects.filter(id=id).first()
-    qs.employee_status = status
-    qs.save()
-
-    messages.success(request, f'Employee {status}.')
-    return HttpResponseRedirect(reverse('admin:admin-employee-list'))
+    try:
+        if not request.user.is_superuser:
+            logout(request)
+            messages.warning(request, 'Access Denied.')
+            return HttpResponseRedirect(reverse('index'))
+        
+        if request.method == 'POST':
+            qs = Employee.objects.filter(id=id).first()
+            qs.employee_status = status
+            qs.save()
+            return JsonResponse({'status': 'Success'}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
