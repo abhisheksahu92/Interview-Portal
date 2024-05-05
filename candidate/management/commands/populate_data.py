@@ -49,22 +49,5 @@ class Command(BaseCommand):
                                     skill=random.choice(skill_choices),
                                     resume = File(file_ref))
             print('50 Candidates has been created')
-            file_path = os.path.join(os.getcwd(), 'candidate\management\commands\data_file.json')
-            with open(file_path, "r") as read_file:
-                data = json.load(read_file)
-                for emp_data in data['data']:
-                    username = User.objects.create_user(
-                        username=emp_data['username'],
-                        password=emp_data['password']
-                    )
-                    group = Group.objects.get(name='Employee')
-                    group.user_set.add(User.objects.get(username=emp_data['username']))
-
-                    Employee.objects.create(employee_username=username,
-                                            employee_name=emp_data['employee_name'],
-                                            employee_email=emp_data['employee_email'],
-                                            employee_skill=emp_data['employee_skill'],
-                                            employee_level=emp_data['employee_level'])
-            print('6 Employees has been created.')
         except Exception as e:
             print(e)
