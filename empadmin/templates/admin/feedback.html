@@ -17,11 +17,12 @@
     <col span="1" style="width: 10%;">
     <col span="1" style="width: 7%;">
     <col span="1" style="width: 10%;">
-    {% if candidate.candidate_id.assessment_result %}
+    <col span="1" style="width: 15%;">
+    <col span="1" style="width: 10%;">
+    {% if candidate.candidate_id.assessment_result and candidate.candidate_id.status == 'Rejected'%}
       <col span="1" style="width: 15%;">
     {% endif %}
-    <col span="1" style="width: 15%;">
-    <col span="1" style="width: 15%;">
+    <col span="1" style="width: 10%;">
  </colgroup>
  <thead>
    <tr>
@@ -33,7 +34,10 @@
      <th scope="col">Source</th>
      <th scope="col">Skill</th>
      <th scope="col">Exam Score</th>
+     <th scope="col">Exam Result</th> 
+     {% if candidate.candidate_id.assessment_result and candidate.candidate_id.status == 'Rejected'%}
       <th scope="col">Exam Actions</th> 
+      {% endif %}
      <th scope="col">Resume</th>
    </tr>
  </thead>
@@ -47,13 +51,14 @@
      <td>{{candidate.candidate_id.source}}</td>
      <td>{{candidate.candidate_id.skill}}</td>
      <td>{{candidate.candidate_id.assessment_data}}</td>
-     {% if candidate.candidate_id.assessment_result %}
+     {% if candidate.candidate_id.assessment_result and candidate.candidate_id.status == 'Rejected' %}
+      <td>Not Cleared</td>
+      {% else %}
+      <td>Cleared</td>
+    {% endif %}
+     {% if candidate.candidate_id.assessment_result and candidate.candidate_id.status == 'Rejected' %}
       <td>
         <a href = "{% url 'admin:admin-exam' 'Reset' candidate.candidate_id.id %}" class="btn btn-warning btn-sm">Reset</a>
-        <a href = "{% url 'admin:admin-exam' 'Pass' candidate.candidate_id.id %}" class="btn btn-warning btn-sm">Pass</a>
-        </td>
-      {% else %}
-      <td>
         <a href = "{% url 'admin:admin-exam' 'Pass' candidate.candidate_id.id %}" class="btn btn-warning btn-sm">Pass</a>
         </td>
       {% endif %}
