@@ -4,8 +4,9 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
+from django.http import JsonResponse
 
-from .models import Jobs
+from .models import Jobs,JobsExam
 from .forms import JobsForm
 # Create your views here.
 
@@ -27,7 +28,12 @@ def job_detail(request, pk):
         return HttpResponseRedirect(reverse('index'))
     
     job = Jobs.objects.get(pk=pk)
-    return render(request, 'jobs/job_detail.html', {'job': job})
+    exam = JobsExam.objects.filter(job_id=job)
+    if exam.exists:
+        exam = exam.first()
+    else:
+        exam = False
+    return render(request, 'jobs/job_detail.html', {'job': job,'exam':exam})
 
 @login_required(login_url="/admin/login/") 
 def create_job(request):
@@ -75,3 +81,20 @@ def delete_job(request, pk):
         job.delete()
         return HttpResponseRedirect(reverse('jobs:job-list'))
     return render(request, 'jobs/delete_job.html', {'job': job})
+
+@login_required(login_url="/admin/login/") 
+def select_exam(request, pk,exam):
+    try:
+        if not request.user.is_superuser:
+            logout(request)
+            messages.warning(request, 'Access Denied.')
+            return HttpResponseRedirect(reverse('index'))
+        
+        job = Jobs.objects.get(pk=pk)
+        if request.method == 'POST':
+            JobsExam.objects.get_or_create(job_id=job,exam=exam)
+            return JsonResponse({'status': 'Success'}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+    
+    
