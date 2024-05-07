@@ -1,0 +1,73 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2 class="text-center alert alert-info">Show Candidate Information</h2>
+{% for message in messages %}
+<div class="alert alert-success">
+{{ message }}
+</div>
+{% endfor %}
+{% if candidate_list %}
+<div class="container mt-auto">
+<table class="table table-striped table-dark table-bordered" id="userTable">
+  <colgroup>
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 16%;">
+    <col span="1" style="width: 3%;">
+    <col span="1" style="width: 5%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 5%;">
+    <col span="1" style="width: 20%;">
+    <col span="1" style="width: 3%;">
+ </colgroup>
+ <thead>
+   <tr>
+     <th scope="col">Name</th>
+     <th scope="col">Email</th>
+     <th scope="col">Skill</th>
+     <th scope="col">Experience</th>
+     <th scope="col">Notice Period</th>
+     <th scope="col">Source</th>
+     <th scope="col">Date</th>
+     <th scope="col">Actions</th>
+   </tr>
+ </thead>
+ <tbody>
+  {% for candidate in candidate_list %}
+   <tr>
+     <td>{{candidate.first_name}} {{candidate.last_name}}</td>
+     <td>{{candidate.email}}</td>
+     <td>{{candidate.skill}}</td>
+     <td>{{candidate.experience}}</td>
+     <td>{{candidate.noticeperiod}}</td>
+     <td>{{candidate.source}}</td>
+     <td>{{candidate.updated_at|date:'Y-m-d h:i'}}</td>
+     <td>
+      <a href="{% url 'admin:admin-feedback' candidate.id %}" class="btn btn-warning btn-sm">View</a>
+    </td>
+   </tr>
+  {% endfor %}
+ </tbody>
+</table>
+{% else %}
+    <h2 class="text-center alert alert-warning">No Records</h2>
+{% endif %}
+<!--    Now the pagination section-->
+
+{% if is_paginated %}
+    <div class="pagination" >
+        <span class="page-links" >
+            {% if page_obj.has_previous %}
+            <button class="btn btn-outline-primary" type="button"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></button>
+            {% endif %}
+            <span class="page-current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+            {% if page_obj.has_next %}
+            <button class="btn btn-outline-primary" type="button"><a href="?page={{ page_obj.next_page_number }}">Next</a></button>
+            {% endif %}
+        </span>
+    </div>
+<br>
+{% endif %}
+</div>
+{% endblock content %}

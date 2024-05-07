@@ -1,0 +1,86 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% block content %}
+{% for message in messages %}
+    <div class="alert alert-success">
+    <a class="close" href="#" data-dismiss="alert">×</a>
+    {{ message }}
+    </div>
+{% endfor %}
+<table class="table table-hover table-dark table-bordered">
+  <colgroup>
+    <col span="1" style="width: 11%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 3%;">
+    <col span="1" style="width: 4%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 7%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 15%;">
+    <col span="1" style="width: 10%;">
+    {% if candidate.candidate_id.assessment_result and candidate.candidate_id.status == 'Rejected'%}
+      <col span="1" style="width: 15%;">
+    {% endif %}
+    <col span="1" style="width: 10%;">
+ </colgroup>
+ <thead>
+   <tr>
+     <th scope="col">Name</th>
+     <th scope="col">Phone</th>
+     <th scope="col">Email</th>
+     <th scope="col">Experience</th>
+     <th scope="col">Notice Period</th>
+     <th scope="col">Source</th>
+     <th scope="col">Skill</th>
+     <th scope="col">Exam Score</th>
+     <th scope="col">Exam Result</th> 
+     {% if candidate.candidate_id.assessment_result and candidate.candidate_id.status == 'Rejected'%}
+      <th scope="col">Exam Actions</th> 
+      {% endif %}
+     <th scope="col">Resume</th>
+   </tr>
+ </thead>
+ <tbody>
+   <tr>
+     <td>{{candidate.candidate_id.first_name}} {{candidate.candidate_id.last_name}}</td>
+     <td>{{candidate.candidate_id.phone}}</td>
+     <td>{{candidate.candidate_id.email}}</td>
+     <td>{{candidate.candidate_id.experience}}</td>
+     <td>{{candidate.candidate_id.noticeperiod}}</td>
+     <td>{{candidate.candidate_id.source}}</td>
+     <td>{{candidate.candidate_id.skill}}</td>
+     <td>{{candidate.candidate_id.assessment_data}}</td>
+     {% if candidate.candidate_id.assessment_result and candidate.candidate_id.status == 'Rejected' %}
+      <td>Not Cleared</td>
+      {% else %}
+      <td>Cleared</td>
+    {% endif %}
+     {% if candidate.candidate_id.assessment_result and candidate.candidate_id.status == 'Rejected' %}
+      <td>
+        <a href = "{% url 'admin:admin-exam' 'Reset' candidate.candidate_id.id %}" class="btn btn-warning btn-sm">Reset</a>
+        <a href = "{% url 'admin:admin-exam' 'Pass' candidate.candidate_id.id %}" class="btn btn-warning btn-sm">Pass</a>
+        </td>
+      {% endif %}
+     <td>
+         <a href="{{candidate.candidate_id.resume.url}}" class="btn btn-warning btn-sm">View</a>
+     </td>
+   </tr>
+ </tbody>
+</table>
+{% if candidate.feedback_l1 != None or candidate.feedback_l2 != None or candidate.feedback_hr != None%}
+  <table class="table table-hover table-dark table-bordered">
+    <thead>
+      <tr>
+        <th scope="col" width="15%" >L1 Feedback</th> <td>{{candidate.feedback_l1}}</td>
+      </tr>
+      <tr>
+        <th scope="col" width="15%">L2 Feedback</th><td>{{candidate.feedback_l2}}</td>
+      </tr>
+      <tr>
+        <th scope="col" width="15%">HR Feedback</th><td>{{candidate.feedback_hr}}</td>
+      </tr>
+    </thead>
+    </table>
+  {% endif %}
+{% endblock content %}

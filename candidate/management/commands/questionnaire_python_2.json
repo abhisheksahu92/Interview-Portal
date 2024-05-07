@@ -1,0 +1,986 @@
+{
+    "questions": [
+      {
+        "question": "What is the output of the following code snippet?\n\nx = 5\ny = 3\nprint(x + y)",
+        "options": [
+          "5",
+          "8",
+          "15",
+          "53"
+        ],
+        "answer": "8"
+      },
+      {
+        "question": "Which of the following is not a valid variable name in Python?",
+        "options": [
+          "my_variable",
+          "_myvariable",
+          "123variable",
+          "my-variable"
+        ],
+        "answer": "123variable"
+      },
+      {
+        "question": "What does the 'range()' function in Python return?",
+        "options": [
+          "A list of numbers",
+          "A range object",
+          "A dictionary",
+          "A tuple"
+        ],
+        "answer": "A range object"
+      },
+      {
+        "question": "What will be the output of the following code snippet?\n\nlist = [1, 2, 3, 4, 5]\nprint(list[2:4])",
+        "options": [
+          "[3, 4]",
+          "[2, 3, 4]",
+          "[2, 3]",
+          "[3, 4, 5]"
+        ],
+        "answer": "[3, 4]"
+      },
+      {
+        "question": "What is the result of 2**3?",
+        "options": [
+          "8",
+          "6",
+          "9",
+          "16"
+        ],
+        "answer": "8"
+      },
+      {
+        "question": "Which of the following data types is mutable in Python?",
+        "options": [
+          "int",
+          "float",
+          "tuple",
+          "list"
+        ],
+        "answer": "list"
+      },
+      {
+        "question": "What will be the output of the following code snippet?\n\nx = 5\ny = 2\nprint(x % y)",
+        "options": [
+          "1",
+          "2",
+          "0",
+          "3"
+        ],
+        "answer": "1"
+      },
+      {
+        "question": "Which keyword is used for defining a function in Python?",
+        "options": [
+          "func",
+          "def",
+          "define",
+          "function"
+        ],
+        "answer": "def"
+      },
+      {
+        "question": "What is the result of the expression 'Hello' + 'World'?",
+        "options": [
+          "'HelloWorld'",
+          "'Hello World'",
+          "'Hello' 'World'",
+          "Error"
+        ],
+        "answer": "'HelloWorld'"
+      },
+      {
+        "question": "Which of the following statements is used to exit a loop in Python?",
+        "options": [
+          "break",
+          "exit",
+          "quit",
+          "stop"
+        ],
+        "answer": "break"
+      },
+      {
+        "question": "What is the result of the expression 5 // 2?",
+        "options": [
+          "2.5",
+          "2",
+          "3",
+          "2.0"
+        ],
+        "answer": "2"
+      },
+      {
+        "question": "Which of the following statements is used to check if a key exists in a dictionary?",
+        "options": [
+          "exists()",
+          "contains()",
+          "in",
+          "has_key()"
+        ],
+        "answer": "in"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = ['a', 'b', 'c']\nprint(''.join(x))",
+        "options": [
+          "abc",
+          "['a', 'b', 'c']",
+          "'a' 'b' 'c'",
+          "Error"
+        ],
+        "answer": "abc"
+      },
+      {
+        "question": "What does the 'del' statement do in Python?",
+        "options": [
+          "Deletes a file",
+          "Deletes a variable",
+          "Deletes an object",
+          "Deletes a directory"
+        ],
+        "answer": "Deletes a variable"
+      },
+      {
+        "question": "Which of the following is an immutable data type in Python?",
+        "options": [
+          "list",
+          "set",
+          "tuple",
+          "dictionary"
+        ],
+        "answer": "tuple"
+      },
+      {
+        "question": "What is the result of the expression 'hello' * 3?",
+        "options": [
+          "'hellohellohello'",
+          "'hello hello hello'",
+          "['hello', 'hello', 'hello']",
+          "Error"
+        ],
+        "answer": "'hellohellohello'"
+      },
+      {
+        "question": "Which method is used to remove and return the last item from a list in Python?",
+        "options": [
+          "pop()",
+          "remove()",
+          "discard()",
+          "delete()"
+        ],
+        "answer": "pop()"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = 10\ny = 20\nx, y = y, x\nprint(x, y)",
+        "options": [
+          "20 10",
+          "10 20",
+          "Error",
+          "10, 20"
+        ],
+        "answer": "20 10"
+      },
+      {
+        "question": "Which of the following is not a valid way to create a dictionary in Python?",
+        "options": [
+          "{1: 'one', 2: 'two', 3: 'three'}",
+          "dict([(1, 'one'), (2, 'two'), (3, 'three')])",
+          "{1, 'one', 2, 'two', 3, 'three'}",
+          "{'one': 1, 'two': 2, 'three': 3}"
+        ],
+        "answer": "{1, 'one', 2, 'two', 3, 'three'}"
+      },
+      {
+        "question": "What is the result of the expression 10 / 3 in Python 3?",
+        "options": [
+          "3.33333333333",
+          "3.333",
+          "3",
+          "3.0"
+        ],
+        "answer": "3.33333333333"
+      },
+      {
+        "question": "What does the 'continue' statement do in Python?",
+        "options": [
+          "It terminates the loop",
+          "It skips the rest of the code in the loop and continues with the next iteration",
+          "It breaks the loop",
+          "It restarts the loop"
+        ],
+        "answer": "It skips the rest of the code in the loop and continues with the next iteration"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = [1, 2, 3]\nfor i in range(3):\n    x.append(i)\nprint(x)",
+        "options": [
+          "[1, 2, 3, 0, 1, 2]",
+          "[1, 2, 3, 1, 2, 3]",
+          "[1, 2, 3, 3, 2, 1]",
+          "[1, 2, 3, 0, 1, 2, 3]"
+        ],
+        "answer": "[1, 2, 3, 0, 1, 2]"
+      },
+      {
+        "question": "Which of the following is a correct way to open a file 'data.txt' in Python for writing?",
+        "options": [
+          "open('data.txt', 'w')",
+          "open('data.txt', 'r')",
+          "open('data.txt', 'a')",
+          "open('data.txt', 'x')"
+        ],
+        "answer": "open('data.txt', 'w')"
+      },
+      {
+        "question": "What is the result of the expression 'python'[1:4]?",
+        "options": [
+          "'yth'",
+          "'ytho'",
+          "'pyt'",
+          "'ytho'"
+        ],
+        "answer": "'yth'"
+      },
+      {
+        "question": "Which of the following is used to add an item to the end of a list in Python?",
+        "options": [
+          "add()",
+          "append()",
+          "insert()",
+          "extend()"
+        ],
+        "answer": "append()"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nprint('abc'.capitalize())",
+        "options": [
+          "'Abc'",
+          "'ABC'",
+          "'abc'",
+          "Error"
+        ],
+        "answer": "'Abc'"
+      },
+      {
+        "question": "Which method is used to sort a list in Python?",
+        "options": [
+          "sort()",
+          "sorted()",
+          "order()",
+          "arrange()"
+        ],
+        "answer": "sort()"
+      },
+      {
+        "question": "What is the result of the expression 2 + 2 * 3?",
+        "options": [
+          "8",
+          "10",
+          "12",
+          "Error"
+        ],
+        "answer": "8"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = 5\nprint('The value of x is {}'.format(x))",
+        "options": [
+          "The value of x is 5",
+          "The value of x is {x}",
+          "The value of x is '5'",
+          "Error"
+        ],
+        "answer": "The value of x is 5"
+      },
+      {
+        "question": "Which built-in function returns the length of an object in Python?",
+        "options": [
+          "size()",
+          "length()",
+          "count()",
+          "len()"
+        ],
+        "answer": "len()"
+      },
+      {
+        "question": "Which of the following statements is used to define a function in Python?",
+        "options": [
+          "function myFunction()",
+          "define myFunction()",
+          "func myFunction()",
+          "def myFunction()"
+        ],
+        "answer": "def myFunction()"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = 5\ny = 2\nprint(x / y)",
+        "options": [
+          "2.5",
+          "2",
+          "2.0",
+          "2.1"
+        ],
+        "answer": "2.5"
+      },
+      {
+        "question": "Which of the following is a correct way to check if a variable is of a certain type in Python?",
+        "options": [
+          "type(var) == 'int'",
+          "var.type() == int",
+          "isinstance(var, int)",
+          "var.isType(int)"
+        ],
+        "answer": "isinstance(var, int)"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = [1, 2, 3]\nprint(x[-1])",
+        "options": [
+          "1",
+          "3",
+          "2",
+          "Error"
+        ],
+        "answer": "3"
+      },
+      {
+        "question": "Which of the following is used to remove an item from a set in Python?",
+        "options": [
+          "discard()",
+          "remove()",
+          "delete()",
+          "pop()"
+        ],
+        "answer": "discard()"
+      },
+      {
+        "question": "What is the result of the expression 2 * (3 + 4)?",
+        "options": [
+          "14",
+          "16",
+          "12",
+          "10"
+        ],
+        "answer": "14"
+      },
+      {
+        "question": "What does the 'strip()' method do in Python?",
+        "options": [
+          "Removes leading and trailing whitespace from a string",
+          "Splits a string into a list",
+          "Joins elements of a list into a string",
+          "Returns the index of the first occurrence of a substring"
+        ],
+        "answer": "Removes leading and trailing whitespace from a string"
+      },
+      {
+        "question": "What is the result of the expression 4 % 2?",
+        "options": [
+          "0",
+          "2",
+          "1",
+          "4"
+        ],
+        "answer": "0"
+      },
+      {
+        "question": "Which of the following is used to open a file in binary mode in Python?",
+        "options": [
+          "open('file.txt', 'b')",
+          "open('file.txt', 'binary')",
+          "open('file.txt', 'rb')",
+          "open('file.txt', 'r')",
+          "open('file.txt', 'w')"
+        ],
+        "answer": "open('file.txt', 'rb')"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = 5\ny = 2\nprint(x ** y)",
+        "options": [
+          "10",
+          "25",
+          "7",
+          "Error"
+        ],
+        "answer": "25"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = ['a', 'b', 'c']\nprint(','.join(x))",
+        "options": [
+          "abc",
+          "'a', 'b', 'c'",
+          "a,b,c",
+          "Error"
+        ],
+        "answer": "a,b,c"
+      },
+      {
+        "question": "What is the result of the expression 3 + 2 * 4 / 2?",
+        "options": [
+          "7",
+          "5",
+          "10",
+          "9"
+        ],
+        "answer": "7"
+      },
+      {
+        "question": "Which of the following is used to concatenate two lists in Python?",
+        "options": [
+          "merge()",
+          "join()",
+          "concat()",
+          "extend()"
+        ],
+        "answer": "extend()"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = 'Hello'\nprint(x[1:4])",
+        "options": [
+          "'ell'",
+          "'Hel'",
+          "'llo'",
+          "'ell'"
+        ],
+        "answer": "'ell'"
+      },
+      {
+        "question": "What is the result of the expression 7 // 2?",
+        "options": [
+          "3.5",
+          "3",
+          "4",
+          "3.0"
+        ],
+        "answer": "3"
+      },
+      {
+        "question": "Which built-in function returns the absolute value of a number in Python?",
+        "options": [
+          "abs()",
+          "fabs()",
+          "absolute()",
+          "absval()"
+        ],
+        "answer": "abs()"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = {'a': 1, 'b': 2}\nprint(x.get('c', 3))",
+        "options": [
+          "1",
+          "2",
+          "3",
+          "Error"
+        ],
+        "answer": "3"
+      },
+      {
+        "question": "Which of the following is used to convert a string to uppercase in Python?",
+        "options": [
+          "lower()",
+          "uppercase()",
+          "upper()",
+          "to_upper()"
+        ],
+        "answer": "upper()"
+      },
+      {
+        "question": "What does the 'enumerate()' function in Python do?",
+        "options": [
+          "Returns the count of elements in an iterable",
+          "Returns an iterator of tuples containing indices and values",
+          "Returns the sum of elements in an iterable",
+          "Returns the maximum element in an iterable"
+        ],
+        "answer": "Returns an iterator of tuples containing indices and values"
+      },
+      {
+        "question": "What is the result of the expression bool('False')?",
+        "options": [
+          "True",
+          "False",
+          "Error",
+          "None"
+        ],
+        "answer": "True"
+      },
+      {
+        "question": "What is the result of the expression 2**3?",
+        "options": [
+          "8",
+          "6",
+          "9",
+          "16"
+        ],
+        "answer": "8"
+      },
+      {
+        "question": "Which of the following is a correct way to check if a key exists in a dictionary?",
+        "options": [
+          "key in dict",
+          "dict.has_key(key)",
+          "key.exists()",
+          "key.exists(dict)"
+        ],
+        "answer": "key in dict"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = [1, 2, 3, 4, 5]\nprint(x[2:4])",
+        "options": [
+          "[3, 4]",
+          "[2, 3, 4]",
+          "[2, 3]",
+          "[3, 4, 5]"
+        ],
+        "answer": "[3, 4]"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = {1, 2, 3}\nprint(type(x))",
+        "options": [
+          "set",
+          "list",
+          "tuple",
+          "dictionary"
+        ],
+        "answer": "set"
+      },
+      {
+        "question": "What is the result of the expression 9 % 4?",
+        "options": [
+          "1",
+          "2",
+          "3",
+          "0"
+        ],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is used to remove an item from a list in Python?",
+        "options": [
+          "discard()",
+          "remove()",
+          "delete()",
+          "pop()"
+        ],
+        "answer": "remove()"
+      },
+      {
+        "question": "What does the 'range()' function in Python return?",
+        "options": [
+          "A list of numbers",
+          "A range object",
+          "A dictionary",
+          "A tuple"
+        ],
+        "answer": "A range object"
+      },
+      {
+        "question": "What will be the output of the following code snippet?\n\nx = [1, 2, 3]\nprint(x[-2])",
+        "options": [
+          "1",
+          "3",
+          "2",
+          "Error"
+        ],
+        "answer": "2"
+      },
+      {
+        "question": "Which of the following is used to open a file in read mode in Python?",
+        "options": [
+          "open('file.txt', 'w')",
+          "open('file.txt', 'r')",
+          "open('file.txt', 'a')",
+          "open('file.txt', 'x')"
+        ],
+        "answer": "open('file.txt', 'r')"
+      },
+      {
+        "question": "What is the result of the expression len('python')?",
+        "options": [
+          "5",
+          "6",
+          "7",
+          "Error"
+        ],
+        "answer": "6"
+      },
+      {
+        "question": "What is the result of the expression 10 / 3?",
+        "options": [
+          "3.3333333333333335",
+          "3.333",
+          "3",
+          "3.0"
+        ],
+        "answer": "3.3333333333333335"
+      },
+      {
+        "question": "Which of the following is not a valid variable name in Python?",
+        "options": [
+          "my_var",
+          "_myvar",
+          "123var",
+          "myVar"
+        ],
+        "answer": "123var"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = ['a', 'b', 'c']\nfor i in x:\n    print(i, end=' ')",
+        "options": [
+          "abc",
+          "a b c",
+          "['a', 'b', 'c']",
+          "'a' 'b' 'c'"
+        ],
+        "answer": "a b c"
+      },
+      {
+        "question": "What is the result of the expression 'hello' * 3?",
+        "options": [
+          "'hellohellohello'",
+          "'hello hello hello'",
+          "['hello', 'hello', 'hello']",
+          "Error"
+        ],
+        "answer": "'hellohellohello'"
+      },
+      {
+        "question": "Which of the following is used to check if a variable is of a certain type in Python?",
+        "options": [
+          "type(var) == 'int'",
+          "var.type() == int",
+          "isinstance(var, int)",
+          "var.isType(int)"
+        ],
+        "answer": "isinstance(var, int)"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = 'python'\nprint(x.capitalize())",
+        "options": [
+          "'python'",
+          "'Python'",
+          "'PYTHON'",
+          "Error"
+        ],
+        "answer": "'Python'"
+      },
+      {
+        "question": "Which built-in function is used to find the maximum element from an iterable?",
+        "options": [
+          "max()",
+          "maximum()",
+          "max_element()",
+          "find_max()"
+        ],
+        "answer": "max()"
+      },
+      {
+        "question": "What is the result of the expression 7 // 3?",
+        "options": [
+          "2.3333333333333335",
+          "2",
+          "2.0",
+          "2.3"
+        ],
+        "answer": "2"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = {'a': 1, 'b': 2}\nprint(x['c'])",
+        "options": [
+          "1",
+          "2",
+          "0",
+          "Error"
+        ],
+        "answer": "Error"
+      },
+      {
+        "question": "Which of the following is used to convert a string to lowercase in Python?",
+        "options": [
+          "lowercase()",
+          "lower()",
+          "to_lowercase()",
+          "case_lower()"
+        ],
+        "answer": "lower()"
+      },
+      {
+        "question": "What is the result of the expression len([1, 2, 3])?",
+        "options": [
+          "1",
+          "2",
+          "3",
+          "Error"
+        ],
+        "answer": "3"
+      },
+      {
+        "question": "Which of the following statements is true about Python?",
+        "options": [
+          "Python is a compiled language",
+          "Python code must be written within curly braces {}",
+          "Python supports automatic memory management",
+          "Python does not support object-oriented programming"
+        ],
+        "answer": "Python supports automatic memory management"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = [1, 2, 3]\nprint(x[3])",
+        "options": [
+          "1",
+          "2",
+          "3",
+          "Error"
+        ],
+        "answer": "Error"
+      },
+      {
+        "question": "Which of the following is used to define a multiline string in Python?",
+        "options": [
+          "Triple single quotes (''')",
+          "Double quotes ('')",
+          "Single quotes ('')",
+          "Triple double quotes (\"\")"
+        ],
+        "answer": "Triple double quotes (\"\")"
+      },
+      {
+        "question": "What is the result of the expression 'hello'.upper()?",
+        "options": [
+          "'HELLO'",
+          "'Hello'",
+          "'hello'",
+          "Error"
+        ],
+        "answer": "'HELLO'"
+      },
+      {
+        "question": "Which of the following is used to remove leading and trailing whitespace from a string in Python?",
+        "options": [
+          "strip()",
+          "trim()",
+          "remove_whitespace()",
+          "clean()"
+        ],
+        "answer": "strip()"
+      },
+      {
+        "question": "What is the result of the expression bool(0)?",
+        "options": [
+          "True",
+          "False",
+          "Error",
+          "None"
+        ],
+        "answer": "False"
+      },
+      {
+        "question": "Which of the following is used to open a file in write mode in Python?",
+        "options": [
+          "open('file.txt', 'r')",
+          "open('file.txt', 'w')",
+          "open('file.txt', 'a')",
+          "open('file.txt', 'x')"
+        ],
+        "answer": "open('file.txt', 'w')"
+      },
+      {
+        "question": "What is the result of the expression 2 == 2?",
+        "options": [
+          "True",
+          "False",
+          "Error",
+          "None"
+        ],
+        "answer": "True"
+      },
+      {
+        "question": "Which of the following is used to convert a string to a list in Python?",
+        "options": [
+          "tolist()",
+          "list()",
+          "convert()",
+          "stringtolist()"
+        ],
+        "answer": "list()"
+      },
+      {
+        "question": "What is the result of the expression 5 % 2?",
+        "options": [
+          "2.5",
+          "2",
+          "1",
+          "0.5"
+        ],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is not a valid way to define a tuple in Python?",
+        "options": [
+          "(1, 2, 3)",
+          "[1, 2, 3]",
+          "tuple([1, 2, 3])",
+          "1, 2, 3"
+        ],
+        "answer": "[1, 2, 3]"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = [1, 2, 3]\nprint(x[0])",
+        "options": [
+          "1",
+          "2",
+          "3",
+          "Error"
+        ],
+        "answer": "1"
+      },
+      {
+        "question": "Which of the following is used to find the length of a string in Python?",
+        "options": [
+          "length()",
+          "len()",
+          "size()",
+          "count()"
+        ],
+        "answer": "len()"
+      },
+      {
+        "question": "What is the result of the expression 'hello' + 'world'?",
+        "options": [
+          "'helloworld'",
+          "'hello world'",
+          "'hello' 'world'",
+          "Error"
+        ],
+        "answer": "'helloworld'"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = (1, 2, 3)\nprint(x[1:])",
+        "options": [
+          "(2, 3)",
+          "(1, 2)",
+          "(1, 2, 3)",
+          "(2,)"
+        ],
+        "answer": "(2, 3)"
+      },
+      {
+        "question": "Which of the following is used to read a single character from the standard input in Python?",
+        "options": [
+          "input()",
+          "getchar()",
+          "get()",
+          "raw_input()"
+        ],
+        "answer": "getchar()"
+      },
+      {
+        "question": "What is the result of the expression 2 ** 3?",
+        "options": [
+          "6",
+          "8",
+          "16",
+          "4"
+        ],
+        "answer": "8"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = {'a': 1, 'b': 2}\nprint(x['c'])",
+        "options": [
+          "1",
+          "2",
+          "0",
+          "Error"
+        ],
+        "answer": "Error"
+      },
+      {
+        "question": "Which of the following is used to check if a string starts with a specified substring in Python?",
+        "options": [
+          "startswith()",
+          "start()",
+          "beginwith()",
+          "start_with()"
+        ],
+        "answer": "startswith()"
+      },
+      {
+        "question": "What is the result of the expression 10 // 3?",
+        "options": [
+          "3.3333333333333335",
+          "3",
+          "3.0",
+          "3.3"
+        ],
+        "answer": "3"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = [1, 2, 3]\nprint(x[-1])",
+        "options": [
+          "1",
+          "3",
+          "2",
+          "Error"
+        ],
+        "answer": "3"
+      },
+      {
+        "question": "Which of the following is used to return the integer part of a division in Python?",
+        "options": [
+          "div()",
+          "integer()",
+          "floor()",
+          "int()"
+        ],
+        "answer": "int()"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = {'a': 1, 'b': 2}\nprint(list(x.keys()))",
+        "options": [
+          "['a', 'b']",
+          "[1, 2]",
+          "[('a', 1), ('b', 2)]",
+          "Error"
+        ],
+        "answer": "['a', 'b']"
+      },
+      {
+        "question": "Which of the following is used to remove a specific item from a list in Python?",
+        "options": [
+          "delete()",
+          "remove()",
+          "discard()",
+          "pop()"
+        ],
+        "answer": "remove()"
+      },
+      {
+        "question": "What is the output of the following code snippet?\n\nx = [1, 2, 3]\nprint(x[-2])",
+        "options": [
+          "1",
+          "3",
+          "2",
+          "Error"
+        ],
+        "answer": "2"
+      },
+      {
+        "question": "Which of the following is used to check if a given value is present in a list in Python?",
+        "options": [
+          "check()",
+          "contains()",
+          "in",
+          "exist()"
+        ],
+        "answer": "in"
+      },
+      {
+        "question": "What is the result of the expression 3 + 2 * 4 / 2?",
+        "options": [
+          "7",
+          "5",
+          "10",
+          "9"
+        ],
+        "answer": "7"
+      }
+    ]
+  }
+  

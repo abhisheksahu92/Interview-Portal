@@ -9,29 +9,37 @@
     </div>
 {% endfor %}
 <table class="table table-hover table-dark table-bordered">
+  <colgroup>
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 3%;">
+    <col span="1" style="width: 5%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 5%;">
+    <col span="1" style="width: 43%;">
+    <col span="1" style="width: 7%;">
+ </colgroup>
  <thead>
    <tr>
      <th scope="col">Name</th>
-     <th scope="col">Phone Number</th>
-     <th scope="col">Email</th>
      <th scope="col">Date of Birth</th>
      <th scope="col">Experience</th>
      <th scope="col">Notice Period</th>
      <th scope="col">Source</th>
      <th scope="col">Skill</th>
+     <th scope="col">Assessment Score</th>
      <th scope="col">Resume</th>
    </tr>
  </thead>
  <tbody>
    <tr>
      <td>{{candidate.first_name}} {{candidate.last_name}}</td>
-     <td>{{candidate.phone}}</td>
-     <td>{{candidate.email}}</td>
      <td>{{candidate.dateofbirth}}</td>
      <td>{{candidate.experience}}</td>
      <td>{{candidate.noticeperiod}}</td>
      <td>{{candidate.source}}</td>
      <td>{{candidate.skill}}</td>
+     <td>{{candidate.assessment_data}}</td>
      <td>
          <a href="{{candidate.resume.url}}" class="btn btn-warning btn-sm">View</a>
      </td>
@@ -69,6 +77,6 @@
 {% endif %}
 <form method = 'POST' enctype="multipart/form-data"> {% csrf_token %}
 {{form|crispy}}
-<input type="submit" class="btn btn-primary" value="Register"></input>
+<input type="submit" class="btn btn-primary" value="Update"></input>
 </form>
 {% endblock content %}

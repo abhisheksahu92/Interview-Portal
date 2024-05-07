@@ -7,7 +7,7 @@ class EmployeeProfileForm(forms.ModelForm):
     passcode = forms.CharField(label='Authentication Key', max_length=10, required=False)
     class Meta:
         model = Employee
-        fields = ['employee_name', 'employee_email', 'employee_skill', 'employee_level','passcode']
+        fields = ['employee_name', 'employee_skill', 'employee_level','passcode']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -20,17 +20,15 @@ class EmployeeProfileForm(forms.ModelForm):
         if cleaned_data.get('employee_level') == 'HR':
             if cleaned_data.get('passcode') != 'hr1234':
                 raise ValidationError('Authentication Key is not correct')
-        if 'ip' not in  cleaned_data.get('employee_email'):
-            raise forms.ValidationError('Please enter you IP email id')
 
 class EmployeeSignupForm(forms.ModelForm):
     password = forms.CharField(label='Password', max_length=120, required=True,
                                        widget=forms.PasswordInput())
-    password_confirm = forms.CharField(label='Confirm_Password', max_length=120,
+    password_confirm = forms.CharField(label='Confirm Password', max_length=120,
                                        required=True, widget=forms.PasswordInput())
     class Meta:
         model = User
-        fields = ['username','password','password_confirm']
+        fields = ['username','email','password','password_confirm']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -51,7 +49,10 @@ class EmployeeLoginForm(forms.Form):
             raise forms.ValidationError('Username not exists')
 
 class EmployeeFeedbackForm(forms.Form):
-    feedback = forms.CharField(label = 'Feedback', max_length= 300, required=True)
-    status   = forms.ChoiceField(label = 'Status', choices=(('Selected','Selected'),('Rejected','Rejected')), required=True)
+    status   = forms.ChoiceField(label = 'Status', 
+                                 choices=(('Selected','Selected'),('Rejected','Rejected')), 
+                                 required=True)
+    feedback = forms.CharField(label = 'Feedback', max_length= 1000, required=True,widget=forms.Textarea)
+    
 
 

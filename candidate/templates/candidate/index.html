@@ -1,5 +1,6 @@
 {% extends 'candidate/base.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
 {% block content %}
     {% for message in messages %}
         <div class="alert alert-success">
@@ -10,8 +11,84 @@
     <p class="lead">This innovative online platform designed to streamline and optimize the interview process for both recruiters and candidates. It serves as a centralized hub where recruiters can manage and conduct interviews efficiently, while candidates can easily signup, attend, and follow up on their interviews.</p>
     <br>
     {% if status != 'NOTLOGGED' %}
-    <p class="lead">
-      <a href="#" class="btn btn-lg btn-secondary fw-bold border-white bg-white">Status: {{status}}</a>
-    </p>
+    <table class="table table-hover table-dark table-bordered align-middle mb-0">
+      <colgroup>
+        <col span="1" style="width: 5%;">
+        <col span="1" style="width: 20%;">
+        <col span="1" style="width: 10%;">
+        <col span="1" style="width: 60%;">
+     </colgroup>
+      <thead class="bg-light">
+        <tr>
+          <th>Level</th>
+          <th>Interviewer</th>
+          <th>Status</th>
+          <th>Feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="d-flex align-items-center">
+              <div class="ms-3">
+                <p class="fw-bold mb-1">L1</p>
+              </div>
+            </div>
+          </td>
+          {% if candidate.l1_by.employee_name %}
+            <td><p class="fw-normal mb-1">{{ candidate.l1_by.employee_name}}</p><p class="text-muted mb-0">{{ candidate.l1_by.employee_skill}} Developer</p></td>
+          {% else %}
+          <td><p class="fw-normal mb-1">Not Assigned</p></td>
+          {% endif %}
+          <td><p class="fw-normal mb-1">{{ candidate.status_l1}}</p></td>
+          {% if candidate.feedback_l2 != None %}
+            <td><p class="fw-normal mb-1">{{ candidate.feedback_l1}}</p></td>
+          {% else %}
+          <td><p class="fw-normal mb-1"></p></td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            <div class="d-flex align-items-center">
+              <div class="ms-3">
+                <p class="fw-bold mb-1">L2</p>
+              </div>
+            </div>
+          </td>
+          {% if candidate.l2_by.employee_name %}
+            <td><p class="fw-normal mb-1">{{ candidate.l2_by.employee_name}}</p><p class="text-muted mb-0">{{ candidate.l2_by.employee_skill}} Developer</p></td>
+          {% else %}
+          <td><p class="fw-normal mb-1">Not Assigned</p></td>
+          {% endif %}
+          <td><p class="fw-normal mb-1">{{ candidate.status_l2}}</p></td>
+          {% if candidate.feedback_l2 != None %}
+            <td><p class="fw-normal mb-1">{{ candidate.feedback_l2}}</p></td>
+          {% else %}
+          <td><p class="fw-normal mb-1"></p></td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            <div class="d-flex align-items-center">
+              <div class="ms-3">
+                <p class="fw-bold mb-1">HR</p>
+              </div>
+            </div>
+          </td>
+          {% if candidate.hr_by.employee_name  %}
+            <td><p class="fw-normal mb-1">{{ candidate.hr_by.employee_name}}</p><p class="text-muted mb-0">{{ candidate.l1_by.employee_skill}} Developer</p></td>
+          {% else %}
+          <td><p class="fw-normal mb-1">Not Assigned</p></td>
+          {% endif %}
+          <td><p class="fw-normal mb-1">{{ candidate.status_hr}}</p></td>
+          {% if candidate.feedback_hr != None %}
+            <td><p class="fw-normal mb-1">{{ candidate.feedback_hr}}</p></td>
+          {% else %}
+          <td><p class="fw-normal mb-1"></p></td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+    <br>
     {% endif %}
 {% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'candidate/mail_template.html' %}
+
+{% block body %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; border-radius: 10px;">
+    <h2 style="color: #333333;">Welcome Back to Interview Portal!</h2>
+    <p style="color: #666666;">Dear {{first_name}} {{last_name}},</p>
+    <p style="color: #666666;">Welcome back! We're thrilled to see you logging in again to Interview Portal. Please update your profile if you haven't to start the interview process.</p>
+    <p style="color: #666666;">We hope you're having a great experience with us. As a logged-in user, you now have access to all the features and benefits our platform offers.</p>
+    <p style="color: #666666;">If you have any questions, feedback, or need assistance, please don't hesitate to reach out to our support team. We're here to ensure your experience with Interview Portal is smooth and enjoyable.</p>
+    <p style="color: #666666;">Thank you for being a valued member of our community. We look forward to continuing to serve you.</p>
+    <p style="color: #666666;">Best regards,</p>
+    <p style="color: #666666;">Abhishek Sahu<br>Python Developer</p>
+</div>
+{% endblock %}

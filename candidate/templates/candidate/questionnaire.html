@@ -1,0 +1,104 @@
+{% extends 'candidate/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}<div class="cover-container d-flex w-100 h-100 p-5 mx-auto flex-column">
+    <h1>Welcome to {{skill}} Quiz</h1>
+     
+    <div align="right" id="timer"><b>Timer: 0 seconds</b></div>
+     
+     <form method='post' action='' id="exam">
+        {% csrf_token %}
+        {% for q  in questions %}
+        <div class="form-group text-start">
+            <label for="question">{{ forloop.counter }}. {{q.question}}</label>
+        </div>
+        <div class="form-check text-start">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="{{q.id}}" id="gridRadios1" value="{{q.option1}}">
+                <label class="form-check-label" for="gridRadios1">
+                    {{q.option1}}
+                </label>
+            </div>
+            <div class="form-check text-start">
+                <input class="form-check-input" type="radio" name="{{q.id}}" id="gridRadios2" value="{{q.option2}}">
+                <label class="form-check-label" for="gridRadios2">
+                    {{q.option2}}
+                </label>
+            </div>
+            <div class="form-check text-start">
+                <input class="form-check-input" type="radio" name="{{q.id}}" id="gridRadios1" value="{{q.option3}}">
+                <label class="form-check-label" for="gridRadios1">
+                    {{q.option3}}
+                </label>
+            </div>
+            <div class="form-check text-start">
+                <input class="form-check-input" type="radio" name="{{q.id}}" id="gridRadios2" value="{{q.option4}}">
+                <label class="form-check-label" for="gridRadios2">
+                    {{q.option4}}
+                </label>
+            </div>
+            <br>
+        </div>    
+        {% endfor %}
+        <input id='timer' type='hidden' name="timer" value="">
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+    {% block script %}
+            <script>
+            var timer,
+            timeleft = 10 * 60; // 5 seconds
+            function time(){
+                var minute = Math.floor(timeleft / 60);
+                var seconds = timeleft % 60;
+                if (timeleft >= 0){
+                    if (minute < 10){
+                        minute = "0" + minute;
+                    }
+                    
+                    if (seconds < 10){
+                        seconds = "0" + seconds;
+                    }
+                    document.getElementById("timer").innerHTML = minute + ":" + seconds;
+                }
+                
+                if (timeleft <= 0){    
+                    clearTimeout(timer);
+                    document.getElementById("exam").submit();
+                    return;
+                }
+                timeleft--;
+                timer = setTimeout(time, 1000);
+                }
+            time();
+            count = 0;
+            $(document).ready(function() {
+                var hidden, visibilityState, visibilityChange;
+
+                if (typeof document.hidden !== "undefined") {
+                    hidden = "hidden", visibilityChange = "visibilitychange", visibilityState = "visibilityState";
+                } else if (typeof document.msHidden !== "undefined") {
+                    hidden = "msHidden", visibilityChange = "msvisibilitychange", visibilityState = "msVisibilityState";
+                }
+
+                var document_hidden = document[hidden];
+
+                document.addEventListener(visibilityChange, function() {
+                    if(document_hidden != document[hidden]) {
+                    if(document[hidden]) {
+                        count+=1;
+                        if(count == 2){
+                            console.log("DONE")
+                            window.alert(["Are you sure you want to leave this page? Your assessment will auto-submit."]);
+                        }
+                        if(count == 3){
+                            document.getElementById("exam").submit();
+                            return;
+                        }
+                    }
+                    document_hidden = document[hidden];
+                    }});
+                });
+            </script>
+        {% endblock script %}
+{% endblock %}

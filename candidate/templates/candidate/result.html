@@ -1,0 +1,42 @@
+{% extends 'candidate/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}
+<div class ='cover-container d-flex w-50 h-100 p-5 mx-auto flex-column'>
+    {% for message in messages %}
+        <div class="alert alert-success">
+        {{ message }}
+        </div>
+    {% endfor %}
+    <h2 class="text-center alert alert-warning">Assessment Result</h2>
+    <table class="table table-dark table-bordered">
+        <tbody>
+        <tr>
+            <td>Score</td>
+            <td>{{score}}</td>
+        </tr>
+        <tr>
+            <td>Percentage</td>
+            <td>{{percent}}</td>
+        </tr>
+        <tr>
+            <td>Correct answers:</td>
+            <td>{{correct}}</td>
+        </tr>
+        <tr>
+            <td>Incorrect answers:</td>
+            <td>{{wrong}}</td>
+        </tr>
+        <tr>
+            <td>Total questions:</td>
+            <td>{{total}}</td>
+        </tr>
+        <tr>
+            <td>Status:</td>
+            <td>{{status}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+ 
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'candidate/mail_template.html' %}
+
+{% block title %}
+    <title>Congratulations! Test Passed.</title>
+{% endblock %}
+
+{% block body %}
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; border-radius: 10px;">
+        <h2 style="color: #333333;">Notification: Congratulations! You've Passed your Test.</h2>
+        <p style="color: #666666;">Dear {{first_name}} {{last_name}},</p>
+        <p style="color: #666666;">We are delighted to inform you that you have successfully passed the {{level}} assessment. Congratulations on this achievement.</p>
+        <p style="color: #666666;">Your performance in the assessment demonstrated your strong capabilities and potential. We are impressed by your dedication and commitment to excellence.</p>
+        <p style="color: #666666;">As you progress to the next stage of our selection process, we encourage you to continue your preparation and maintain the same level of enthusiasm and determination.</p>
+        <p style="color: #666666;">Please be prepared for the upcoming stage. If you have any questions or need further information, please don't hesitate to reach out to us.</p>
+        <p style="color: #666666;">Once again, congratulations on your achievement, and we look forward to seeing you excel in the next stage of our selection process.</p>
+        <p style="color: #666666;">Best regards,</p>
+        <p style="color: #666666;">Abhishek Sahu<br>Python Developer<br></p>
+    </div>
+{% endblock %}

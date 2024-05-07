@@ -8,10 +8,33 @@ class DateInput(forms.DateInput):
 class CandidateCreateForm(forms.ModelForm):
     class Meta:
         model = Candidate
-        fields = ['first_name', 'last_name', 'email', 'phone', 'dateofbirth','experience',
+        fields = ['first_name', 'last_name', 'phone', 'dateofbirth','experience',
                     'noticeperiod','source','skill','resume']
+        NOTICEPERIOD_CHOICES = (
+                ('', 'Select Notice Period'),
+                (1,1), #First one is the value of select option and second is the displayed value in option
+                (2,2),
+                (3,3),
+                )
         widgets = {
             'dateofbirth': DateInput(),
+            'noticeperiod': forms.Select(choices=NOTICEPERIOD_CHOICES,attrs={'class': 'form-control'}),
+        }
+
+class CandidateUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Candidate
+        fields = ['first_name', 'last_name', 'dateofbirth','experience',
+                    'noticeperiod','source','skill','resume']
+        NOTICEPERIOD_CHOICES = (
+                ('', 'Select Notice Period'),
+                (1,1), #First one is the value of select option and second is the displayed value in option
+                (2,2),
+                (3,3),
+                )
+        widgets = {
+            'dateofbirth': DateInput(),
+            'noticeperiod': forms.Select(choices=NOTICEPERIOD_CHOICES,attrs={'class': 'form-control'}),
         }
 
 class CandidateSignupForm(forms.ModelForm):
@@ -21,7 +44,7 @@ class CandidateSignupForm(forms.ModelForm):
                                        required=True, widget=forms.PasswordInput())
     class Meta:
         model = User
-        fields = ['username','password','password_confirm']
+        fields = ['username','email','password','password_confirm']
 
     def clean(self):
         cleaned_data = super().clean()

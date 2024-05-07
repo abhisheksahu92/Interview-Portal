@@ -26,6 +26,8 @@ class Candidate(models.Model):
     created_at = models.DateTimeField(verbose_name='Created At', auto_now=False, auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='Updated At', auto_now=True, auto_now_add=False)
     status = models.CharField(verbose_name='Status', default='Pending',choices=result_choice , max_length= 50)
+    assessment_data = models.JSONField(verbose_name='Score', null=True)
+    assessment_result = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at','-updated_at']
@@ -44,15 +46,31 @@ class CandidateResult(models.Model):
     status_l1       = models.CharField(verbose_name='L1 Status', default='Pending',choices=result_choice , max_length= 50)
     feedback_l1     = models.TextField(verbose_name='L1 Feedback', null=True, blank=True)
     l1_by           = models.ForeignKey(Employee,related_name='+',on_delete=models.CASCADE, null=True, blank=True)
+    l1_at           = models.DateTimeField(verbose_name='L1 Date',null=True)
     status_l2       = models.CharField(verbose_name='L2 Status', default='Pending',choices=result_choice , max_length= 50)
     feedback_l2     = models.TextField(verbose_name='L2 Feedback', null=True, blank=True)
     l2_by           = models.ForeignKey(Employee, related_name='+', on_delete=models.CASCADE, null=True, blank=True)
+    l2_at           = models.DateTimeField(verbose_name='L2 Date',null=True)
     status_hr       = models.CharField(verbose_name='HR Status', default='Pending',choices=result_choice , max_length= 50)
     feedback_hr     = models.TextField(verbose_name='HR Feedback', null=True, blank=True)
     hr_by           = models.ForeignKey(Employee, related_name='+', on_delete=models.CASCADE, null=True, blank=True)
+    hr_at           = models.DateTimeField(verbose_name='HR Date',null=True)
 
 # method for updating
 @receiver(post_save, sender=Candidate)
 def update_stock(sender, instance, **kwargs):
-    CandidateResult.objects.create(candidate_id=instance)
+    CandidateResult.objects.get_or_create(candidate_id=instance)
 
+# Create your models here.
+class CandidateQuestionModel(models.Model):
+    skill_choices = (('Python', 'Python'), ('Java', 'Java'))
+    question = models.CharField(max_length=200,null=True)
+    skill = models.CharField(max_length=10, default='Python', choices=skill_choices, null=False, blank=False)
+    option1 = models.CharField(max_length=200,null=True)
+    option2 = models.CharField(max_length=200,null=True)
+    option3 = models.CharField(max_length=200,null=True)
+    option4 = models.CharField(max_length=200,null=True)
+    answer  = models.CharField(max_length=200,null=True)
+    
+    def __str__(self):
+        return self.question

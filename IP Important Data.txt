@@ -1,0 +1,2 @@
+python .\manage.py create_admin -username abhishekadmin -password abhishekadmin -first_name Abhishek -last_name Sahu -email s.engineerabhisheksahu@gmail.com
+

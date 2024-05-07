@@ -1,0 +1,18 @@
+{% extends 'candidate/mail_template.html' %}
+
+{% block title %}
+    <title>Notification: Application Status Update</title>
+{% endblock %}
+{% block body %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; border-radius: 10px;">
+    <h2 style="color: #333333;">Application Status Update</h2>
+    <p style="color: #666666;">Dear {{first_name}} {{last_name}},</p>
+    <p style="color: #666666;">We regret to inform you that after careful consideration, we have decided not to move forward with your application.</p>
+    <p style="color: #666666;">We sincerely appreciate the time and effort you invested in the application process and want to thank you for your interest in joining our team.</p>
+    <p style="color: #666666;">While your qualifications and experience are impressive, we received a large number of highly qualified applicants, and unfortunately, we could only select a few candidates for further consideration.</p>
+    <p style="color: #666666;">Please do not be discouraged by this decision, as it does not reflect on your abilities or potential. We encourage you to continue pursuing opportunities that align with your skills and career goals.</p>
+    <p style="color: #666666;">Thank you again for your interest, and we wish you all the best in your future endeavors.</p>
+    <p style="color: #666666;">Best regards,</p>
+    <p style="color: #666666;">Abhishek Sahu<br>Python Developer<br></p>
+</div>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% block style %}
+<style>
+  /* Darken the modal backdrop */
+  .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5) !important;
+  }
+  /* Dark-themed modal content */
+  .dark-modal .modal-content {
+      background-color: #343a40;
+      color: #fff;
+  }
+  .dark-modal .modal-header {
+      border-bottom: 1px solid #454d55;
+  }
+  .dark-modal .modal-footer {
+      border-top: 1px solid #454d55;
+  }
+  .dark-modal .modal-title {
+      color: #fff;
+  }
+  .dark-modal .close {
+      color: #fff;
+      opacity: 0.5;
+  }
+  .dark-modal .close:hover {
+      opacity: 0.75;
+  }
+  .dark-modal .btn-secondary {
+      color: #fff;
+      background-color: #6c757d;
+      border-color: #6c757d;
+  }
+  .dark-modal .btn-secondary:hover {
+      color: #fff;
+      background-color: #5a6268;
+      border-color: #545b62;
+  }
+</style>
+{% endblock %}
+{% block content %}
+{% for message in messages %}
+    <div class="alert alert-success">
+    <a class="close" href="#" data-dismiss="alert">×</a>
+    {{ message }}
+    </div>
+{% endfor %} 
+<table class="table table-hover table-dark table-bordered">
+  <colgroup>
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 13%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 20%;">
+    <col span="1" style="width: 10%;">
+    <col span="1" style="width: 15%;">
+ </colgroup>
+ <thead>
+    <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Company</th>
+        <th scope="col">Location</th>
+        <th scope="col">Posted Date</th>
+        <th scope="col">Expiration Date</th>
+        <th scope="col">Contact Info</th>
+        <th scope="col">Skill</th>
+        <th scope="col">Actions</th>
+      </tr>
+ </thead>
+ <tbody>
+   <tr>
+    <td>{{job.title}}</td>
+    <td>{{job.company}}</td>
+    <td>{{job.location}}</td>
+    <td>{{job.posted_date}}</td>
+    <td>{{job.expiration_date}}</td>
+    <td>{{job.contact_information}}</td>
+    {% if exam %}
+      <td>{{exam.exam}}</td>
+    {% else %}
+    <td>
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="modal" data-target="#darkModal">Skill</button>
+        <!-- Dark-themed Modal -->
+        <div class="modal fade dark-modal" tabindex="-1" role="dialog" id="darkModal">
+            <div class="modal-dialog dark-modal" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Choose an Skill</h5>
+                    </div>
+                    <div class="modal-body">
+                      <p>Select an option:</p>
+                      <button type="button" class="btn btn-secondary" onclick="selectOption('Python')">Python</button>
+                      <button type="button" class="btn btn-secondary" onclick="selectOption('Java')">Java</button>
+                      </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </td>
+    {% endif %}
+    <td>
+        <a href="{% url 'jobs:update-job' job.id %}" class="btn btn-warning btn-sm" title="Edit Job"><i class="fas fa-edit"></i></a>
+        <a href="{% url 'jobs:delete-job' job.id %}" class="btn btn-warning btn-sm" title="Delete Job"><i class="fas fa-trash-alt"></i></a>
+        </td>
+   </tr>
+ </tbody>
+</table>
+  <table class="table table-hover table-dark table-bordered">
+    <thead>
+      <tr>
+        <th scope="col" width="25%" >Description</th> <td>{{job.description}}</td>
+      </tr>
+      <tr>
+        <th scope="col" width="25%">Requirements</th><td>{{job.requirements}}</td>
+      </tr>
+    </thead>
+    </table>
+{% endblock content %}
+
+{% block script %}
+<!-- Include Bootstrap JS and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+<script>
+    // JavaScript function to handle option selection
+    function selectOption(option) {
+      var xhr = new XMLHttpRequest();
+      if (option == 'Python'){
+        xhr.open("POST", "{% url 'jobs:select-exam' job.id 'Python' %}", true);
+      }
+      else{
+        xhr.open("POST", "{% url 'jobs:select-exam' job.id 'Java' %}", true);
+      }
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+              showSuccessNotification()
+          }
+          if (xhr.status == 400) {
+              showNotSuccessNotification()
+          }
+        };
+      xhr.send();
+      }
+    function showSuccessNotification() 
+        {
+            // Display update notification
+            Swal.fire({
+                title: 'Updating Data',
+                text: 'Please wait...',
+                icon: 'info',
+                showConfirmButton: false,
+                timer: 1000, // Display for 3 seconds (adjust as needed)
+                allowOutsideClick: false
+            }).then(() => {
+                // After the update is complete, display confirmation message
+                Swal.fire({
+                    title: 'Update Successful!',
+                    text: 'Data has been updated.',
+                    icon: 'success',
+                    timer: 1000,
+                    showConfirmButton: false,
+                }).then((result) => {
+                // After the notification is closed, reload the page
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    location.reload();
+                }
+            });
+            });
+        }
+        function showNotSuccessNotification() 
+        {
+            // Display update notification
+            Swal.fire({
+              title: 'Error!',
+              text: 'An unexpected error occurred.',
+              icon: 'error',
+              timer: 3000, // Display for 3 seconds (adjust as needed)
+              allowOutsideClick: false
+            }).then((result) => {
+                // After the notification is closed, reload the page
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    location.reload();
+                }
+            });
+        }
+    function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+</script>
+{% endblock %}

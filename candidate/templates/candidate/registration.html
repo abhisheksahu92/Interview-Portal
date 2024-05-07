@@ -1,0 +1,15 @@
+{% extends 'candidate/mail_template.html' %}
+
+{% block body %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; border-radius: 10px;">
+    <h2 style="color: #333333;">Welcome to Interview Portal!</h2>
+    <p style="color: #666666;">Dear {{first_name}} {{last_name}},</p>
+    <p style="color: #666666;">Congratulations! You've successfully updated your profile on Interview Portal. Please complete your assessment first.</p>
+    <p style="color: #666666;">Post which interview process will start soon. Interview Process have three levels L1,L2,HR.</p>
+    <p style="color: #666666;">With your new account, you can now access all the features and benefits our platform offers.</p>
+    <p style="color: #666666;">If you have any questions, need assistance, or want to provide feedback, feel free to reach out to our support team. We're here to help!</p>
+    <p style="color: #666666;">Thank you for choosing Interview Portal. We look forward to seeing you around!</p>
+    <p style="color: #666666;">Best regards,</p>
+    <p style="color: #666666;">Abhishek Sahu<br>Python Developer</p>
+</div>
+{% endblock %}

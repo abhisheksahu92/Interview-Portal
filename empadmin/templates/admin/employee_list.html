@@ -1,0 +1,184 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2 class="text-center alert alert-info">Show Employee Information</h2>
+{% for message in messages %}
+<div class="alert alert-success">
+{{ message }}
+</div>
+{% endfor %}
+{% if employee_list %}
+<table class="table table-hover table-dark table-bordered" id="userTable">
+ <thead>
+   <tr>
+    <th scope="col">Username</th>
+     <th scope="col">Name</th>
+     <th scope="col">Email</th>
+     <th scope="col">Skill</th>
+     <th scope="col">Level</th>
+     <th scope="col">Status</th>
+     <th scope="col">Actions</th>
+   </tr>
+ </thead>
+ <tbody>
+  {% for employee in employee_list %}
+   <tr>
+     <td>{{employee.employee_username.username}}</td>
+     <td>{{employee.employee_name}}</td>
+     <td>{{employee.employee_email}}</td>
+     <td>{{employee.employee_skill}}</td>
+     <td>{{employee.employee_level}}</td>
+     <td>{{employee.employee_status}}</td>
+     {% if employee.employee_status == 'Pending' %}
+     <td>
+        <a onclick="selectOption('Approved',{{employee.id}})" class="btn btn-warning btn-sm" title="Approve Employee"><i class="fas fa-check-circle"></i></a>
+        <a onclick="selectOption('Rejected',{{employee.id}})" class="btn btn-warning btn-sm" title="Reject Employee"><i class="fas fa-times-circle"></i></a>
+    </td>
+     {% else %}
+     <td>
+        <a href="{% url 'admin:admin-emp-update' employee.id %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+        <a onclick="selectOption('Deleted',{{employee.id}})" class="btn btn-warning btn-sm" title="Delete Employee"><i class="fas fa-trash-alt"></i></a>
+  </td>
+  {% endif %}
+   </tr>
+  {% endfor %}
+ </tbody>
+</table>
+{% else %}
+    <h2 class="text-center alert alert-warning">No Records</h2>
+{% endif %}
+<!--    Now the pagination section-->
+
+{% if is_paginated %}
+    <div class="pagination" >
+        <span class="page-links" >
+            {% if page_obj.has_previous %}
+            <button class="btn btn-outline-primary" type="button"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></button>
+            {% endif %}
+            <span class="page-current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+            {% if page_obj.has_next %}
+            <button class="btn btn-outline-primary" type="button"><a href="?page={{ page_obj.next_page_number }}">Next</a></button>
+            {% endif %}
+        </span>
+    </div>
+<br>
+{% endif %}
+{% endblock content %}
+
+{% block script %}
+<script>
+    // JavaScript function to handle option selection
+    function selectOption(option,employeeId) {
+      var xhr = new XMLHttpRequest();
+      if (option == 'Approved'){
+        xhr.open("POST", "empstatusupdate/" + option + "/" + employeeId +'/', true);
+      }
+      else if (option == 'Rejected'){
+        xhr.open("POST", "empstatusupdate/" + option + "/" + employeeId +'/', true);
+      }
+      else if (option == 'Deleted'){
+
+        xhr.open("POST", "empdelete/" + employeeId +"/", true);
+      }
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            if (option == 'Deleted'){
+                showDeleteNotification()
+            }
+            else{
+              showNotification()
+            }
+          }
+          if (xhr.status == 400) {
+              showErrorNotification()
+          }
+        };
+      xhr.send();
+      }
+      function showDeleteNotification() 
+        {
+            // Display update notification
+            Swal.fire({
+                title: 'Deleting Data',
+                text: 'Please wait...',
+                icon: 'info',
+                showConfirmButton: false,
+                timer: 1000, // Display for 3 seconds (adjust as needed)
+                allowOutsideClick: false
+            }).then(() => {
+                // After the update is complete, display confirmation message
+                Swal.fire({
+                    title: 'Deletion Successful!',
+                    text: 'Data has been Deleted.',
+                    icon: 'success',
+                    timer: 1000,
+                    showConfirmButton: false,
+                }).then((result) => {
+                // After the notification is closed, reload the page
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    location.reload();
+                }
+            });
+            });
+        }
+    function showNotification(option) 
+        {
+            // Display update notification
+            Swal.fire({
+                title: 'Updating Data',
+                text: 'Please wait...',
+                icon: 'info',
+                showConfirmButton: false,
+                timer: 1000, // Display for 3 seconds (adjust as needed)
+                allowOutsideClick: false
+            }).then(() => {
+                // After the update is complete, display confirmation message
+                Swal.fire({
+                    title: 'Updation Successful!',
+                    text: 'Data has been updated.',
+                    icon: 'success',
+                    timer: 1000,
+                    showConfirmButton: false,
+                }).then((result) => {
+                // After the notification is closed, reload the page
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    location.reload();
+                }
+            });
+            });
+        }
+        function showErrorNotification() 
+        {
+            // Display update notification
+            Swal.fire({
+              title: 'Error!',
+              text: 'An unexpected error occurred.',
+              icon: 'error',
+              timer: 3000, // Display for 3 seconds (adjust as needed)
+              allowOutsideClick: false
+            }).then((result) => {
+                // After the notification is closed, reload the page
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    location.reload();
+                }
+            });
+        }
+    function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+</script>
+{% endblock %}
