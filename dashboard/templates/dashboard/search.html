@@ -1,0 +1,80 @@
+{% extends 'dashboard/base.html' %}
+
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container">
+  <form method="get">
+    <div class="well">
+      <h4 style="margin-top: 0">Search by:</h4>
+      <div class="row">
+        <div class="form-group col-sm-4 col-md-3">
+          {{ filter.form.first_name.label_tag }}
+          {% render_field filter.form.first_name class="form-control" %}
+        </div>
+        <div class="form-group col-sm-4 col-md-3">
+          {{ filter.form.last_name.label_tag }}
+          {% render_field filter.form.last_name class="form-control" %}
+        </div>
+        <div class="form-group col-sm-4 col-md-3">
+          {{ filter.form.phone.label_tag }}
+          {% render_field filter.form.phone class="form-control" %}
+        </div>
+        <div class="form-group col-sm-4 col-md-3">
+          {{ filter.form.email.label_tag }}
+          {% render_field filter.form.email class="form-control" %}
+        </div>
+        <div class="form-group col-sm-4 col-md-3">
+            {{ filter.form.noticeperiod.label_tag }}
+            {% render_field filter.form.noticeperiod class="form-control" %}
+          </div>
+          <div class="form-group col-sm-4 col-md-3">
+            {{ filter.form.skill.label_tag }}
+            {% render_field filter.form.skill class="form-control" %}
+          </div>
+          <div class="form-group col-sm-4 col-md-3">
+            {{ filter.form.status.label_tag }}
+            {% render_field filter.form.status class="form-control" %}
+          </div>
+      </div>
+      <br>
+      <button class="w-100 btn btn-lg btn-primary" type="submit">Search</button>
+    </div>
+  </form>
+  <hr>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Notice Period</th>
+        <th>Skill</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in filter.qs %}
+        <tr>
+          <td>{{ user.first_name }}</td>
+          <td>{{ user.last_name }}</td>
+          <td>{{ user.phone }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.noticeperiod }}</td>
+          <td>{{ user.skill }}</td>
+          <td>{{ user.status }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5">No data</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br>
+
+</div>
+
+{% endblock %}
