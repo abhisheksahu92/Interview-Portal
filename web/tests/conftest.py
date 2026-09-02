@@ -4,17 +4,6 @@ from core.models import Company, Membership, User
 from jobs.models import Application, CandidateProfile, Job
 
 
-@pytest.fixture(autouse=True)
-def _plain_staticfiles(settings):
-    """Avoid needing a collectstatic manifest when rendering templates in tests."""
-    settings.STORAGES = {
-        **settings.STORAGES,
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
-        },
-    }
-
-
 @pytest.fixture
 def company(db):
     return Company.objects.create(name="Acme Staffing")

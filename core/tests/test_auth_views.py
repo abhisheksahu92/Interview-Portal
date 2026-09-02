@@ -103,8 +103,17 @@ def test_seed_demo_command():
     from django.core.management import call_command
 
     call_command("seed_demo", verbosity=0)
-    assert Company.objects.filter(name="Demo Staffing").exists()
-    assert User.objects.count() == 4
+    company = Company.objects.get(name="Demo Staffing")
+    # 3 team members + 1 demo candidate + 3 applicants
+    assert User.objects.count() == 7
     owner = User.objects.get(email="owner@demo.test")
     assert owner.check_password("demo1234")
-    assert owner.role_in(Company.objects.get(name="Demo Staffing")) == Membership.OWNER
+    assert owner.role_in(company) == Membership.OWNER
+    assert company.jobs.count() == 2
+    assert company.skills.count() == 3
+    assert company.questions.count() == 3
+
+    # Re-running must be idempotent, not a crash or a duplicate.
+    call_command("seed_demo", verbosity=0)
+    assert User.objects.count() == 7
+    assert company.jobs.count() == 2

@@ -29,7 +29,9 @@ def apply_to_job(job, candidate_profile):
     """Create an ACTIVE application at the job's first stage.
 
     Raises ValidationError when the job is not OPEN or the candidate already
-    applied.
+    applied. AI fit scoring is attached to Application creation by a post_save
+    receiver in ``assessments.signals`` (best-effort, never raises), so every
+    creation path -- services, web and API -- gets it.
     """
     if job.status != Job.OPEN:
         raise ValidationError("This job is not open for applications.")

@@ -3,6 +3,8 @@
 All secrets/config come from the environment (see .env.example).
 """
 
+import os
+import sys
 from pathlib import Path
 
 import environ
@@ -24,6 +26,9 @@ env = environ.Env(
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
+
+# True while running under pytest, so tests never depend on a collectstatic run.
+TESTING = "PYTEST_VERSION" in os.environ or Path(sys.argv[0]).name.startswith("pytest")
 
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
@@ -124,17 +129,29 @@ USE_TZ = True
 # --- Static / media -------------------------------------------------------
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [d for d in [BASE_DIR / "static"] if d.exists()]
+STATICFILES_DIRS = [d for d in [BASE_DIR / "static"] if d.is_dir()]
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Manifest hashing is only useful for a real collectstatic run; in DEBUG (and
+# under pytest) templates must render without a staticfiles.json manifest.
+_STATIC_BACKEND = (
+    "whitenoise.storage.CompressedStaticFilesStorage"
+    if DEBUG or TESTING
+    else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+)
+
+# WhiteNoise warns loudly when STATIC_ROOT is missing before the first
+# collectstatic; the directory is gitignored, so just make sure it exists.
+STATIC_ROOT.mkdir(parents=True, exist_ok=True)
+
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
+    "staticfiles": {"BACKEND": _STATIC_BACKEND},
 }
+
+WHITENOISE_AUTOREFRESH = DEBUG or TESTING
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -169,6 +186,12 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Multi-tenant hiring platform API",
     "VERSION": "2.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # jobs.PipelineStage.kind and assessments.Question.kind are unrelated enums
+    # that happen to share a field name; name them explicitly.
+    "ENUM_NAME_OVERRIDES": {
+        "PipelineStageKindEnum": "jobs.models.PipelineStage.KIND_CHOICES",
+        "QuestionKindEnum": "assessments.models.Question.KIND_CHOICES",
+    },
 }
 
 # --- AI -------------------------------------------------------------------

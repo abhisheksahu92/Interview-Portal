@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import NoReverseMatch, reverse
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -97,18 +97,15 @@ def record_review(application, stage, reviewer, decision, rating=None, feedback=
 
 
 def assessment_url_for(application):
-    """Best-effort link into the assessments app for this application.
+    """URL of the assessment the candidate should take at their current stage.
 
-    The assessments app owns its URL names; we probe the likely ones and return
-    ``None`` when nothing matches so the template can degrade gracefully.
+    Returns ``None`` when the stage needs no assessment or none is configured.
     """
     stage = application.current_stage
     if stage is None or not stage.requires_assessment:
         return None
-    try:
-        from assessments.models import Assessment
-    except ImportError:  # pragma: no cover - assessments always installed
-        return None
+    from assessments.models import Assessment
+
     assessment = (
         Assessment.objects.filter(job=application.job, is_active=True)
         .filter(Q(stage=stage) | Q(stage__isnull=True))
@@ -117,25 +114,10 @@ def assessment_url_for(application):
     )
     if assessment is None:
         return None
-    candidates = [
-        (
-            "assessments:take_assessment",
-            {"application_id": application.pk, "assessment_id": assessment.pk},
-        ),
-        ("assessments:start", {"application_id": application.pk, "assessment_id": assessment.pk}),
-        ("assessments:start", {"application_pk": application.pk, "assessment_pk": assessment.pk}),
-        ("assessments:take", {"application_id": application.pk, "assessment_id": assessment.pk}),
-        ("assessments:take", {"assessment_id": assessment.pk}),
-        ("assessments:assessment_detail", {"pk": assessment.pk}),
-        ("assessments:detail", {"pk": assessment.pk}),
-        ("assessments:start", {"pk": assessment.pk}),
-    ]
-    for name, kwargs in candidates:
-        try:
-            return reverse(name, kwargs=kwargs)
-        except NoReverseMatch:
-            continue
-    return None
+    return reverse(
+        "assessments:take_assessment",
+        kwargs={"application_id": application.pk, "assessment_id": assessment.pk},
+    )
 
 
 def _company_jobs(request):
@@ -610,13 +592,7 @@ def job_apply(request, pk):
             defaults={"current_stage": job.first_stage},
         )
         if created:
-            services = _jobs_services()
-            hook = getattr(services, "score_application", None) if services else None
-            if callable(hook):
-                try:
-                    hook(application)
-                except Exception:  # pragma: no cover - AI is best-effort
-                    pass
+            # AI fit scoring runs off a post_save signal in assessments/.
             messages.success(request, f"Applied to {job.title}.")
         else:
             messages.info(request, "You have already applied to this job.")
