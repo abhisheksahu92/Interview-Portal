@@ -25,3 +25,39 @@ for small IT services / staffing firms, with AI-assisted screening.
 
 ## Legacy
 Old apps `candidate/`, `employee/`, `empadmin/`, `dashboard/`, old `jobs/` and old templates/static are deleted by the foundation agent. Old `db.sqlite3`, `media/`, `.env`, and leaked Dockerfile token are removed.
+
+## Pinned model contract (agents build against this; jobs agent implements it verbatim)
+
+### jobs/models.py
+- Skill(company FK related_name="skills", name CharField(80)); unique (company, name).
+- Job(company FK related_name="jobs", title, location, description TextField, requirements TextField,
+  employment_type choices FULL_TIME/CONTRACT/INTERN, status choices DRAFT/OPEN/CLOSED default DRAFT,
+  skills M2M Skill blank, created_by FK core.User null, created_at, closes_at DateField null).
+- PipelineStage(job FK related_name="stages", name CharField(80), order PositiveInteger,
+  kind choices SCREENING/ASSESSMENT/INTERVIEW/HR/OFFER, requires_assessment bool default False);
+  unique (job, order); ordering ["order"]. Job.save() on create seeds default stages:
+  Screening(SCREENING), Assessment(ASSESSMENT, requires_assessment=True), L1 Interview, L2 Interview, HR, Offer.
+- CandidateProfile(user OneToOne core.User related_name="candidate_profile", phone, date_of_birth null,
+  experience_years Decimal(4,1), notice_period_days PositiveInteger default 0, resume FileField upload_to="resumes/" blank,
+  headline CharField(200) blank, skills M2M Skill blank).
+- Application(job FK related_name="applications", candidate FK CandidateProfile related_name="applications",
+  current_stage FK PipelineStage null, status choices ACTIVE/REJECTED/HIRED/WITHDRAWN default ACTIVE,
+  ai_summary TextField blank, ai_fit_score PositiveSmallInteger null, created_at, updated_at); unique (job, candidate).
+  Methods: advance() -> moves to next stage or marks HIRED at last stage; reject(); property company -> job.company.
+- StageReview(application FK related_name="reviews", stage FK PipelineStage, reviewer FK core.User,
+  decision choices PASS/FAIL/HOLD, rating PositiveSmallInteger 1-5 null, feedback TextField blank, created_at);
+  unique (application, stage, reviewer).
+
+### assessments/models.py
+- Question(company FK, skill FK jobs.Skill null, kind choices MCQ/TEXT, text TextField, options JSONField list default list,
+  correct_option PositiveSmallInteger null, difficulty choices EASY/MEDIUM/HARD, source choices MANUAL/AI, created_at).
+- Assessment(job FK jobs.Job related_name="assessments", stage FK jobs.PipelineStage null, title, questions M2M Question,
+  time_limit_minutes PositiveInteger default 30, pass_mark_percent PositiveSmallInteger default 60, is_active bool).
+- Attempt(assessment FK, application FK jobs.Application related_name="attempts", started_at, submitted_at null,
+  answers JSONField dict {question_id: answer} default dict, score_percent Decimal(5,2) null, passed bool null,
+  ai_feedback TextField blank). Method grade() scores MCQs locally and TEXT answers via assessments.ai when key present.
+
+### assessments/ai.py (service module, all functions must work without ANTHROPIC_API_KEY by returning None/[] and logging)
+- generate_questions(job, skill, n=5, kind="MCQ") -> list[Question] (saved, source=AI)
+- grade_text_answer(question, answer) -> int 0-100 | None
+- summarize_fit(application) -> sets application.ai_summary / ai_fit_score
