@@ -17,6 +17,11 @@ logger = logging.getLogger(__name__)
 
 def score_application(application):
     """Best-effort AI fit summary/score for ``application``. Never raises."""
+    from django.conf import settings
+
+    if not (getattr(settings, "ANTHROPIC_API_KEY", "") or ""):
+        logger.debug("No ANTHROPIC_API_KEY; skipping AI fit scoring.")
+        return None
     try:
         from assessments import ai
 
@@ -29,5 +34,9 @@ def score_application(application):
 
 @receiver(post_save, sender=Application, dispatch_uid="assessments.score_application")
 def _score_new_application(sender, instance, created, **kwargs):
-    if created:
-        score_application(instance)
+    """Score brand-new applications only - updates must not re-hit the API."""
+    if not created:
+        return
+    if kwargs.get("raw"):  # loaddata / fixtures
+        return
+    score_application(instance)

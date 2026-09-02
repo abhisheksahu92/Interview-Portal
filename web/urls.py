@@ -34,6 +34,16 @@ urlpatterns = [
     # company settings
     path("settings/members/", views.settings_members, name="settings_members"),
     path("settings/members/<int:pk>/remove/", views.member_remove, name="member_remove"),
+    path(
+        "settings/invitations/<int:pk>/resend/",
+        views.invite_resend,
+        name="invite_resend",
+    ),
+    path(
+        "settings/invitations/<int:pk>/revoke/",
+        views.invite_revoke,
+        name="invite_revoke",
+    ),
     path("settings/skills/", views.settings_skills, name="settings_skills"),
     path("settings/skills/<int:pk>/delete/", views.skill_delete, name="skill_delete"),
     # candidate portal

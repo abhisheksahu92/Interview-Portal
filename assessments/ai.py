@@ -10,6 +10,7 @@ import logging
 import re
 
 from django.conf import settings
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +54,10 @@ Return JSON: {{"score": <integer 0-100>, "feedback": "<one or two sentences>"}}
 """
 
 SUMMARIZE_FIT_PROMPT = """\
-Assess how well this candidate fits the role.
+Assess how well this candidate fits the role. Be concrete and skeptical: reward
+evidence found in the resume, and call out requirements you cannot verify.
 
+# Role
 Job title: {title}
 Job description:
 {description}
@@ -64,15 +67,23 @@ Job requirements:
 
 Required skills: {job_skills}
 
-Candidate headline: {headline}
-Candidate years of experience: {experience_years}
-Candidate skills: {candidate_skills}
+# Candidate
+Headline: {headline}
+Years of experience (self-reported): {experience_years}
+Self-reported skills: {candidate_skills}
 Notice period (days): {notice_period_days}
 Resume text (may be empty):
 {resume_text}
 
-Return JSON: {{"fit_score": <integer 0-100>, "summary": "<3-5 sentence summary
-covering strengths, gaps and a recommendation>"}}
+# Output
+Return JSON only, of exactly this shape:
+{{"fit_score": <integer 0-100>,
+  "summary": "<exactly 3 sentences: match, gaps, recommendation>",
+  "strengths": ["<short phrase>", ...],
+  "gaps": ["<short phrase>", ...],
+  "flagged_skills": ["<required skill with no supporting evidence>", ...]}}
+Use an empty list when a section has nothing to report. Score 0-100 where 100 is
+a perfect match; if the resume text is empty, judge on the profile alone and say so.
 """
 
 
@@ -115,17 +126,28 @@ def _extract_json(text):
     return None
 
 
-def _ask(prompt):
-    """Send one prompt and return the parsed JSON object, or ``None``."""
+def _ask(prompt, schema=None):
+    """Send one prompt and return the parsed JSON object, or ``None``.
+
+    When the installed SDK supports structured outputs and a ``schema`` is
+    given, the response format is constrained server-side; otherwise we fall
+    back to tolerant JSON extraction from the text response.
+    """
     client = get_client()
     if client is None:
         return None
+    extra = {}
+    if schema is not None and hasattr(getattr(client, "messages", None), "parse"):
+        extra["output_config"] = {
+            "format": {"type": "json_schema", "schema": schema},
+        }
     try:
         response = client.messages.create(
             model=MODEL,
             max_tokens=MAX_TOKENS,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
+            **extra,
         )
         text = "".join(
             block.text for block in response.content if getattr(block, "type", "") == "text"
@@ -217,38 +239,57 @@ def grade_text_answer(question, answer):
     return _clamp_score(data.get("score"))
 
 
-def extract_resume_text(profile, max_chars=8000):
-    """Best-effort plain text from a candidate's resume file. Never raises."""
-    resume = getattr(profile, "resume", None)
-    if not resume:
-        return ""
-    name = (getattr(resume, "name", "") or "").lower()
-    try:
-        with resume.open("rb") as handle:
-            raw = handle.read(2_000_000)
-    except Exception:
-        logger.warning("Could not read resume file for profile %s.", getattr(profile, "pk", "?"))
-        return ""
-    if name.endswith(".pdf"):
-        try:
-            import io
+FIT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "fit_score": {"type": "integer", "minimum": 0, "maximum": 100},
+        "summary": {"type": "string"},
+        "strengths": {"type": "array", "items": {"type": "string"}},
+        "gaps": {"type": "array", "items": {"type": "string"}},
+        "flagged_skills": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["fit_score", "summary"],
+    "additionalProperties": False,
+}
 
-            from pypdf import PdfReader  # type: ignore
 
-            reader = PdfReader(io.BytesIO(raw))
-            text = "\n".join((page.extract_text() or "") for page in reader.pages)
-            return text[:max_chars]
-        except Exception:
-            logger.info("PDF text extraction unavailable; skipping resume text.")
-            return ""
+def extract_resume_text(profile, max_chars=None):
+    """Cached plain text of a candidate's resume. Never raises.
+
+    Thin wrapper around :mod:`assessments.resume` kept for callers that only
+    have a profile; the text is cached on the profile itself.
+    """
+    from assessments import resume as resume_service
+
     try:
-        return raw.decode("utf-8", errors="ignore")[:max_chars]
-    except Exception:
+        text = resume_service.get_resume_text(profile)
+    except Exception:  # pragma: no cover - best effort
+        logger.warning("Resume text unavailable for profile %s.", getattr(profile, "pk", "?"),
+                       exc_info=True)
         return ""
+    return text[:max_chars] if max_chars else text
+
+
+def _string_list(value, limit=8):
+    """Coerce a model-supplied list into a short list of clean strings."""
+    if isinstance(value, str):
+        value = [value]
+    if not isinstance(value, list):
+        return []
+    out = []
+    for item in value:
+        if isinstance(item, dict):
+            item = item.get("name") or item.get("text") or item.get("skill") or ""
+        text = str(item).strip()
+        if text:
+            out.append(text[:200])
+        if len(out) >= limit:
+            break
+    return out
 
 
 def summarize_fit(application):
-    """Set ``ai_summary``/``ai_fit_score`` on ``application``. Returns the score."""
+    """Set ``ai_summary``/``ai_fit_score``/``ai_details``. Returns the score."""
     job = application.job
     profile = application.candidate
     prompt = SUMMARIZE_FIT_PROMPT.format(
@@ -260,14 +301,25 @@ def summarize_fit(application):
         experience_years=getattr(profile, "experience_years", "") or "",
         candidate_skills=", ".join(s.name for s in profile.skills.all()) or "none listed",
         notice_period_days=getattr(profile, "notice_period_days", 0),
-        resume_text=extract_resume_text(profile),
+        resume_text=extract_resume_text(profile) or "(no resume text available)",
     )
-    data = _ask(prompt)
+    data = _ask(prompt, schema=FIT_SCHEMA)
     if not isinstance(data, dict):
         return None
     score = _clamp_score(data.get("fit_score"))
     summary = str(data.get("summary") or "").strip()
+    details = {
+        "fit_score": score,
+        "summary": summary,
+        "strengths": _string_list(data.get("strengths")),
+        "gaps": _string_list(data.get("gaps")),
+        "flagged_skills": _string_list(data.get("flagged_skills")),
+        "model": MODEL,
+        "scored_at": timezone.now().isoformat(),
+        "resume_text_used": bool(getattr(profile, "resume_text", "")),
+    }
     application.ai_summary = summary
     application.ai_fit_score = score
-    application.save(update_fields=["ai_summary", "ai_fit_score"])
+    application.ai_details = details
+    application.save(update_fields=["ai_summary", "ai_fit_score", "ai_details"])
     return score

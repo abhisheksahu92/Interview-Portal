@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from core.models import Company, Membership, User
+from core.models import Company, Invitation, Membership, User
 
 
 class MembershipInline(admin.TabularInline):
@@ -59,3 +59,11 @@ class MembershipAdmin(admin.ModelAdmin):
     list_filter = ["role", "company"]
     search_fields = ["user__email", "company__name"]
     autocomplete_fields = ["user", "company"]
+
+
+@admin.register(Invitation)
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ["email", "company", "role", "created_at", "expires_at", "accepted_at"]
+    list_filter = ["role", "company"]
+    search_fields = ["email", "company__name"]
+    readonly_fields = ["token", "created_at"]

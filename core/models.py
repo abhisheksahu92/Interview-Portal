@@ -1,5 +1,9 @@
+import secrets
+from datetime import timedelta
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
 
@@ -122,3 +126,90 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user.email} @ {self.company.name} ({self.role})"
+
+
+class Invitation(models.Model):
+    """A pending invitation for an email address to join a company."""
+
+    TOKEN_BYTES = 32
+    EXPIRY_DAYS = 7
+
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="invitations"
+    )
+    email = models.EmailField()
+    role = models.CharField(
+        max_length=20, choices=Membership.ROLE_CHOICES, default=Membership.RECRUITER
+    )
+    token = models.CharField(max_length=100, unique=True)
+    invited_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sent_invitations",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.email} -> {self.company.name} ({self.role})"
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = self.new_token()
+        if self.email:
+            self.email = self.email.strip().lower()
+        if not self.expires_at:
+            self.expires_at = self.default_expiry()
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def new_token():
+        return secrets.token_urlsafe(Invitation.TOKEN_BYTES)
+
+    @classmethod
+    def default_expiry(cls):
+        return timezone.now() + timedelta(days=cls.EXPIRY_DAYS)
+
+    @property
+    def is_accepted(self):
+        return self.accepted_at is not None
+
+    @property
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    @property
+    def is_pending(self):
+        return not self.is_accepted and not self.is_expired
+
+    def accept_url(self, request=None):
+        from django.urls import reverse
+
+        path = reverse("core:invite_accept", args=[self.token])
+        return request.build_absolute_uri(path) if request is not None else path
+
+    def refresh_token(self):
+        """Issue a new token and push the expiry out (used by "resend")."""
+        self.token = self.new_token()
+        self.expires_at = self.default_expiry()
+        self.accepted_at = None
+        self.save(update_fields=["token", "expires_at", "accepted_at"])
+        return self
+
+    def accept(self, user):
+        """Create/update the Membership for ``user`` and mark this accepted."""
+        membership, created = Membership.objects.get_or_create(
+            user=user, company=self.company, defaults={"role": self.role}
+        )
+        if not created and membership.role != self.role:
+            membership.role = self.role
+            membership.save(update_fields=["role"])
+        self.accepted_at = timezone.now()
+        self.save(update_fields=["accepted_at"])
+        return membership

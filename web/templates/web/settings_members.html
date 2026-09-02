@@ -11,16 +11,13 @@
         <table class="table align-middle mb-0">
           <caption class="visually-hidden">Members of {{ company.name }}</caption>
           <thead><tr><th scope="col">Email</th><th scope="col">Role</th>
-            <th scope="col">Status</th><th scope="col"></th></tr></thead>
+            <th scope="col">Joined</th><th scope="col"></th></tr></thead>
           <tbody>
             {% for m in memberships %}
               <tr>
                 <td>{{ m.user.email }}</td>
                 <td><span class="badge text-bg-secondary">{{ m.get_role_display }}</span></td>
-                <td>
-                  {% if m.user.is_active %}Active
-                  {% else %}<span class="text-warning-emphasis">Pending activation</span>{% endif %}
-                </td>
+                <td>{{ m.created_at|date:"j M Y" }}</td>
                 <td class="text-end">
                   {% if current_role == "OWNER" and m.user_id != user.id %}
                     <form method="post" action="{% url 'web:member_remove' m.pk %}" class="d-inline">
@@ -35,7 +32,50 @@
         </table>
       </div>
     </div>
+
+    <div class="ip-section mt-3">
+      <h2 class="h6">Pending invitations</h2>
+      {% if invitations %}
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <caption class="visually-hidden">Pending invitations for {{ company.name }}</caption>
+            <thead><tr><th scope="col">Email</th><th scope="col">Role</th>
+              <th scope="col">Status</th><th scope="col"></th></tr></thead>
+            <tbody>
+              {% for inv in invitations %}
+                <tr>
+                  <td>{{ inv.email }}</td>
+                  <td><span class="badge text-bg-light">{{ inv.get_role_display }}</span></td>
+                  <td>
+                    {% if inv.is_expired %}
+                      <span class="text-danger-emphasis">Expired</span>
+                    {% else %}
+                      Invited &middot; expires {{ inv.expires_at|date:"j M Y" }}
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if current_role == "OWNER" %}
+                      <form method="post" action="{% url 'web:invite_resend' inv.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">Resend</button>
+                      </form>
+                      <form method="post" action="{% url 'web:invite_revoke' inv.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="ip-muted mb-0">No invitations are waiting to be accepted.</p>
+      {% endif %}
+    </div>
   </div>
+
   <div class="col-lg-5">
     <div class="ip-section">
       <h2 class="h6">Invite by email</h2>
@@ -49,11 +89,12 @@
               {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
             </div>
           {% endfor %}
-          <button class="btn btn-primary" type="submit">Add member</button>
+          {% for e in form.non_field_errors %}<div class="text-danger small mb-2">{{ e }}</div>{% endfor %}
+          <button class="btn btn-primary" type="submit">Send invitation</button>
         </form>
         <p class="ip-muted mt-3 mb-0">
-          If no account exists for that address we create an inactive placeholder
-          user; they must be activated (or sign up) before they can sign in.
+          We email a sign-up link that expires in 7 days. Nobody joins
+          {{ company.name }} until they accept it.
         </p>
       {% else %}
         <p class="ip-muted mb-0">Only company owners can invite or remove members.</p>

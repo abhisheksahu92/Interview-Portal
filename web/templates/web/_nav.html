@@ -9,6 +9,7 @@
       <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:settings_members' %}">Members</a>
       <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:settings_skills' %}">Skills</a>
       <a class="btn btn-sm btn-outline-secondary" href="{% url 'assessments:question_list' %}">Question bank</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'billing:overview' %}">Billing{% if billing_plan %} <span class="badge text-bg-light">{{ billing_plan.name }}</span>{% endif %}</a>
       <a class="btn btn-sm btn-primary ms-auto" href="{% url 'web:job_create' %}">New job</a>
     {% endif %}
   {% else %}

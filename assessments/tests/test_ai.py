@@ -134,3 +134,66 @@ def test_extract_resume_text_best_effort(candidate, settings, tmp_path):
     assert ai.extract_resume_text(candidate) == ""
     candidate.resume.save("cv.txt", ContentFile(b"Senior Python engineer"), save=True)
     assert "Senior Python engineer" in ai.extract_resume_text(candidate)
+
+
+@pytest.mark.django_db
+def test_summarize_fit_stores_structured_details(monkeypatch, application):
+    fake_client(
+        monkeypatch,
+        json.dumps(
+            {
+                "fit_score": 82,
+                "summary": "Good match. Missing AWS. Recommend a screen.",
+                "strengths": ["5 years Python", {"name": "Django"}],
+                "gaps": "No AWS exposure",
+                "flagged_skills": ["AWS"],
+            }
+        ),
+    )
+    assert ai.summarize_fit(application) == 82
+    application.refresh_from_db()
+    details = application.ai_details
+    assert details["fit_score"] == 82
+    assert details["strengths"] == ["5 years Python", "Django"]
+    assert details["gaps"] == ["No AWS exposure"]
+    assert details["flagged_skills"] == ["AWS"]
+    assert details["model"] == ai.MODEL
+    assert details["scored_at"]
+    assert details["resume_text_used"] is False
+
+
+@pytest.mark.django_db
+def test_summarize_fit_prompt_includes_resume_text(monkeypatch, application, tmp_path, settings):
+    from django.core.files.base import ContentFile
+
+    settings.MEDIA_ROOT = tmp_path
+    profile = application.candidate
+    profile.resume.save("cv.txt", ContentFile(b"Built Django REST services"), save=True)
+
+    messages = fake_client(monkeypatch, json.dumps({"fit_score": 60, "summary": "ok"}))
+    ai.summarize_fit(application)
+    prompt = messages.calls[0]["messages"][0]["content"]
+    assert "Built Django REST services" in prompt
+    assert "flagged_skills" in prompt
+    profile.refresh_from_db()
+    assert profile.resume_parsed_at is not None
+    application.refresh_from_db()
+    assert application.ai_details["resume_text_used"] is True
+
+
+@pytest.mark.django_db
+def test_summarize_fit_no_structured_output_on_old_sdk(monkeypatch, application):
+    """The mocked client has no ``messages.parse``, so no output_config is sent."""
+    messages = fake_client(monkeypatch, json.dumps({"fit_score": 10, "summary": "x"}))
+    ai.summarize_fit(application)
+    assert "output_config" not in messages.calls[0]
+
+
+@pytest.mark.django_db
+def test_summarize_fit_uses_structured_output_when_supported(monkeypatch, application):
+    messages = fake_client(monkeypatch, json.dumps({"fit_score": 30, "summary": "y"}))
+    messages.parse = lambda **kwargs: None  # pretend the SDK supports it
+    ai.summarize_fit(application)
+    fmt = messages.calls[0]["output_config"]["format"]
+    assert fmt["type"] == "json_schema"
+    assert fmt["schema"]["properties"]["fit_score"]["maximum"] == 100

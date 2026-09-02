@@ -1,0 +1,67 @@
+# Fly.io deployment for Interview Portal v2.
+#
+# One-time setup (see README "Deployment" for the full walkthrough):
+#   fly launch --no-deploy --copy-config --name interview-portal --region bom
+#   fly postgres create --name interview-portal-db --region bom
+#   fly postgres attach interview-portal-db      # sets DATABASE_URL
+#   fly secrets set SECRET_KEY=... ANTHROPIC_API_KEY=...
+#   fly deploy
+#
+# `release_command` runs migrations once per deploy, before the new machines
+# take traffic, so the entrypoint is told to skip them (SKIP_MIGRATE=1).
+
+app = "interview-portal"
+primary_region = "bom"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  release_command = "python manage.py migrate --noinput"
+  strategy = "rolling"
+
+[env]
+  PORT = "8000"
+  DEBUG = "False"
+  SKIP_MIGRATE = "1"
+  GUNICORN_WORKERS = "2"
+  GUNICORN_THREADS = "4"
+  GUNICORN_TIMEOUT = "60"
+  # Fly terminates TLS at the edge and proxies over HTTP; the app must trust
+  # the X-Forwarded-Proto header (see interview_portal/settings_checks.md).
+  ALLOWED_HOSTS = "interview-portal.fly.dev,.fly.dev"
+  CSRF_TRUSTED_ORIGINS = "https://interview-portal.fly.dev"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 40
+    hard_limit = 60
+
+  [[http_service.checks]]
+    grace_period = "15s"
+    interval = "30s"
+    timeout = "5s"
+    method = "GET"
+    path = "/healthz/"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# Uploaded resumes need durable storage. A Fly volume is per-machine and does
+# NOT survive machine replacement across regions, so prefer S3/R2 via
+# django-storages (see interview_portal/settings_checks.md). If you must use a
+# volume, scale to exactly one machine and uncomment:
+# [[mounts]]
+#   source = "media"
+#   destination = "/app/media"

@@ -10,5 +10,10 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("signup/", views.candidate_signup, name="candidate_signup"),
     path("signup/company/", views.company_signup, name="company_signup"),
+    path(
+        "invite/<str:token>/",
+        views.invite_accept,
+        name="invite_accept",
+    ),
     path("switch-company/", views.switch_company, name="switch_company"),
 ]

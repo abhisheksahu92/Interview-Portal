@@ -1,0 +1,10 @@
+Hello,
+
+{% if invited_by %}{{ invited_by.email }} has invited you{% else %}You have been invited{% endif %} to join {{ company.name }} on Interview Portal as {{ role }}.
+
+Accept the invitation here:
+{{ accept_url }}
+
+This link expires on {{ expires_at }}.
+
+If you were not expecting this invitation you can ignore this email.

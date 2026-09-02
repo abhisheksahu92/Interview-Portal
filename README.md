@@ -102,13 +102,101 @@ Tests run on SQLite and never need `collectstatic`; static files are served by
 WhiteNoise, with manifest hashing enabled only outside `DEBUG`/tests
 (`python manage.py collectstatic` before a production deploy).
 
-## Docker
+## Deployment
+
+The image is a two-stage `python:3.12-slim` build: deps are compiled into a
+virtualenv in the builder stage, the runtime stage carries only `libpq5` +
+`curl`, runs as the non-root user `app` (uid 10001), runs `collectstatic` at
+build time (with a throwaway `SECRET_KEY`, `DEBUG=False`, so manifest hashing
+is exercised in CI rather than at boot) and has a `HEALTHCHECK` on `/healthz/`.
+
+`scripts/entrypoint.sh` is the entrypoint: it waits for the database, runs
+`migrate`, optionally runs `seed_demo` (`SEED_DEMO=1`), then execs gunicorn.
+Passing any argument other than `gunicorn` runs that command instead
+(`docker compose run --rm web python manage.py createsuperuser`).
+
+| Var | Purpose |
+| --- | --- |
+| `SEED_DEMO=1` | load demo data after migrating (idempotent) |
+| `SKIP_MIGRATE=1` | skip migrations (set on Fly, whose `release_command` migrates) |
+| `DB_WAIT_TIMEOUT` | seconds to wait for the DB, default `60` |
+| `PORT` | gunicorn bind port, default `8000` |
+| `GUNICORN_WORKERS` / `GUNICORN_THREADS` / `GUNICORN_TIMEOUT` | `3` / `2` / `60` |
+
+> **Before the first production deploy** the settings owner must apply
+> `interview_portal/settings_checks.md` — most importantly the `/healthz/` view
+> (all three platforms' health checks hit it) and S3/R2 media storage, because
+> uploaded resumes on local disk are lost on every deploy on Fly and Railway.
+
+### Local Docker
+
 ```bash
-cp .env.example .env   # set DATABASE_URL=postgres://interview:interview@db:5432/interview_portal
+cp .env.example .env
+# set DATABASE_URL=postgres://interview:interview@db:5432/interview_portal
 docker compose up --build
+docker compose exec web python manage.py seed_demo   # optional demo data
 ```
-Brings up PostgreSQL 16 plus the app on http://localhost:8000/ (gunicorn, migrations
-run on start). Seed demo data with
-`docker compose exec web python manage.py seed_demo`.
+PostgreSQL 16 (healthchecked) plus the app on http://localhost:8000/. Uploads
+live on the `media` volume, DB data on `pgdata`.
+
+### Single-host production (docker compose)
+
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d --build
+docker compose -f docker-compose.yaml -f docker-compose.prod.yaml logs -f web
+```
+The overlay forces `DEBUG=False`, raises the worker count, sets
+`restart: always`, caps log files and binds the app to `127.0.0.1:8000` so a
+host reverse proxy (nginx/Caddy/Traefik) terminates TLS in front of it. Point
+`ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` at your real domain in `.env`.
+
+### Fly.io
+
+`fly.toml` is checked in: region `bom`, `release_command` runs migrations
+before new machines take traffic, `http_service` health-checks `/healthz/`,
+`force_https` on.
+
+```bash
+fly launch --no-deploy --copy-config --name interview-portal --region bom
+fly postgres create --name interview-portal-db --region bom
+fly postgres attach interview-portal-db          # injects DATABASE_URL
+fly secrets set SECRET_KEY="$(python -c 'import secrets;print(secrets.token_urlsafe(50))')"
+fly secrets set ANTHROPIC_API_KEY=sk-ant-...     # optional; unset = AI disabled
+fly deploy
+fly ssh console -C "python manage.py createsuperuser"
+```
+If you pick a different app name, update `app`, `ALLOWED_HOSTS` and
+`CSRF_TRUSTED_ORIGINS` in `fly.toml`. Resume uploads need object storage — set
+the S3/R2 vars from `settings_checks.md` as secrets, or (single machine only)
+uncomment the `[[mounts]]` block and `fly volumes create media`.
+
+### Railway
+
+`railway.json` builds from the `Dockerfile` and starts via the entrypoint, with
+the health check on `/healthz/`.
+
+```bash
+railway login
+railway init                     # or `railway link` to an existing project
+railway add --database postgres   # injects DATABASE_URL
+railway variables --set SECRET_KEY=... --set DEBUG=False \
+  --set ALLOWED_HOSTS=<service>.up.railway.app \
+  --set CSRF_TRUSTED_ORIGINS=https://<service>.up.railway.app
+railway up
+```
+Use the private `*.railway.internal` Postgres URL to avoid egress charges.
+Railway's filesystem is ephemeral, so configure S3/R2 media storage.
+
+### CI/CD
+
+`.github/workflows/ci.yml` lints and tests every branch.
+`.github/workflows/deploy.yml` runs on pushes to `main`: ruff, `check --deploy`,
+`makemigrations --check`, pytest and `collectstatic`, then `flyctl deploy`. The
+deploy job is **skipped** unless the `FLY_API_TOKEN` repository secret exists,
+so the workflow is safe to merge before you have a Fly account:
+
+```bash
+fly tokens create deploy -x 999999h     # paste into Settings > Secrets > FLY_API_TOKEN
+```
 
 Legacy v1 code lives in `legacy/` and is excluded from lint/tests. Do not import from it.

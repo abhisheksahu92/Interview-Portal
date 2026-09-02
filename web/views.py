@@ -9,7 +9,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from core.models import Membership
+from core.emails import send_invitation
+from core.models import Invitation, Membership
 from core.permissions import for_company, role_required
 from jobs.models import (
     Application,
@@ -312,32 +313,67 @@ def interviewer_queue(request):
 @role_required(*STAFF_ROLES)
 def settings_members(request):
     company = request.company
-    form = InviteForm(request.POST or None, company=company)
+    form = InviteForm(
+        request.POST or None, company=company, invited_by=request.user
+    )
     if request.method == "POST":
         if request.user.role_in(company) != Membership.OWNER:
             raise PermissionDenied("Only owners can manage members.")
         if form.is_valid():
-            membership = form.save()
-            if form.created_user:
-                messages.warning(
-                    request,
-                    f"{membership.user.email} had no account, so an inactive "
-                    "placeholder was created. They must be activated (or sign up) "
-                    "before they can log in.",
-                )
-            else:
-                messages.success(request, f"{membership.user.email} added.")
+            invitation = form.save()
+            send_invitation(invitation, request)
+            messages.success(
+                request, f"Invitation sent to {invitation.email}."
+            )
             return redirect("web:settings_members")
     memberships = (
         Membership.objects.filter(company=company)
         .select_related("user")
         .order_by("role", "user__email")
     )
+    invitations = [
+        inv
+        for inv in Invitation.objects.filter(
+            company=company, accepted_at__isnull=True
+        ).select_related("invited_by")
+    ]
     return render(
         request,
         "web/settings_members.html",
-        {"form": form, "memberships": memberships, "company": company},
+        {
+            "form": form,
+            "memberships": memberships,
+            "invitations": invitations,
+            "company": company,
+        },
     )
+
+
+@login_required
+@role_required(Membership.OWNER)
+@require_POST
+def invite_resend(request, pk):
+    invitation = get_object_or_404(
+        Invitation.objects.filter(company=request.company, accepted_at__isnull=True),
+        pk=pk,
+    )
+    invitation.refresh_token()
+    send_invitation(invitation, request)
+    messages.success(request, f"Invitation re-sent to {invitation.email}.")
+    return redirect("web:settings_members")
+
+
+@login_required
+@role_required(Membership.OWNER)
+@require_POST
+def invite_revoke(request, pk):
+    invitation = get_object_or_404(
+        Invitation.objects.filter(company=request.company), pk=pk
+    )
+    email = invitation.email
+    invitation.delete()
+    messages.success(request, f"Invitation for {email} revoked.")
+    return redirect("web:settings_members")
 
 
 @login_required

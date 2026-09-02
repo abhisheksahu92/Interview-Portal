@@ -23,6 +23,10 @@ env = environ.Env(
     EMAIL_USE_TLS=(bool, False),
     DEFAULT_FROM_EMAIL=(str, "no-reply@interview-portal.local"),
     ANTHROPIC_API_KEY=(str, ""),
+    STRIPE_SECRET_KEY=(str, ""),
+    STRIPE_PUBLISHABLE_KEY=(str, ""),
+    STRIPE_WEBHOOK_SECRET=(str, ""),
+    STRIPE_PRICE_ID_PRO=(str, ""),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -59,6 +63,7 @@ LOCAL_APPS = [
     "assessments",
     "api",
     "web",
+    "billing",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -90,6 +95,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.tenant",
+                "billing.context_processors.billing",
             ],
         },
     },
@@ -196,3 +202,9 @@ SPECTACULAR_SETTINGS = {
 
 # --- AI -------------------------------------------------------------------
 ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY")
+
+# --- Billing (Stripe) -----------------------------------------------------
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = env("STRIPE_PUBLISHABLE_KEY")
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
+STRIPE_PRICE_ID_PRO = env("STRIPE_PRICE_ID_PRO")

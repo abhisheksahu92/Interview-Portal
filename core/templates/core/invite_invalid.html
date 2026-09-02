@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Invitation unavailable · Interview Portal{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-danger">
+      <div class="card-body">
+        <h1 class="h4 mb-2">This invitation cannot be used</h1>
+        <p class="mb-3">{{ reason }}</p>
+        <a class="btn btn-outline-secondary" href="{% url 'core:login' %}">Go to sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

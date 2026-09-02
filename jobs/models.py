@@ -166,6 +166,9 @@ class CandidateProfile(models.Model):
     experience_years = models.DecimalField(max_digits=4, decimal_places=1, default=0)
     notice_period_days = models.PositiveIntegerField(default=0)
     resume = models.FileField(upload_to="resumes/", blank=True)
+    resume_text = models.TextField(blank=True)
+    resume_hash = models.CharField(max_length=64, blank=True)
+    resume_parsed_at = models.DateTimeField(null=True, blank=True)
     headline = models.CharField(max_length=200, blank=True)
     skills = models.ManyToManyField(Skill, blank=True, related_name="candidates")
 
@@ -204,6 +207,7 @@ class Application(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=ACTIVE)
     ai_summary = models.TextField(blank=True)
     ai_fit_score = models.PositiveSmallIntegerField(null=True, blank=True)
+    ai_details = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

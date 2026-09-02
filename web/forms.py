@@ -2,7 +2,7 @@
 
 from django import forms
 
-from core.models import Membership, User
+from core.models import Invitation, Membership
 from jobs.models import CandidateProfile, Job, PipelineStage, Skill, StageReview
 
 
@@ -100,36 +100,53 @@ class SkillForm(BootstrapMixin, forms.ModelForm):
 
 
 class InviteForm(BootstrapMixin, forms.Form):
+    """Create a pending core.Invitation for an email address."""
+
     email = forms.EmailField()
     role = forms.ChoiceField(choices=Membership.ROLE_CHOICES)
 
-    def __init__(self, *args, company=None, **kwargs):
+    def __init__(self, *args, company=None, invited_by=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.company = company
-        self.created_user = False
+        self.invited_by = invited_by
 
     def clean_email(self):
         return self.cleaned_data["email"].strip().lower()
 
+    def clean(self):
+        cleaned = super().clean()
+        email = cleaned.get("email")
+        if email and self.company is not None:
+            if Membership.objects.filter(
+                company=self.company, user__email__iexact=email
+            ).exists():
+                self.add_error("email", "That person is already a member.")
+        return cleaned
+
     def save(self):
-        """Create the Membership, creating an inactive placeholder user if needed."""
+        """Create (or refresh) the invitation.
+
+        An existing account for the address is fine: we still send an invite
+        rather than silently adding them to the company.
+        """
         email = self.cleaned_data["email"]
-        user = User.objects.filter(email__iexact=email).first()
-        if user is None:
-            user = User.objects.create_user(email=email, password=None)
-            user.is_active = False
-            user.set_unusable_password()
-            user.save(update_fields=["is_active", "password"])
-            self.created_user = True
-        membership, _ = Membership.objects.get_or_create(
-            user=user,
-            company=self.company,
-            defaults={"role": self.cleaned_data["role"]},
-        )
-        if membership.role != self.cleaned_data["role"]:
-            membership.role = self.cleaned_data["role"]
-            membership.save(update_fields=["role"])
-        return membership
+        role = self.cleaned_data["role"]
+        invitation = Invitation.objects.filter(
+            company=self.company, email=email, accepted_at__isnull=True
+        ).first()
+        if invitation is None:
+            invitation = Invitation.objects.create(
+                company=self.company,
+                email=email,
+                role=role,
+                invited_by=self.invited_by,
+            )
+        else:
+            invitation.role = role
+            invitation.token = Invitation.new_token()
+            invitation.expires_at = Invitation.default_expiry()
+            invitation.save(update_fields=["role", "token", "expires_at"])
+        return invitation
 
 
 class CandidateProfileForm(BootstrapMixin, forms.ModelForm):
