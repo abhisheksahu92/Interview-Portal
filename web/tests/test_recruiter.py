@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 
 from core.models import User
-from jobs.models import Application, PipelineStage, StageReview
+from jobs.models import Application, Job, PipelineStage, StageReview
 
 
 @pytest.mark.django_db
@@ -118,6 +118,66 @@ def test_job_create_seeds_pipeline(client, owner, company):
     assert response.status_code == 302
     job = company.jobs.get(title="SRE")
     assert job.stages.count() == len(job.DEFAULT_STAGES)
+
+
+@pytest.mark.django_db
+def test_job_create_at_free_plan_limit_shows_form_error(client, owner, company):
+    """A metered FREE company opening a second job gets a form error, not a 500."""
+    from billing.models import Subscription
+    from billing.services import free_plan
+
+    Subscription.objects.create(
+        company=company, plan=free_plan(), status=Subscription.ACTIVE
+    )
+    Job.objects.create(company=company, title="Existing", status=Job.OPEN)
+
+    client.force_login(owner)
+    response = client.post(
+        reverse("web:job_create"),
+        {
+            "title": "Second",
+            "location": "Pune",
+            "employment_type": "FULL_TIME",
+            "status": "OPEN",
+            "description": "d",
+            "requirements": "r",
+        },
+    )
+    assert response.status_code == 200
+    assert not company.jobs.filter(title="Second").exists()
+    form = response.context["form"]
+    assert form.errors
+    assert "Upgrade" in response.content.decode()
+    assert reverse("billing:overview") in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_job_edit_to_open_at_free_plan_limit_shows_form_error(client, owner, company):
+    from billing.models import Subscription
+    from billing.services import free_plan
+
+    Subscription.objects.create(
+        company=company, plan=free_plan(), status=Subscription.ACTIVE
+    )
+    Job.objects.create(company=company, title="Existing", status=Job.OPEN)
+    draft = Job.objects.create(company=company, title="Draft", status=Job.DRAFT)
+
+    client.force_login(owner)
+    response = client.post(
+        reverse("web:job_edit", args=[draft.pk]),
+        {
+            "title": "Draft",
+            "location": "Pune",
+            "employment_type": "FULL_TIME",
+            "status": "OPEN",
+            "description": "d",
+            "requirements": "r",
+        },
+    )
+    assert response.status_code == 200
+    draft.refresh_from_db()
+    assert draft.status == Job.DRAFT
+    assert response.context["form"].errors
 
 
 @pytest.mark.django_db

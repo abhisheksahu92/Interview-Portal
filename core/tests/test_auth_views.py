@@ -117,3 +117,10 @@ def test_seed_demo_command():
     call_command("seed_demo", verbosity=0)
     assert User.objects.count() == 7
     assert company.jobs.count() == 2
+
+
+def test_healthz_needs_no_auth_or_database(client):
+    """The container/Fly/Railway probe: no login, no tenant, no DB access."""
+    response = client.get("/healthz/")
+    assert response.status_code == 200
+    assert response.content == b"ok"

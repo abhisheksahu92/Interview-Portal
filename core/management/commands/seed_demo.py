@@ -6,6 +6,8 @@ review. Idempotent -- re-running only tops up what is missing.
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from billing.models import Subscription
+from billing.services import pro_plan, set_plan
 from core.models import Company, Membership, User
 
 DEMO_PASSWORD = "demo1234"
@@ -103,6 +105,20 @@ class Command(BaseCommand):
         self.stdout.write(
             f"{'Created' if created else 'Reusing'} company: {company.name} ({company.slug})"
         )
+
+        # --- billing ------------------------------------------------------
+        # The demo seeds more than one OPEN job, which the FREE plan forbids
+        # (billing enforces the limit via a pre_save signal on Job), so give
+        # the demo company a PRO subscription before any job is created.
+        plan = pro_plan()
+        subscription = Subscription.objects.filter(company=company).first()
+        if subscription is None:
+            subscription = Subscription.objects.create(
+                company=company, plan=plan, status=Subscription.ACTIVE
+            )
+        elif subscription.plan_id != plan.pk or not subscription.is_usable:
+            set_plan(subscription, plan, status=Subscription.ACTIVE)
+        self.stdout.write(f"  plan: {subscription.plan.name}")
 
         # --- team ---------------------------------------------------------
         team = {}

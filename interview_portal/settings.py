@@ -27,6 +27,14 @@ env = environ.Env(
     STRIPE_PUBLISHABLE_KEY=(str, ""),
     STRIPE_WEBHOOK_SECRET=(str, ""),
     STRIPE_PRICE_ID_PRO=(str, ""),
+    CSRF_TRUSTED_ORIGINS=(list, []),
+    LOG_LEVEL=(str, "INFO"),
+    DJANGO_LOG_LEVEL=(str, "INFO"),
+    AWS_STORAGE_BUCKET_NAME=(str, ""),
+    AWS_S3_REGION_NAME=(str, "auto"),
+    AWS_S3_ENDPOINT_URL=(str, ""),
+    AWS_ACCESS_KEY_ID=(str, ""),
+    AWS_SECRET_ACCESS_KEY=(str, ""),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -112,6 +120,15 @@ DATABASES = {
     )
 }
 
+# Persistent connections: managed Postgres has a low connection cap, but
+# CONN_MAX_AGE must stay 0 under pytest (it breaks test-database teardown).
+DATABASES["default"]["CONN_MAX_AGE"] = env.int(
+    "CONN_MAX_AGE", default=0 if (DEBUG or TESTING) else 60
+)
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = not (DEBUG or TESTING)
+if DATABASES["default"].get("ENGINE", "").endswith("postgresql"):
+    DATABASES["default"].setdefault("OPTIONS", {}).setdefault("connect_timeout", 5)
+
 # --- Auth -----------------------------------------------------------------
 AUTH_USER_MODEL = "core.User"
 
@@ -156,6 +173,30 @@ STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": _STATIC_BACKEND},
 }
+
+# Object storage for user uploads (resumes). Only active when a bucket is
+# configured, so local dev and tests keep using the filesystem. Works with S3
+# and Cloudflare R2 (AWS_S3_ENDPOINT_URL + AWS_S3_REGION_NAME=auto).
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+if AWS_STORAGE_BUCKET_NAME:
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "region_name": env("AWS_S3_REGION_NAME"),
+            "endpoint_url": env("AWS_S3_ENDPOINT_URL") or None,
+            "access_key": env("AWS_ACCESS_KEY_ID"),
+            "secret_key": env("AWS_SECRET_ACCESS_KEY"),
+            "default_acl": "private",
+            "querystring_auth": True,  # resumes are served as signed URLs only
+            "file_overwrite": False,
+            "signature_version": "s3v4",
+        },
+    }
+
+# Cap upload sizes (resumes are small documents).
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 WHITENOISE_AUTOREFRESH = DEBUG or TESTING
 
@@ -208,3 +249,54 @@ STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = env("STRIPE_PUBLISHABLE_KEY")
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
 STRIPE_PRICE_ID_PRO = env("STRIPE_PRICE_ID_PRO")
+
+
+# --- Security / proxy -----------------------------------------------------
+# Fly.io and Railway terminate TLS at the edge and forward plain HTTP.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=not (DEBUG or TESTING))
+SECURE_REDIRECT_EXEMPT = [r"^healthz/$"]
+
+SESSION_COOKIE_SECURE = not (DEBUG or TESTING)
+CSRF_COOKIE_SECURE = not (DEBUG or TESTING)
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # HTMX reads the CSRF token from the cookie
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+X_FRAME_OPTIONS = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Must include the scheme, e.g. https://interview-portal.fly.dev
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+
+SECURE_HSTS_SECONDS = env.int(
+    "SECURE_HSTS_SECONDS", default=0 if (DEBUG or TESTING) else 31536000
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# --- Logging (containers collect stdout/stderr) ---------------------------
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
+    },
+    "root": {"handlers": ["console"], "level": env("LOG_LEVEL")},
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": env("DJANGO_LOG_LEVEL"),
+            "propagate": False,
+        },
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        # assessments.ai logs when ANTHROPIC_API_KEY is missing — keep it visible.
+        "assessments": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "billing": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}

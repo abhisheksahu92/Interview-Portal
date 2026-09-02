@@ -64,6 +64,9 @@ else
     log "SKIP_MIGRATE=1; skipping migrations"
 fi
 
+log "provisioning billing subscriptions"
+python manage.py provision_subscriptions
+
 if [ "${SEED_DEMO:-0}" = "1" ]; then
     log "seeding demo data"
     python manage.py seed_demo

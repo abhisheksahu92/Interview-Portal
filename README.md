@@ -22,6 +22,10 @@ Django 5 + DRF + HTMX/Bootstrap 5. See `ARCHITECTURE.md` for the full design.
   free-text answers, and summarize a resume against the job into an
   `ai_summary` + `ai_fit_score` (fired automatically on every new application).
   All AI degrades gracefully: with no `ANTHROPIC_API_KEY` it logs and no-ops.
+- **Team invitations** — owners invite teammates by email with a role; a signed
+  token link (7-day expiry) creates the membership on accept.
+- **Billing** — FREE/PRO plans metered on open jobs, Stripe Checkout + customer
+  portal + webhooks; with no Stripe keys the plan/usage page still works.
 - **REST API** — DRF viewsets for everything, token auth, OpenAPI schema + Swagger UI.
 
 ## Apps
@@ -31,6 +35,7 @@ Django 5 + DRF + HTMX/Bootstrap 5. See `ARCHITECTURE.md` for the full design.
 | `jobs` | Domain only: jobs, configurable pipeline stages, applications, stage reviews, candidate profiles, transition services |
 | `assessments` | Question banks, assessments, attempts, Claude-powered generation/grading, recruiter + candidate screens |
 | `api` | DRF viewsets, token auth, OpenAPI schema (drf-spectacular) |
+| `billing` | Plans, per-company subscriptions, Stripe checkout/portal/webhooks, open-job plan limits |
 | `web` | **Canonical server-rendered UI**: landing, recruiter dashboard/kanban, candidate portal, interviewer reviews, company settings |
 
 ## Quick start
@@ -72,6 +77,10 @@ at `/accounts/signup/candidate/`.
 | `/assessments/questions/` | Question bank |
 | `/api/v1/` | REST API root |
 | `/api/docs/` | Swagger UI (schema at `/api/schema/`) |
+| `/billing/` | Plan, usage and upgrade |
+| `/billing/webhook/` | Stripe webhook endpoint (POST, no auth, signature-verified) |
+| `/settings/members/` | Members and invitations |
+| `/healthz/` | Liveness probe (`ok`, no auth, no DB) |
 | `/admin/` | Django admin |
 
 API clients authenticate with `POST /api/v1/auth/token/` (email + password) and then
@@ -88,6 +97,13 @@ Copy `.env.example` to `.env`; everything is read from the environment.
 | `DATABASE_URL` | `sqlite:///db_v2.sqlite3` | e.g. `postgres://user:pass@db:5432/interview_portal` |
 | `ANTHROPIC_API_KEY` | empty | enables the Claude features; unset = AI disabled |
 | `EMAIL_BACKEND` / `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_TLS` / `DEFAULT_FROM_EMAIL` | console backend | outbound mail |
+| `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_ID_PRO` | empty | enable Stripe billing; unset = plan/usage shown, upgrade disabled |
+| `CSRF_TRUSTED_ORIGINS` | empty | **required in production**, comma-separated, scheme included (`https://app.example.com`) |
+| `SECURE_SSL_REDIRECT` | on when `DEBUG=False` | turn off behind a plain-HTTP host |
+| `SECURE_HSTS_SECONDS` | `31536000` outside DEBUG | start lower on a custom apex domain |
+| `CONN_MAX_AGE` | `60` outside DEBUG/tests | persistent DB connections; must stay `0` under pytest |
+| `LOG_LEVEL` / `DJANGO_LOG_LEVEL` | `INFO` | logging goes to stdout |
+| `AWS_STORAGE_BUCKET_NAME` / `AWS_S3_REGION_NAME` / `AWS_S3_ENDPOINT_URL` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | empty | set the bucket to move media (resumes) to S3/Cloudflare R2 |
 | `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | `interview_portal` / `interview` / `interview` | used by the compose `db` service |
 
 ## Tests and checks
@@ -95,12 +111,103 @@ Copy `.env.example` to `.env`; everything is read from the environment.
 .venv/bin/ruff check .
 .venv/bin/python manage.py check
 .venv/bin/python manage.py makemigrations --check --dry-run
-.venv/bin/pytest                                  # 139 tests
+.venv/bin/pytest                                  # 220 tests
 .venv/bin/python manage.py spectacular --file /dev/null   # schema must be warning-free
 ```
 Tests run on SQLite and never need `collectstatic`; static files are served by
 WhiteNoise, with manifest hashing enabled only outside `DEBUG`/tests
 (`python manage.py collectstatic` before a production deploy).
+
+## Invitations
+
+Owners invite teammates from `/settings/members/`: pick an email + role, and the
+app stores an `Invitation` with a random token that expires after 7 days and
+mails a link to `/accounts/invite/<token>/`. Accepting creates the `Membership`
+(signing up first if the invitee has no account). Pending invitations can be
+resent or revoked from the same page. With the default console email backend the
+link is printed to the server log, which is enough for local testing.
+
+## Billing
+
+`billing/` meters **open jobs** per company:
+
+- `Plan` rows (`FREE`, `max_open_jobs=1`; `PRO`, `max_open_jobs=25`) are seeded by
+  a data migration.
+- Each company gets a `Subscription` lazily (first visit to `/billing/`, a Stripe
+  checkout, or `manage.py provision_subscriptions`).
+- A `pre_save` signal on `jobs.Job` raises `ValidationError` when a save would push
+  the company past its open-job limit. Companies with **no** `Subscription` row are
+  never metered, so fixtures and imports predating billing keep working. The web
+  job form catches the error and shows an upgrade link.
+
+Stripe env vars (all optional — without them `/billing/` still shows plan and
+usage, only upgrade/portal buttons are disabled):
+
+| Var | Where to find it |
+| --- | --- |
+| `STRIPE_SECRET_KEY` | Stripe dashboard → Developers → API keys (`sk_test_...`) |
+| `STRIPE_PUBLISHABLE_KEY` | same page (`pk_test_...`) |
+| `STRIPE_PRICE_ID_PRO` | Products → your Pro price (`price_...`), recurring monthly |
+| `STRIPE_WEBHOOK_SECRET` | Developers → Webhooks → your endpoint (`whsec_...`) |
+
+Webhook URL: **`https://<your-domain>/billing/webhook/`** — subscribe to
+`checkout.session.completed`, `customer.subscription.updated` and
+`customer.subscription.deleted`. Requests are signature-verified with
+`STRIPE_WEBHOOK_SECRET`; the endpoint is CSRF-exempt and unauthenticated by design.
+
+Test-mode setup:
+
+```bash
+stripe login
+stripe listen --forward-to localhost:8000/billing/webhook/   # prints whsec_...
+# put that value in .env as STRIPE_WEBHOOK_SECRET, restart runserver
+```
+Then upgrade from `/billing/` and pay with the test card `4242 4242 4242 4242`,
+any future expiry and any CVC.
+
+Give every existing company a billing record after deploying billing:
+
+```bash
+.venv/bin/python manage.py provision_subscriptions
+```
+(the container entrypoint runs this automatically after `migrate`).
+
+## Resume parsing and AI re-scoring
+
+`assessments/resume.py` extracts plain text from an uploaded resume (PDF via
+`pypdf`, DOCX via `python-docx`, plain text otherwise), caps it at 12k characters
+and caches it on the candidate profile, re-parsing only when the file changes.
+Both parsers are imported lazily, so a deployment without them still runs — it
+just gets less text. The text feeds `assessments.ai.summarize_fit`, which writes
+`Application.ai_summary` and `ai_fit_score` when a candidate applies.
+
+Applications created while `ANTHROPIC_API_KEY` was unset have no score. Backfill
+them (or re-score after a prompt change):
+
+```bash
+.venv/bin/python manage.py rescore_applications --missing-only --all
+.venv/bin/python manage.py rescore_applications --company demo-staffing
+.venv/bin/python manage.py rescore_applications --job 1
+```
+
+## Production checklist
+
+1. `SECRET_KEY` set to a long random value, `DEBUG=False`.
+2. `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` (with scheme) point at the real domain.
+3. `DATABASE_URL` points at managed Postgres; `CONN_MAX_AGE` left at the default `60`.
+4. Object storage configured (`AWS_STORAGE_BUCKET_NAME` + keys) — otherwise resumes
+   are lost on every deploy on Fly/Railway.
+5. TLS terminated at the edge; `SECURE_SSL_REDIRECT` on (`/healthz/` is exempt).
+6. `python manage.py check --deploy` is clean (see below).
+7. `migrate` and `provision_subscriptions` run on release; `collectstatic` at build.
+8. Stripe live keys + a webhook pointed at `/billing/webhook/`, or leave billing
+   in display-only mode.
+9. `ANTHROPIC_API_KEY` set if AI screening should be on.
+10. A superuser exists (`manage.py createsuperuser`) and `/healthz/` returns `ok`.
+
+`DEBUG=0 SECRET_KEY=<real key> ALLOWED_HOSTS=example.com python manage.py check --deploy`
+reports **no warnings**. (Using a short placeholder key raises `security.W009`,
+which is about the placeholder, not the configuration.)
 
 ## Deployment
 
@@ -111,7 +218,8 @@ build time (with a throwaway `SECRET_KEY`, `DEBUG=False`, so manifest hashing
 is exercised in CI rather than at boot) and has a `HEALTHCHECK` on `/healthz/`.
 
 `scripts/entrypoint.sh` is the entrypoint: it waits for the database, runs
-`migrate`, optionally runs `seed_demo` (`SEED_DEMO=1`), then execs gunicorn.
+`migrate`, runs `provision_subscriptions`, optionally runs `seed_demo`
+(`SEED_DEMO=1`), then execs gunicorn.
 Passing any argument other than `gunicorn` runs that command instead
 (`docker compose run --rm web python manage.py createsuperuser`).
 
@@ -123,10 +231,9 @@ Passing any argument other than `gunicorn` runs that command instead
 | `PORT` | gunicorn bind port, default `8000` |
 | `GUNICORN_WORKERS` / `GUNICORN_THREADS` / `GUNICORN_TIMEOUT` | `3` / `2` / `60` |
 
-> **Before the first production deploy** the settings owner must apply
-> `interview_portal/settings_checks.md` — most importantly the `/healthz/` view
-> (all three platforms' health checks hit it) and S3/R2 media storage, because
-> uploaded resumes on local disk are lost on every deploy on Fly and Railway.
+See the **Production checklist** above before the first deploy; the biggest item
+is S3/R2 media storage, since uploaded resumes on local disk are lost on every
+deploy on Fly and Railway.
 
 ### Local Docker
 
@@ -167,7 +274,7 @@ fly ssh console -C "python manage.py createsuperuser"
 ```
 If you pick a different app name, update `app`, `ALLOWED_HOSTS` and
 `CSRF_TRUSTED_ORIGINS` in `fly.toml`. Resume uploads need object storage — set
-the S3/R2 vars from `settings_checks.md` as secrets, or (single machine only)
+the S3/R2 vars (see the env table) as secrets, or (single machine only)
 uncomment the `[[mounts]]` block and `fly volumes create media`.
 
 ### Railway

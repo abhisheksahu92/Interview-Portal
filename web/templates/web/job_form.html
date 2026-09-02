@@ -7,6 +7,12 @@
 <div class="ip-section">
   <form method="post" novalidate>
     {% csrf_token %}
+    {% if plan_limit_hit %}
+      <div class="alert alert-warning">
+        Your plan's open-job limit is reached.
+        <a href="{% url 'billing:overview' %}">Upgrade your plan</a> or close an existing job.
+      </div>
+    {% endif %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
     {% for field in form %}
       <div class="mb-3">
