@@ -5,10 +5,12 @@
   <ul class="list-group">
     {% for q in created %}
       <li class="list-group-item">
-        <div>{{ q.text }}</div>
+        <div class="fw-medium">{{ q.text }}</div>
         {% if q.options %}
-          <ol class="small text-muted mb-0" start="0">
-            {% for opt in q.options %}<li>{{ opt }}{% if forloop.counter0 == q.correct_option %} <span class="badge text-bg-success">correct</span>{% endif %}</li>{% endfor %}
+          <ol class="small ip-muted mb-0 mt-2" start="0">
+            {% for opt in q.options %}
+              <li>{{ opt }}{% if forloop.counter0 == q.correct_option %} <span class="ip-badge ip-badge--success">correct</span>{% endif %}</li>
+            {% endfor %}
           </ol>
         {% endif %}
       </li>

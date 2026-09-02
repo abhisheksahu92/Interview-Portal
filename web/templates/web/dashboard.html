@@ -1,64 +1,97 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}
 {% block title %}Dashboard · {{ company.name }}{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>{{ company.name }}</h1>
+    <p>Recruiting overview across every open pipeline.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:interviewer_queue' %}">
+      <i class="bi bi-inbox me-1" aria-hidden="true"></i>My queue</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'web:job_create' %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New job</a>
+  </div>
+</div>
+{% endblock %}
 {% block content %}
-{% include "web/_nav.html" %}
-<h1 class="h3 mb-1">{{ company.name }}</h1>
-<p class="ip-muted">Recruiting overview</p>
 
 <div class="row g-3 mb-4">
   <div class="col-6 col-lg-3">
-    <div class="ip-kpi"><div class="ip-kpi__label">Open jobs</div>
-      <div class="ip-kpi__value">{{ kpis.open_jobs }}</div></div>
+    <div class="ip-kpi">
+      <div class="ip-kpi__label">Open jobs</div>
+      <div class="ip-kpi__value">{{ kpis.open_jobs }}</div>
+      <div class="ip-kpi__trend">of {{ jobs|length }} total posting{{ jobs|length|pluralize }}</div>
+    </div>
   </div>
   <div class="col-6 col-lg-3">
-    <div class="ip-kpi"><div class="ip-kpi__label">Active applications</div>
-      <div class="ip-kpi__value">{{ kpis.active_applications }}</div></div>
+    <div class="ip-kpi">
+      <div class="ip-kpi__label">Active applications</div>
+      <div class="ip-kpi__value">{{ kpis.active_applications }}</div>
+      <div class="ip-kpi__trend">currently moving through a stage</div>
+    </div>
   </div>
   <div class="col-6 col-lg-3">
-    <div class="ip-kpi"><div class="ip-kpi__label">Hires this month</div>
-      <div class="ip-kpi__value">{{ kpis.hires_this_month }}</div></div>
+    <div class="ip-kpi">
+      <div class="ip-kpi__label">Hires this month</div>
+      <div class="ip-kpi__value">{{ kpis.hires_this_month }}</div>
+      <div class="ip-kpi__trend">reached the final stage</div>
+    </div>
   </div>
   <div class="col-6 col-lg-3">
-    <div class="ip-kpi"><div class="ip-kpi__label">Avg fit score</div>
+    <div class="ip-kpi">
+      <div class="ip-kpi__label">Avg fit score</div>
       <div class="ip-kpi__value">
         {% if kpis.avg_fit_score %}{{ kpis.avg_fit_score|floatformat:0 }}{% else %}—{% endif %}
-      </div></div>
+      </div>
+      <div class="ip-kpi__trend">
+        {% if kpis.avg_fit_score %}AI résumé match, 0–100{% else %}no AI scores yet{% endif %}
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="ip-section">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h5 mb-0">Jobs</h2>
-    <a class="btn btn-sm btn-primary" href="{% url 'web:job_create' %}">New job</a>
+<section class="ip-section" id="jobs">
+  <div class="ip-section__head">
+    <h2>Jobs</h2>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_create' %}">New job</a>
   </div>
-  <div class="table-responsive">
-    <table class="table align-middle mb-0">
-      <caption class="visually-hidden">Jobs at {{ company.name }}</caption>
-      <thead>
-        <tr>
-          <th scope="col">Title</th><th scope="col">Location</th>
-          <th scope="col">Type</th><th scope="col">Status</th>
-          <th scope="col" class="text-end">Applications</th><th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for job in jobs %}
+  {% if jobs %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Jobs at {{ company.name }}</caption>
+        <thead>
           <tr>
-            <td><a href="{% url 'web:job_detail' job.pk %}">{{ job.title }}</a></td>
-            <td>{{ job.location|default:"—" }}</td>
-            <td>{{ job.get_employment_type_display }}</td>
-            <td><span class="badge text-bg-{% if job.status == 'OPEN' %}success{% elif job.status == 'DRAFT' %}secondary{% else %}dark{% endif %}">{{ job.get_status_display }}</span></td>
-            <td class="text-end">{{ job.application_count }}</td>
-            <td class="text-end">
-              <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_detail' job.pk %}">Board</a>
-            </td>
+            <th scope="col">Title</th><th scope="col">Location</th>
+            <th scope="col">Type</th><th scope="col">Status</th>
+            <th scope="col" class="text-end">Applications</th><th scope="col"></th>
           </tr>
-        {% empty %}
-          <tr><td colspan="6" class="ip-muted">No jobs yet. Create your first opening.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+        </thead>
+        <tbody>
+          {% for job in jobs %}
+            <tr>
+              <td><a class="fw-semibold" href="{% url 'web:job_detail' job.pk %}">{{ job.title }}</a></td>
+              <td class="ip-muted">{{ job.location|default:"—" }}</td>
+              <td class="ip-muted">{{ job.get_employment_type_display }}</td>
+              <td>
+                <span class="ip-badge ip-badge--{% if job.status == 'OPEN' %}success{% elif job.status == 'DRAFT' %}neutral{% else %}danger{% endif %}">{{ job.get_status_display }}</span>
+              </td>
+              <td class="text-end">{{ job.application_count }}</td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_detail' job.pk %}">Board</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-briefcase"></i></span>
+      <div class="ip-empty__title">No jobs yet</div>
+      <p>Create your first opening and we will seed a six-stage pipeline for you automatically.</p>
+      <a class="btn btn-primary" href="{% url 'web:job_create' %}">Create your first job</a>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

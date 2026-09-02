@@ -1,29 +1,39 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}
 {% block title %}Stages · {{ job.title }}{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-muted small mb-1">
+      <a href="{% url 'web:job_detail' job.pk %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to board</a>
+    </p>
+    <h1>Pipeline stages</h1>
+    <p>{{ job.title }}</p>
+  </div>
+</div>
+{% endblock %}
 {% block content %}
-{% include "web/_nav.html" %}
-<h1 class="h3 mb-1">Pipeline stages</h1>
-<p class="ip-muted">{{ job.title }} · <a href="{% url 'web:job_detail' job.pk %}">back to board</a></p>
 <div class="row g-3">
   <div class="col-lg-7">
-    <div class="ip-section">
-      <div class="table-responsive">
-        <table class="table align-middle mb-0">
+    <section class="ip-section">
+      <div class="ip-table-wrap">
+        <table class="ip-table">
           <caption class="visually-hidden">Stages for {{ job.title }}</caption>
           <thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Kind</th>
             <th scope="col">Assessment</th><th scope="col"></th></tr></thead>
           <tbody>
             {% for stage in stages %}
               <tr>
-                <td>{{ stage.order }}</td>
-                <td>{{ stage.name }}</td>
-                <td>{{ stage.get_kind_display }}</td>
-                <td>{% if stage.requires_assessment %}Required{% else %}—{% endif %}</td>
+                <td class="ip-muted">{{ stage.order }}</td>
+                <td class="fw-semibold">{{ stage.name }}</td>
+                <td><span class="ip-badge ip-badge--neutral">{{ stage.get_kind_display }}</span></td>
+                <td>{% if stage.requires_assessment %}<span class="ip-badge ip-badge--accent">Required</span>{% else %}<span class="ip-muted">—</span>{% endif %}</td>
                 <td class="text-end">
                   <form method="post" action="{% url 'web:stage_delete' stage.pk %}">
                     {% csrf_token %}
-                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                    <button class="btn btn-sm btn-outline-danger ip-icon-btn" type="submit"
+                            aria-label="Delete stage {{ stage.name }}">
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </button>
                   </form>
                 </td>
               </tr>
@@ -31,11 +41,11 @@
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   </div>
   <div class="col-lg-5">
-    <div class="ip-section">
-      <h2 class="h6">Add a stage</h2>
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Add a stage</h2></div>
       <form method="post" novalidate>
         {% csrf_token %}
         {% for field in form %}
@@ -52,7 +62,7 @@
         {% endfor %}
         <button class="btn btn-primary" type="submit">Add stage</button>
       </form>
-    </div>
+    </section>
   </div>
 </div>
 {% endblock %}

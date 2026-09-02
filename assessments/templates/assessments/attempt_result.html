@@ -1,22 +1,44 @@
 {% extends "base.html" %}
 {% block title %}Result · {{ attempt.assessment.title }}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{{ attempt.assessment.title }} — result</h1>
-<div class="card card-body" style="max-width:640px">
-  <p class="mb-1">Score: <strong>{{ attempt.score_percent|default:"—" }}%</strong>
-    (pass mark {{ attempt.assessment.pass_mark_percent }}%)</p>
-  <p>
-    {% if attempt.passed is None %}<span class="badge text-bg-secondary">Not graded</span>
-    {% elif attempt.passed %}<span class="badge text-bg-success">Passed</span>
-    {% else %}<span class="badge text-bg-danger">Not passed</span>{% endif %}
-  </p>
-  {% if attempt.ai_feedback %}
-    <hr><h2 class="h6">Feedback</h2>
-    <pre class="mb-0 small">{{ attempt.ai_feedback }}</pre>
-  {% endif %}
-  <p class="mt-3 mb-0 text-muted small">
-    Application: {{ attempt.application.job.title }} ·
-    stage {{ attempt.application.current_stage.name|default:"—" }}
-  </p>
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="ip-section text-center">
+      <p class="ip-eyebrow mb-2">Assessment result</p>
+      <h1 class="h4 mb-4">{{ attempt.assessment.title }}</h1>
+
+      <div class="d-flex justify-content-center mb-3">
+        <div class="ip-ring"
+             style="--ip-ring-value: {{ attempt.score_percent|default:0|floatformat:0 }};
+                    --ip-ring-color: {% if attempt.passed %}var(--ip-success){% elif attempt.passed is None %}var(--ip-slate-400){% else %}var(--ip-danger){% endif %};"
+             role="img"
+             aria-label="Score {{ attempt.score_percent|default:'not graded' }} out of 100">
+          <div class="ip-ring__inner">
+            <div class="ip-ring__value">{{ attempt.score_percent|default:"—" }}</div>
+            <div class="ip-ring__unit">of 100</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="mb-2">
+        {% if attempt.passed is None %}<span class="ip-badge ip-badge--neutral">Not graded</span>
+        {% elif attempt.passed %}<span class="ip-badge ip-badge--success">Passed</span>
+        {% else %}<span class="ip-badge ip-badge--danger">Not passed</span>{% endif %}
+      </p>
+      <p class="ip-muted small mb-0">Pass mark {{ attempt.assessment.pass_mark_percent }}%</p>
+
+      {% if attempt.ai_feedback %}
+        <hr class="my-4">
+        <h2 class="h6 text-start mb-2">Feedback</h2>
+        <pre class="mb-0 text-start">{{ attempt.ai_feedback }}</pre>
+      {% endif %}
+
+      <hr class="my-4">
+      <p class="ip-muted small mb-3">
+        {{ attempt.application.job.title }}<span class="ip-meta-dot"></span>stage {{ attempt.application.current_stage.name|default:"—" }}
+      </p>
+      <a class="btn btn-outline-secondary" href="{% url 'web:candidate_home' %}">Back to my applications</a>
+    </div>
+  </div>
 </div>
 {% endblock %}

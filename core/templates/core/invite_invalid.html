@@ -1,15 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Invitation unavailable · Interview Portal{% endblock %}
+{% block main_class %}container py-5{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow-sm border-danger">
-      <div class="card-body">
-        <h1 class="h4 mb-2">This invitation cannot be used</h1>
-        <p class="mb-3">{{ reason }}</p>
+  <div class="col-sm-10 col-md-7 col-lg-5">
+    <div class="text-center mb-4">
+      <a class="ip-brand justify-content-center" href="/">
+        <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+        <span>Interview&nbsp;Portal</span>
+      </a>
+    </div>
+    <div class="ip-section">
+      <div class="ip-empty ip-empty--sm">
+        <span class="ip-empty__icon" aria-hidden="true" style="color:var(--ip-danger)"><i class="bi bi-exclamation-triangle"></i></span>
+        <div class="ip-empty__title">This invitation cannot be used</div>
+        <p>{{ reason }}</p>
         <a class="btn btn-outline-secondary" href="{% url 'core:login' %}">Go to sign in</a>
       </div>
     </div>
+
   </div>
 </div>
 {% endblock %}

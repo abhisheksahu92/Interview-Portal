@@ -1,49 +1,56 @@
-<div class="ip-card" id="app-card-{{ application.pk }}">
+<article class="ip-card" id="app-card-{{ application.pk }}">
   <div class="d-flex justify-content-between align-items-start gap-2">
-    <div class="ip-card__name">
-      {{ application.candidate.user.email }}
+    <div style="min-width:0">
+      <div class="ip-card__name">{{ application.candidate.user.email }}</div>
       {% if application.candidate.headline %}
         <div class="ip-card__meta">{{ application.candidate.headline }}</div>
       {% endif %}
     </div>
     {% if application.ai_fit_score is not None %}
-      <span class="badge text-bg-{% if application.ai_fit_score >= 70 %}success{% elif application.ai_fit_score >= 40 %}warning{% else %}secondary{% endif %}"
-            title="AI fit score">{{ application.ai_fit_score }}</span>
+      <span class="ip-fit ip-fit--{% if application.ai_fit_score >= 70 %}high{% elif application.ai_fit_score >= 40 %}mid{% else %}low{% endif %}"
+            title="AI fit score {{ application.ai_fit_score }} of 100">{{ application.ai_fit_score }}</span>
     {% else %}
-      <span class="badge text-bg-light" title="No AI fit score yet">—</span>
+      <span class="ip-fit ip-fit--none" title="No AI fit score yet">—</span>
     {% endif %}
   </div>
 
-  <div class="ip-card__meta mt-1">
-    {{ application.candidate.experience_years }} yrs ·
-    {% if application.status != "ACTIVE" %}
-      <span class="badge text-bg-dark">{{ application.get_status_display }}</span>
-    {% else %}
-      {{ application.current_stage.name|default:"Unassigned" }}
-    {% endif %}
+  <div class="ip-card__meta mt-2">
+    {{ application.candidate.experience_years }} yrs<span class="ip-meta-dot"></span>{% if application.status != "ACTIVE" %}<span class="ip-badge ip-badge--{% if application.status == 'HIRED' %}success{% else %}danger{% endif %}">{{ application.get_status_display }}</span>{% else %}{{ application.updated_at|timesince }} in stage{% endif %}
   </div>
 
   {% if application.latest_review %}
     <div class="ip-card__meta mt-1">
-      Latest: <strong>{{ application.latest_review.get_decision_display }}</strong>
-      {% if application.latest_review.rating %} · {{ application.latest_review.rating }}/5{% endif %}
+      <i class="bi bi-chat-left-text me-1" aria-hidden="true"></i>
+      <strong>{{ application.latest_review.get_decision_display }}</strong>{% if application.latest_review.rating %} · {{ application.latest_review.rating }}/5{% endif %}
       by {{ application.latest_review.reviewer.email }}
     </div>
   {% endif %}
 
   {% if application.status == "ACTIVE" %}
-    <div class="d-flex flex-wrap gap-1 mt-2">
-      <button class="btn btn-sm btn-outline-success"
+    <div class="ip-card__actions">
+      <button class="btn btn-sm btn-outline-success ip-icon-btn"
               hx-post="{% url 'web:application_advance' application.pk %}"
-              hx-target="#kanban" hx-swap="outerHTML">Advance</button>
-      <button class="btn btn-sm btn-outline-danger"
+              hx-target="#kanban" hx-swap="outerHTML" hx-indicator="#board-indicator"
+              hx-confirm="Advance this application to the next stage?"
+              aria-label="Advance {{ application.candidate.user.email }} to the next stage"
+              title="Advance">
+        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger ip-icon-btn"
               hx-post="{% url 'web:application_reject' application.pk %}"
-              hx-target="#kanban" hx-swap="outerHTML"
-              hx-confirm="Reject this application?">Reject</button>
-      <button class="btn btn-sm btn-outline-secondary"
+              hx-target="#kanban" hx-swap="outerHTML" hx-indicator="#board-indicator"
+              hx-confirm="Reject this application?"
+              aria-label="Reject {{ application.candidate.user.email }}"
+              title="Reject">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary ms-auto"
               hx-get="{% url 'web:application_review' application.pk %}"
-              hx-target="#review-slot-{{ application.pk }}" hx-swap="innerHTML">Review</button>
+              hx-target="#review-slot-{{ application.pk }}" hx-swap="innerHTML"
+              aria-label="Review {{ application.candidate.user.email }}">
+        <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Review
+      </button>
     </div>
-    <div id="review-slot-{{ application.pk }}" class="mt-2"></div>
+    <div id="review-slot-{{ application.pk }}"></div>
   {% endif %}
-</div>
+</article>

@@ -1,92 +1,112 @@
 {% extends "base.html" %}
 {% block title %}Billing — Interview Portal{% endblock %}
-
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Billing</h1>
+    <p>Plans are priced per active (open) job. Members, candidates and assessments are unlimited.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <span class="ip-badge ip-badge--accent">Current plan: <span>{{ plan.name }}</span></span>
+  </div>
+</div>
+{% endblock %}
 {% block content %}
-{% include "web/_nav.html" %}
-
-<h1 class="h3 mb-1">Billing</h1>
-<p class="text-muted">Plans are priced per active (open) job.</p>
 
 <div class="row g-3 mb-4">
   <div class="col-md-6">
-    <div class="card h-100">
-      <div class="card-body">
-        <h2 class="h5 card-title">
-          Current plan
-          <span class="badge text-bg-primary">{{ plan.name }}</span>
-          <span class="badge text-bg-{% if subscription.status == 'ACTIVE' %}success{% elif subscription.status == 'PAST_DUE' %}danger{% else %}secondary{% endif %}">
-            {{ subscription.get_status_display }}
-          </span>
-        </h2>
-        <p class="mb-1">
-          {% if plan.price_monthly %}${{ plan.price_monthly }}/month{% else %}Free{% endif %}
-        </p>
-        {% if subscription.current_period_end %}
-          <p class="text-muted small mb-0">
-            Renews {{ subscription.current_period_end|date:"j M Y" }}
-          </p>
-        {% endif %}
+    <section class="ip-section h-100">
+      <div class="ip-section__head">
+        <h2>Subscription</h2>
+        <span class="ip-badge ip-badge--{% if subscription.status == 'ACTIVE' %}success{% elif subscription.status == 'PAST_DUE' %}danger{% else %}neutral{% endif %}">
+          {{ subscription.get_status_display }}
+        </span>
       </div>
-    </div>
+      <div class="ip-kpi__value">{% if plan.price_monthly %}${{ plan.price_monthly }}{% else %}Free{% endif %}</div>
+      <div class="ip-kpi__trend">
+        {% if plan.price_monthly %}per month{% else %}no card required{% endif %}
+        <span class="ip-meta-dot"></span>up to {{ max_open_jobs }} open job{{ max_open_jobs|pluralize }}
+      </div>
+      {% if subscription.current_period_end %}
+        <p class="ip-muted small mt-3 mb-0">Renews {{ subscription.current_period_end|date:"j M Y" }}</p>
+      {% endif %}
+    </section>
   </div>
 
   <div class="col-md-6">
-    <div class="card h-100">
-      <div class="card-body">
-        <h2 class="h5 card-title">Usage</h2>
-        <p class="display-6 mb-1">{{ open_jobs }} / {{ max_open_jobs }}</p>
-        <p class="text-muted mb-2">open jobs</p>
+    <section class="ip-section h-100">
+      <div class="ip-section__head"><h2>Usage</h2></div>
+      <div class="ip-kpi__value">{{ open_jobs }} / {{ max_open_jobs }}</div>
+      <div class="ip-kpi__trend">open jobs</div>
+      <div class="mt-3">
         {% if at_limit %}
-          <div class="alert alert-warning mb-0 py-2">
+          <div class="alert alert-warning mb-0">
             You have reached your plan limit. Close a job or upgrade to open another.
           </div>
         {% else %}
-          <p class="mb-0 text-success">{{ remaining }} more can be opened.</p>
+          <p class="mb-0 small" style="color:var(--ip-success)">
+            <i class="bi bi-check-circle me-1" aria-hidden="true"></i>{{ remaining }} more can be opened.
+          </p>
         {% endif %}
       </div>
-    </div>
+    </section>
   </div>
 </div>
 
-<div class="d-flex flex-wrap gap-2">
-  {% if is_owner %}
-    {% if plan.code != "PRO" %}
-      <form method="post" action="{% url 'billing:checkout' %}" class="m-0">
-        {% csrf_token %}
-        <button class="btn btn-primary" type="submit" {% if not stripe_ready %}disabled{% endif %}>
-          Upgrade to {{ pro_plan.name }} — ${{ pro_plan.price_monthly }}/mo
-        </button>
-      </form>
-    {% endif %}
-    <form method="post" action="{% url 'billing:portal' %}" class="m-0">
-      {% csrf_token %}
-      <button class="btn btn-outline-secondary" type="submit"
-              {% if not subscription.stripe_customer_id %}disabled{% endif %}>
-        Manage subscription
-      </button>
-    </form>
-  {% else %}
-    <p class="text-muted mb-0">Only the company owner can change the plan.</p>
-  {% endif %}
+<h2 class="h6 mb-3">Plans</h2>
+<div class="row g-3 mb-4">
+  {% for p in plans %}
+    <div class="col-md-6 col-lg-4">
+      <div class="ip-plan {% if p.pk == plan.pk %}is-current{% endif %}">
+        <div class="d-flex align-items-center gap-2">
+          <span class="ip-plan__name">{{ p.name }}</span>
+          {% if p.pk == plan.pk %}<span class="ip-badge ip-badge--accent">Current plan</span>{% endif %}
+        </div>
+        <div class="ip-plan__price">
+          {% if p.price_monthly %}${{ p.price_monthly }} <span>/ month</span>{% else %}$0 <span>/ month</span>{% endif %}
+        </div>
+        <ul class="ip-plan__list">
+          <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_open_jobs }} open job{{ p.max_open_jobs|pluralize }}</li>
+          <li><i class="bi bi-check2" aria-hidden="true"></i> Unlimited members and candidates</li>
+          <li><i class="bi bi-check2" aria-hidden="true"></i> Configurable pipelines and assessments</li>
+        </ul>
+        <div class="ip-plan__cta">
+          {% if p.pk == plan.pk %}
+            <button class="btn btn-outline-secondary w-100" type="button" disabled>Your plan</button>
+          {% elif is_owner and p.code == "PRO" %}
+            <form method="post" action="{% url 'billing:checkout' %}" class="m-0">
+              {% csrf_token %}
+              <button class="btn btn-primary w-100" type="submit" {% if not stripe_ready %}disabled{% endif %}>
+                Upgrade to {{ pro_plan.name }} — ${{ pro_plan.price_monthly }}/mo
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-outline-secondary w-100" type="button" disabled>Not available</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
 </div>
 
-{% if not stripe_ready %}
-  <p class="text-muted small mt-3 mb-0">
-    Stripe is not configured on this server, so upgrades are disabled.
-  </p>
-{% endif %}
-
-<h2 class="h5 mt-4">Plans</h2>
-<table class="table table-sm align-middle">
-  <thead><tr><th>Plan</th><th>Open jobs</th><th class="text-end">Price / month</th></tr></thead>
-  <tbody>
-    {% for p in plans %}
-      <tr {% if p.pk == plan.pk %}class="table-active"{% endif %}>
-        <td>{{ p.name }}</td>
-        <td>{{ p.max_open_jobs }}</td>
-        <td class="text-end">{% if p.price_monthly %}${{ p.price_monthly }}{% else %}Free{% endif %}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="ip-section ip-section--tight">
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    {% if is_owner %}
+      <form method="post" action="{% url 'billing:portal' %}" class="m-0">
+        {% csrf_token %}
+        <button class="btn btn-outline-secondary" type="submit"
+                {% if not subscription.stripe_customer_id %}disabled{% endif %}>
+          <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>Manage subscription
+        </button>
+      </form>
+    {% else %}
+      <p class="ip-muted small mb-0">Only the company owner can change the plan.</p>
+    {% endif %}
+    {% if not stripe_ready %}
+      <p class="ip-muted small mb-0 ms-auto">
+        Stripe is not configured on this server, so upgrades are disabled.
+      </p>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

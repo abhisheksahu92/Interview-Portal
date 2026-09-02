@@ -1,34 +1,40 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}
 {% block title %}{{ job.title }} at {{ job.company.name }}{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
 {% block content %}
-<p class="mb-2"><a href="{% url 'web:job_browse' %}">&larr; All open roles</a></p>
-<h1 class="h3 mb-1">{{ job.title }}</h1>
-<p class="ip-muted">
-  {{ job.company.name }} · {{ job.location|default:"Remote / unspecified" }}
-  · {{ job.get_employment_type_display }}
-  {% if job.closes_at %} · closes {{ job.closes_at|date:"j M Y" }}{% endif %}
+<p class="ip-muted small mb-2">
+  <a href="{% url 'web:job_browse' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> All open roles</a>
 </p>
+<div class="ip-page-head">
+  <div>
+    <h1>{{ job.title }}</h1>
+    <p>
+      {{ job.company.name }}<span class="ip-meta-dot"></span>{{ job.location|default:"Remote / unspecified" }}<span class="ip-meta-dot"></span>{{ job.get_employment_type_display }}{% if job.closes_at %}<span class="ip-meta-dot"></span>closes {{ job.closes_at|date:"j M Y" }}{% endif %}
+    </p>
+  </div>
+</div>
 
 <div class="row g-3">
   <div class="col-lg-8">
     <div class="ip-section mb-3">
-      <h2 class="h6">About the role</h2>
-      <p class="mb-0">{{ job.description|linebreaksbr|default:"—" }}</p>
+      <h2 class="h6 mb-3">About the role</h2>
+      <p class="mb-0 ip-muted">{{ job.description|linebreaksbr|default:"—" }}</p>
     </div>
     <div class="ip-section">
-      <h2 class="h6">Requirements</h2>
-      <p class="mb-2">{{ job.requirements|linebreaksbr|default:"—" }}</p>
-      {% for skill in job.skills.all %}<span class="badge text-bg-light">{{ skill.name }}</span>{% endfor %}
+      <h2 class="h6 mb-3">Requirements</h2>
+      <p class="mb-3 ip-muted">{{ job.requirements|linebreaksbr|default:"—" }}</p>
+      <div class="d-flex flex-wrap gap-1">
+        {% for skill in job.skills.all %}<span class="ip-badge ip-badge--neutral">{{ skill.name }}</span>{% endfor %}
+      </div>
     </div>
   </div>
   <div class="col-lg-4">
     <div class="ip-section">
       {% if already_applied %}
-        <p class="mb-2">You have already applied to this role.</p>
-        <a class="btn btn-outline-primary" href="{% url 'web:candidate_home' %}">Track my applications</a>
+        <div class="ip-badge ip-badge--success mb-3"><i class="bi bi-check-circle" aria-hidden="true"></i> Applied</div>
+        <p class="ip-muted small">You have already applied to this role.</p>
+        <a class="btn btn-outline-secondary w-100" href="{% url 'web:candidate_home' %}">Track my applications</a>
       {% elif user.is_authenticated and not current_company %}
-        <h2 class="h6">Apply</h2>
+        <h2 class="h6 mb-3">Apply</h2>
         <form method="post" action="{% url 'web:job_apply' job.pk %}" novalidate>
           {% csrf_token %}
           <div class="form-check mb-3">
@@ -36,16 +42,17 @@
             <label class="form-check-label" for="{{ form.confirm.id_for_label }}">{{ form.confirm.label }}</label>
             {% for e in form.confirm.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
           </div>
-          <button class="btn btn-primary" type="submit">Apply now</button>
+          <button class="btn btn-primary w-100" type="submit">Apply now</button>
         </form>
-        <p class="ip-muted mt-2 mb-0">
+        <p class="ip-muted small mt-3 mb-0">
           <a href="{% url 'web:candidate_profile' %}">Update your profile / résumé</a> first if needed.
         </p>
       {% elif current_company %}
-        <p class="ip-muted mb-0">You are signed in as a company member, so you cannot apply.</p>
+        <p class="ip-muted small mb-0">You are signed in as a company member, so you cannot apply.</p>
       {% else %}
-        <a class="btn btn-primary" href="{% url 'core:candidate_signup' %}">Sign up to apply</a>
-        <a class="btn btn-link" href="{% url 'core:login' %}">Sign in</a>
+        <h2 class="h6 mb-3">Apply</h2>
+        <a class="btn btn-primary w-100 mb-2" href="{% url 'core:candidate_signup' %}">Sign up to apply</a>
+        <a class="btn btn-outline-secondary w-100" href="{% url 'core:login' %}">Sign in</a>
       {% endif %}
     </div>
   </div>

@@ -1,49 +1,102 @@
 {% extends "base.html" %}
 {% block title %}{{ assessment.title }}{% endblock %}
+{% block main_class %}container py-0 pb-5{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h4 mb-0">{{ assessment.title }}</h1>
-  <div class="fs-5">Time left: <strong id="timer" data-seconds="{{ attempt.seconds_remaining }}">--:--</strong></div>
+<div class="ip-exam-bar mb-4">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3">
+    <div>
+      <h1 class="h5 mb-1">{{ assessment.title }}</h1>
+      <p class="ip-muted small mb-0">
+        {{ assessment.time_limit_minutes }} minute limit<span class="ip-meta-dot"></span>pass mark {{ assessment.pass_mark_percent }}%<span class="ip-meta-dot"></span><span id="answered-count">0</span> of {{ questions|length }} answered
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="ip-muted small">Time left</span>
+      <span class="ip-timer" id="timer-pill">
+        <i class="bi bi-stopwatch" aria-hidden="true"></i>
+        <strong id="timer" data-seconds="{{ attempt.seconds_remaining }}">--:--</strong>
+      </span>
+    </div>
+  </div>
+  <div class="ip-progress" role="progressbar" aria-label="Questions answered"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress">
+    <div class="ip-progress__bar" id="progress-bar"></div>
+  </div>
 </div>
-<p class="text-muted">{{ assessment.time_limit_minutes }} minute limit · pass mark {{ assessment.pass_mark_percent }}%</p>
 
 <form id="attempt-form" method="post" action="{% url 'assessments:submit_attempt' attempt.pk %}">
   {% csrf_token %}
   {% for q in questions %}
-    <div class="card mb-3">
-      <div class="card-body">
-        <p class="fw-semibold">{{ forloop.counter }}. {{ q.text }}</p>
-        {% if q.kind == "MCQ" %}
-          {% for opt in q.options %}
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="q{{ q.pk }}"
-                     id="q{{ q.pk }}-{{ forloop.counter0 }}" value="{{ forloop.counter0 }}">
-              <label class="form-check-label" for="q{{ q.pk }}-{{ forloop.counter0 }}">{{ opt }}</label>
-            </div>
-          {% endfor %}
-        {% else %}
-          <textarea class="form-control" name="q{{ q.pk }}" rows="4"></textarea>
-        {% endif %}
+    <fieldset class="ip-question">
+      <legend class="fw-semibold h6 d-flex align-items-start mb-3">
+        <span class="ip-question__num" aria-hidden="true">{{ forloop.counter }}</span>
+        <span>{{ q.text }}</span>
+      </legend>
+      {% if q.kind == "MCQ" %}
+        {% for opt in q.options %}
+          <label class="ip-option" for="q{{ q.pk }}-{{ forloop.counter0 }}">
+            <input class="form-check-input" type="radio" name="q{{ q.pk }}"
+                   id="q{{ q.pk }}-{{ forloop.counter0 }}" value="{{ forloop.counter0 }}">
+            <span>{{ opt }}</span>
+          </label>
+        {% endfor %}
+      {% else %}
+        <label class="visually-hidden" for="q{{ q.pk }}">Your answer</label>
+        <textarea class="form-control" id="q{{ q.pk }}" name="q{{ q.pk }}" rows="4"
+                  placeholder="Type your answer…"></textarea>
+      {% endif %}
+    </fieldset>
+  {% empty %}
+    <div class="ip-section">
+      <div class="ip-empty ip-empty--sm">
+        <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-question-circle"></i></span>
+        <div class="ip-empty__title">This assessment has no questions yet.</div>
+        <p>Nothing to answer — check back once the hiring team publishes questions.</p>
       </div>
     </div>
-  {% empty %}
-    <p class="text-muted">This assessment has no questions yet.</p>
   {% endfor %}
-  <button class="btn btn-primary">Submit assessment</button>
+  <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+    <button class="btn btn-primary btn-lg">Submit assessment</button>
+    <span class="ip-muted small">You cannot change your answers after submitting.</span>
+  </div>
 </form>
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function () {
+  var form = document.getElementById("attempt-form");
+  var total = form ? form.querySelectorAll("fieldset.ip-question").length : 0;
+
+  function refreshProgress() {
+    if (!form || !total) { return; }
+    var answered = 0;
+    form.querySelectorAll("fieldset.ip-question").forEach(function (fs) {
+      var radio = fs.querySelector("input[type=radio]:checked");
+      var text = fs.querySelector("textarea");
+      if (radio || (text && text.value.trim())) { answered += 1; }
+    });
+    var pct = Math.round((answered / total) * 100);
+    document.getElementById("progress-bar").style.width = pct + "%";
+    document.getElementById("progress").setAttribute("aria-valuenow", pct);
+    document.getElementById("answered-count").textContent = answered;
+  }
+  if (form) {
+    form.addEventListener("change", refreshProgress);
+    form.addEventListener("input", refreshProgress);
+    refreshProgress();
+  }
+
   var el = document.getElementById("timer");
   if (!el) { return; }
+  var pill = document.getElementById("timer-pill");
   var left = parseInt(el.dataset.seconds || "0", 10);
   function tick() {
     var m = Math.floor(left / 60), s = left % 60;
     el.textContent = m + ":" + (s < 10 ? "0" + s : s);
+    if (pill) { pill.classList.toggle("is-low", left <= 60); }
     if (left <= 0) {
-      document.getElementById("attempt-form").submit();
+      form.submit();
       return;
     }
     left -= 1;

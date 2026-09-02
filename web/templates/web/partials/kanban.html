@@ -1,35 +1,49 @@
-<div id="kanban" class="ip-board" role="list" aria-label="Pipeline board">
+<div id="kanban" class="ip-board ip-busy" role="list" aria-label="Pipeline board">
   {% for column in columns %}
     <div class="ip-board__col" role="listitem">
       <div class="ip-board__head">
-        <span>{{ column.stage.name }}</span>
-        <span class="badge text-bg-secondary">{{ column.applications|length }}</span>
+        <span class="ip-board__title">{{ column.stage.name }}</span>
+        <span class="ip-board__count">{{ column.applications|length }}</span>
       </div>
       {% if column.stage.requires_assessment %}
-        <div class="ip-muted mb-2">Requires assessment</div>
+        <div class="ip-board__hint"><i class="bi bi-clipboard-check me-1" aria-hidden="true"></i>Requires assessment</div>
       {% endif %}
-      {% for application in column.applications %}
-        {% include "web/partials/application_card.html" %}
-      {% empty %}
-        <p class="ip-muted mb-0">Empty</p>
-      {% endfor %}
+      <div class="ip-board__body">
+        {% for application in column.applications %}
+          {% include "web/partials/application_card.html" %}
+        {% empty %}
+          <p class="ip-muted small mb-0 py-2 text-center">No candidates here</p>
+        {% endfor %}
+      </div>
     </div>
   {% empty %}
-    <p class="ip-muted">This job has no pipeline stages.</p>
+    <div class="ip-empty ip-empty--sm w-100">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+      <div class="ip-empty__title">This job has no pipeline stages</div>
+      <p>Add stages to start moving candidates through a process.</p>
+    </div>
   {% endfor %}
 
   {% if unassigned %}
     <div class="ip-board__col" role="listitem">
-      <div class="ip-board__head"><span>Unassigned</span>
-        <span class="badge text-bg-secondary">{{ unassigned|length }}</span></div>
-      {% for application in unassigned %}{% include "web/partials/application_card.html" %}{% endfor %}
+      <div class="ip-board__head">
+        <span class="ip-board__title">Unassigned</span>
+        <span class="ip-board__count">{{ unassigned|length }}</span>
+      </div>
+      <div class="ip-board__body">
+        {% for application in unassigned %}{% include "web/partials/application_card.html" %}{% endfor %}
+      </div>
     </div>
   {% endif %}
   {% if closed %}
     <div class="ip-board__col" role="listitem">
-      <div class="ip-board__head"><span>Closed</span>
-        <span class="badge text-bg-secondary">{{ closed|length }}</span></div>
-      {% for application in closed %}{% include "web/partials/application_card.html" %}{% endfor %}
+      <div class="ip-board__head">
+        <span class="ip-board__title">Closed</span>
+        <span class="ip-board__count">{{ closed|length }}</span>
+      </div>
+      <div class="ip-board__body">
+        {% for application in closed %}{% include "web/partials/application_card.html" %}{% endfor %}
+      </div>
     </div>
   {% endif %}
 </div>

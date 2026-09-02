@@ -1,27 +1,46 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}
 {% block title %}My profile{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
 {% block content %}
-{% include "web/_nav.html" %}
-<h1 class="h3 mb-3">My profile</h1>
-<div class="ip-section">
-  <form method="post" enctype="multipart/form-data" novalidate>
-    {% csrf_token %}
-    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
-    <div class="row">
-      {% for field in form %}
-        <div class="col-md-6 mb-3">
-          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-          {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-        </div>
-      {% endfor %}
-    </div>
-    <button class="btn btn-primary" type="submit">Save profile</button>
-  </form>
+<div class="ip-page-head">
+  <div>
+    <h1>My profile</h1>
+    <p>One profile and résumé, reused for every application you send.</p>
+  </div>
 </div>
-{% if profile.resume %}
-  <p class="ip-muted mt-3">Current résumé: <a href="{{ profile.resume.url }}">{{ profile.resume.name }}</a></p>
-{% endif %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="ip-section">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="row">
+          {% for field in form %}
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+              {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        <button class="btn btn-primary" type="submit">Save profile</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="ip-section h-100">
+      <h2 class="h6 mb-2">Résumé</h2>
+      {% if profile.resume %}
+        <p class="ip-muted small">Current file on record:</p>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ profile.resume.url }}">
+          <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>{{ profile.resume.name }}</a>
+      {% else %}
+        <p class="ip-muted small mb-0">
+          No résumé uploaded yet. Adding one lets AI screening summarise your experience
+          against each role you apply to.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

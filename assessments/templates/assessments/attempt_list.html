@@ -1,25 +1,44 @@
 {% extends "base.html" %}
 {% block title %}Attempts · {{ assessment.title }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Attempts</h1>
+    <p>{{ assessment.title }}</p>
+  </div>
+</div>
+{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">Attempts · {{ assessment.title }}</h1>
-<table class="table">
-  <thead><tr><th>Candidate</th><th>Started</th><th>Submitted</th><th>Score</th><th>Result</th></tr></thead>
-  <tbody>
-    {% for at in attempts %}
-      <tr>
-        <td>{{ at.application.candidate.user.email }}</td>
-        <td>{{ at.started_at }}</td>
-        <td>{{ at.submitted_at|default:"—" }}</td>
-        <td>{{ at.score_percent|default:"—" }}</td>
-        <td>
-          {% if at.passed is None %}<span class="badge text-bg-secondary">pending</span>
-          {% elif at.passed %}<span class="badge text-bg-success">passed</span>
-          {% else %}<span class="badge text-bg-danger">failed</span>{% endif %}
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="5" class="text-muted">No attempts yet.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<section class="ip-section">
+  {% if attempts %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Attempts at {{ assessment.title }}</caption>
+        <thead><tr><th scope="col">Candidate</th><th scope="col">Started</th>
+          <th scope="col">Submitted</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead>
+        <tbody>
+          {% for at in attempts %}
+            <tr>
+              <td>{{ at.application.candidate.user.email }}</td>
+              <td class="ip-muted">{{ at.started_at }}</td>
+              <td class="ip-muted">{{ at.submitted_at|default:"—" }}</td>
+              <td>{{ at.score_percent|default:"—" }}</td>
+              <td>
+                {% if at.passed is None %}<span class="ip-badge ip-badge--neutral">pending</span>
+                {% elif at.passed %}<span class="ip-badge ip-badge--success">passed</span>
+                {% else %}<span class="ip-badge ip-badge--danger">failed</span>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-hourglass"></i></span>
+      <div class="ip-empty__title">No attempts yet.</div>
+      <p>Candidates at a stage that requires this assessment will show up here as soon as they start.</p>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

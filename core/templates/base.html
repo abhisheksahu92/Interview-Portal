@@ -1,67 +1,177 @@
-{% load static %}<!-- base layout for Interview Portal v2 -->
+{% load static %}<!doctype html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Interview Portal{% endblock %}</title>
-<link
-  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-  rel="stylesheet">
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("ip-theme");
+      if (!t) {
+        t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", t);
+    } catch (e) { /* storage blocked — stay light */ }
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'web/app.css' %}">
 <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
 {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% with vn=request.resolver_match.view_name %}
+{% if user.is_authenticated and current_company %}
+  {# ---------------- Company workspace: sidebar shell ---------------- #}
+  <div class="ip-shell">
+    {% include "core/_sidebar.html" %}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-  <div class="container">
-    <a class="navbar-brand" href="/">Interview&nbsp;Portal</a>
-    <div class="d-flex align-items-center gap-3 ms-auto text-white-50">
-      {% if user.is_authenticated %}
-        {% if current_company %}
-          <span class="navbar-text">
-            <strong class="text-white">{{ current_company.name }}</strong>
-            {% if current_role %}
-              <span class="badge text-bg-secondary">{{ current_role|title }}</span>
-            {% endif %}
-          </span>
-          {% if user_companies|length > 1 %}
-            <form method="post" action="{% url 'core:switch_company' %}"
-                  class="d-flex align-items-center gap-2">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.path }}">
-              <select name="company_id" class="form-select form-select-sm">
-                {% for c in user_companies %}
-                  <option value="{{ c.id }}"
-                    {% if c.id == current_company.id %}selected{% endif %}>{{ c.name }}</option>
-                {% endfor %}
-              </select>
-              <button class="btn btn-sm btn-outline-light" type="submit">Switch</button>
-            </form>
-          {% endif %}
-        {% elif user.is_candidate %}
-          <span class="navbar-text">Candidate</span>
+    <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="ipSidebarOffcanvas"
+         aria-label="Workspace navigation" style="width:var(--ip-sidebar-w)">
+      {% include "core/_sidebar.html" with offcanvas=1 %}
+    </div>
+
+    <div class="ip-main">
+      <header class="ip-topbar">
+        <button class="btn btn-sm btn-outline-secondary d-lg-none ip-icon-btn" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#ipSidebarOffcanvas"
+                aria-controls="ipSidebarOffcanvas" aria-label="Open navigation">
+          <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+        <a class="ip-brand d-lg-none" href="/" aria-label="Interview Portal home">
+          <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+        </a>
+        <p class="ip-topbar__title d-none d-lg-block">{{ current_company.name }}</p>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          {% include "core/_theme_toggle.html" %}
+        </div>
+      </header>
+      <main class="ip-content" id="main">
+{% else %}
+  {# ---------------- Candidate portal / public: top navbar ---------------- #}
+  <nav class="ip-navbar">
+    <div class="container">
+      <div class="ip-navbar__inner">
+        <a class="ip-brand" href="/">
+          <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+          <span>Interview&nbsp;Portal</span>
+        </a>
+        {% if user.is_authenticated %}
+          <div class="ip-navbar__links d-none d-md-flex">
+            <a class="ip-navbar__link {% if vn == 'web:candidate_home' %}is-active{% endif %}"
+               href="{% url 'web:candidate_home' %}">My applications</a>
+            <a class="ip-navbar__link {% if vn == 'web:job_browse' or vn == 'web:job_public_detail' %}is-active{% endif %}"
+               href="{% url 'web:job_browse' %}">Browse openings</a>
+            <a class="ip-navbar__link {% if vn == 'web:candidate_profile' %}is-active{% endif %}"
+               href="{% url 'web:candidate_profile' %}">My profile</a>
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-2">
+            {% include "core/_theme_toggle.html" %}
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1" aria-hidden="true"></i>
+                <span class="d-none d-sm-inline">{{ user.email }}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><h6 class="dropdown-header">{{ user.email }}</h6></li>
+                <li><a class="dropdown-item d-md-none" href="{% url 'web:candidate_home' %}">My applications</a></li>
+                <li><a class="dropdown-item d-md-none" href="{% url 'web:job_browse' %}">Browse openings</a></li>
+                <li><a class="dropdown-item" href="{% url 'web:candidate_profile' %}">My profile</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:account_home' %}">Account</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <form method="post" action="{% url 'core:logout' %}" class="m-0">
+                    {% csrf_token %}
+                    <button class="dropdown-item" type="submit">Sign out</button>
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </div>
+        {% else %}
+          <div class="ip-navbar__links d-none d-md-flex">
+            <a class="ip-navbar__link {% if vn == 'web:job_browse' %}is-active{% endif %}"
+               href="{% url 'web:job_browse' %}">Open roles</a>
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-2">
+            {% include "core/_theme_toggle.html" %}
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'core:login' %}">Sign in</a>
+            <a class="btn btn-sm btn-primary" href="{% url 'core:candidate_signup' %}">Sign up</a>
+          </div>
         {% endif %}
-        <span class="navbar-text">{{ user.email }}</span>
-        <form method="post" action="{% url 'core:logout' %}" class="m-0">
-          {% csrf_token %}
-          <button class="btn btn-sm btn-outline-light" type="submit">Sign out</button>
-        </form>
-      {% else %}
-        <a class="btn btn-sm btn-outline-light" href="{% url 'core:login' %}">Sign in</a>
-        <a class="btn btn-sm btn-primary" href="{% url 'core:candidate_signup' %}">Sign up</a>
-      {% endif %}
+      </div>
+    </div>
+  </nav>
+  <main class="{% block main_class %}container py-4 py-lg-5{% endblock %}" id="main">
+{% endif %}
+
+    {% block page_header %}{% endblock %}
+    {% block content %}{% endblock %}
+
+{% if user.is_authenticated and current_company %}
+      </main>
     </div>
   </div>
-</nav>
+{% else %}
+  </main>
+  {% block after_main %}{% endblock %}
+{% endif %}
+{% endwith %}
 
-<main class="container pb-5">
-  {% if messages %}
+
+{% if messages %}
+  <div class="ip-toasts" role="status" aria-live="polite">
     {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
-           role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"
-                aria-label="Close"></button>
+      <div class="ip-toast ip-toast--{{ message.tags|default:'info' }}">
+        <i class="bi
+          {% if 'success' in message.tags %}bi-check-circle-fill
+          {% elif 'error' in message.tags or 'danger' in message.tags %}bi-exclamation-octagon-fill
+          {% elif 'warning' in message.tags %}bi-exclamation-triangle-fill
+          {% else %}bi-info-circle-fill{% endif %}" aria-hidden="true"></i>
+        <div class="ip-toast__body">{{ message }}</div>
+        <button type="button" class="btn-close" data-ip-dismiss aria-label="Dismiss notification"></button>
       </div>
     {% endfor %}
-  {% endif %}
-
-  {% block content %}{% endblock %}
-</main>
+  </div>
+{% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function () {
+    var root = document.documentElement;
+    function label(btn) {
+      var dark = root.getAttribute("data-bs-theme") === "dark";
+      btn.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+      var i = btn.querySelector("i");
+      if (i) { i.className = dark ? "bi bi-sun" : "bi bi-moon-stars"; }
+    }
+    var buttons = document.querySelectorAll("[data-ip-theme-toggle]");
+    buttons.forEach(label);
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var next = root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-bs-theme", next);
+        try { localStorage.setItem("ip-theme", next); } catch (e) { /* ignore */ }
+        buttons.forEach(label);
+      });
+    });
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-ip-dismiss]");
+      if (btn) { btn.closest(".ip-toast").remove(); }
+    });
+    window.setTimeout(function () {
+      document.querySelectorAll(".ip-toast:not(.ip-toast--error):not(.ip-toast--danger)")
+        .forEach(function (t) { t.remove(); });
+    }, 6000);
+  })();
+</script>
 {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,107 @@
+{% with vn=request.resolver_match.view_name %}
+<aside class="{% if offcanvas %}d-flex flex-column h-100{% else %}ip-sidebar d-none d-lg-flex{% endif %}">
+  <div class="ip-sidebar__brand">
+    <a class="ip-brand" href="{% if current_role == 'INTERVIEWER' %}{% url 'web:interviewer_queue' %}{% else %}{% url 'web:dashboard' %}{% endif %}">
+      <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+      <span>Interview&nbsp;Portal</span>
+    </a>
+    {% if offcanvas %}
+      <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close navigation"></button>
+    {% endif %}
+  </div>
+
+  <nav class="ip-sidebar__nav" aria-label="Workspace">
+    <ul class="ip-nav">
+      {% if current_role != "INTERVIEWER" %}
+        <li>
+          <a class="ip-nav__link {% if vn == 'web:dashboard' %}is-active{% endif %}" href="{% url 'web:dashboard' %}">
+            <i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn == 'web:job_detail' or vn == 'web:job_create' or vn == 'web:job_edit' or vn == 'web:settings_stages' %}is-active{% endif %}"
+             href="{% url 'web:dashboard' %}#jobs">
+            <i class="bi bi-briefcase" aria-hidden="true"></i> Jobs
+          </a>
+        </li>
+      {% endif %}
+      <li>
+        <a class="ip-nav__link {% if vn == 'web:interviewer_queue' %}is-active{% endif %}" href="{% url 'web:interviewer_queue' %}">
+          <i class="bi bi-inbox" aria-hidden="true"></i> Queue
+        </a>
+      </li>
+      {% if current_role != "INTERVIEWER" %}
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":12" == "assessments:" %}is-active{% endif %}" href="{% url 'assessments:question_list' %}">
+            <i class="bi bi-patch-question" aria-hidden="true"></i> Question bank
+          </a>
+        </li>
+
+        <li class="ip-nav__label" aria-hidden="true">Company</li>
+        <li>
+          <a class="ip-nav__link {% if vn == 'web:settings_members' %}is-active{% endif %}" href="{% url 'web:settings_members' %}">
+            <i class="bi bi-people" aria-hidden="true"></i> Members
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn == 'web:settings_skills' %}is-active{% endif %}" href="{% url 'web:settings_skills' %}">
+            <i class="bi bi-tags" aria-hidden="true"></i> Skills
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn == 'billing:overview' %}is-active{% endif %}" href="{% url 'billing:overview' %}">
+            <i class="bi bi-credit-card" aria-hidden="true"></i> Billing
+            {% if billing_plan %}<span class="ip-nav__count">{{ billing_plan.name }}</span>{% endif %}
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <div class="ip-sidebar__foot">
+    {% if user_companies|length > 1 %}
+      <form method="post" action="{% url 'core:switch_company' %}" class="mb-2">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <label class="visually-hidden" for="ip-company-switch{% if offcanvas %}-oc{% endif %}">Active company</label>
+        <div class="d-flex gap-1">
+          <select name="company_id" class="form-select form-select-sm"
+                  id="ip-company-switch{% if offcanvas %}-oc{% endif %}">
+            {% for c in user_companies %}
+              <option value="{{ c.id }}" {% if c.id == current_company.id %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-sm btn-outline-secondary ip-icon-btn" type="submit" aria-label="Switch company">
+            <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </form>
+    {% else %}
+      <div class="ip-nav__link" style="pointer-events:none">
+        <i class="bi bi-building" aria-hidden="true"></i>
+        <span class="text-truncate">{{ current_company.name }}</span>
+      </div>
+    {% endif %}
+
+    <div class="dropdown">
+      <button class="ip-nav__link w-100 border-0 bg-transparent text-start" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-person-circle" aria-hidden="true"></i>
+        <span class="text-truncate">{{ user.email }}</span>
+        <i class="bi bi-chevron-expand ms-auto small" aria-hidden="true"></i>
+      </button>
+      <ul class="dropdown-menu w-100">
+        <li><h6 class="dropdown-header">{{ user.email }}{% if current_role %} · {{ current_role|title }}{% endif %}</h6></li>
+        <li><a class="dropdown-item" href="{% url 'core:account_home' %}">Account</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <form method="post" action="{% url 'core:logout' %}" class="m-0">
+            {% csrf_token %}
+            <button class="dropdown-item" type="submit">Sign out</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</aside>
+{% endwith %}

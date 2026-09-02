@@ -1,21 +1,28 @@
 <div id="job-results" class="row g-3">
   {% for job in jobs %}
     <div class="col-md-6">
-      <div class="ip-section h-100">
-        <div class="d-flex justify-content-between align-items-start gap-2">
-          <h2 class="h6 mb-1">
+      <article class="ip-section ip-section--tight h-100">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+          <h2 class="h6 mb-0">
             <a href="{% url 'web:job_public_detail' job.pk %}">{{ job.title }}</a>
           </h2>
-          {% if job.pk in applied_ids %}<span class="badge text-bg-success">Applied</span>{% endif %}
+          {% if job.pk in applied_ids %}<span class="ip-badge ip-badge--success">Applied</span>{% endif %}
         </div>
-        <p class="ip-muted mb-2">
-          {{ job.company.name }} · {{ job.location|default:"Remote / unspecified" }}
-          · {{ job.get_employment_type_display }}
+        <p class="ip-muted small mb-2">
+          {{ job.company.name }}<span class="ip-meta-dot"></span>{{ job.location|default:"Remote / unspecified" }}<span class="ip-meta-dot"></span>{{ job.get_employment_type_display }}
         </p>
-        <p class="mb-0">{{ job.description|truncatewords:24 }}</p>
-      </div>
+        <p class="ip-muted mb-0 small">{{ job.description|truncatewords:24 }}</p>
+      </article>
     </div>
   {% empty %}
-    <div class="col-12"><p class="ip-muted">No open roles match that search.</p></div>
+    <div class="col-12">
+      <div class="ip-section">
+        <div class="ip-empty ip-empty--sm">
+          <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-search"></i></span>
+          <div class="ip-empty__title">No open roles match that search</div>
+          <p>Try a broader keyword, or clear the search to see everything currently published.</p>
+        </div>
+      </div>
+    </div>
   {% endfor %}
 </div>
