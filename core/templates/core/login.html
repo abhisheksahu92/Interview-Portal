@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Interview Portal{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-3">Sign in</h1>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_div }}
+          <button class="btn btn-primary w-100 mt-3" type="submit">Sign in</button>
+        </form>
+        <hr>
+        <p class="mb-1 small">
+          New candidate? <a href="{% url 'core:candidate_signup' %}">Create an account</a>
+        </p>
+        <p class="mb-0 small">
+          Hiring team? <a href="{% url 'core:company_signup' %}">Register your company</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

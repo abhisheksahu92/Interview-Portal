@@ -1,0 +1,21 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "interview_portal.settings"
+python_files = ["test_*.py", "tests.py"]
+testpaths = ["core", "jobs", "assessments", "api", "web"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+    "legacy",
+    ".venv",
+    "migrations",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"*/settings.py" = ["F405", "F403"]

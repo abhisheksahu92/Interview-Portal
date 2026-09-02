@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Account · Interview Portal{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Account</h1>
+<dl class="row">
+  <dt class="col-sm-3">Email</dt><dd class="col-sm-9">{{ user.email }}</dd>
+  <dt class="col-sm-3">Type</dt>
+  <dd class="col-sm-9">{% if user.is_candidate %}Candidate{% else %}Hiring team{% endif %}</dd>
+</dl>
+<h2 class="h6">Memberships</h2>
+<ul class="list-group">
+  {% for m in user.memberships.all %}
+    <li class="list-group-item d-flex justify-content-between">
+      <span>{{ m.company.name }}</span>
+      <span class="badge text-bg-secondary">{{ m.get_role_display }}</span>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No company memberships.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
