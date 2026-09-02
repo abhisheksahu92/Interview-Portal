@@ -17,7 +17,11 @@ from jobs.models import (
     Job,
     PipelineStage,
     Skill,
-    StageReview,
+)
+from jobs.services import (
+    advance_application,
+    record_review,
+    reject_application,
 )
 from web.forms import (
     ApplyForm,
@@ -33,67 +37,6 @@ STAFF_ROLES = (Membership.OWNER, Membership.RECRUITER)
 
 
 # --- helpers --------------------------------------------------------------
-
-
-def _jobs_services():
-    """Return ``jobs.services`` if the jobs agent shipped it, else ``None``."""
-    try:
-        from jobs import services  # type: ignore
-
-        return services
-    except ImportError:
-        return None
-
-
-def advance_application(application, user=None):
-    """Advance via jobs.services when available, else the model method."""
-    services = _jobs_services()
-    func = getattr(services, "advance_application", None) if services else None
-    if callable(func):
-        try:
-            return func(application, user=user)
-        except TypeError:
-            return func(application)
-    return application.advance()
-
-
-def reject_application(application, user=None):
-    services = _jobs_services()
-    func = getattr(services, "reject_application", None) if services else None
-    if callable(func):
-        try:
-            return func(application, user=user)
-        except TypeError:
-            return func(application)
-    return application.reject()
-
-
-def record_review(application, stage, reviewer, decision, rating=None, feedback=""):
-    """Record a StageReview.
-
-    ``jobs.services.record_review`` also applies the automatic pipeline
-    transition (PASS advances, FAIL rejects), so the second element of the
-    returned tuple says whether the caller still needs to move the application.
-    """
-    services = _jobs_services()
-    func = getattr(services, "record_review", None) if services else None
-    if callable(func):
-        review = func(
-            application,
-            stage=stage,
-            reviewer=reviewer,
-            decision=decision,
-            rating=rating,
-            feedback=feedback,
-        )
-        return review, True
-    review, _ = StageReview.objects.update_or_create(
-        application=application,
-        stage=stage,
-        reviewer=reviewer,
-        defaults={"decision": decision, "rating": rating, "feedback": feedback},
-    )
-    return review, False
 
 
 def assessment_url_for(application):
@@ -268,7 +211,7 @@ def _application_card_response(request, application):
 @require_POST
 def application_advance(request, pk):
     application = get_object_or_404(_company_applications(request), pk=pk)
-    advance_application(application, user=request.user)
+    advance_application(application)
     if request.headers.get("HX-Request"):
         return render(
             request, "web/partials/kanban.html", _kanban_context(request, application.job)
@@ -282,7 +225,7 @@ def application_advance(request, pk):
 @require_POST
 def application_reject(request, pk):
     application = get_object_or_404(_company_applications(request), pk=pk)
-    reject_application(application, user=request.user)
+    reject_application(application)
     if request.headers.get("HX-Request"):
         return render(
             request, "web/partials/kanban.html", _kanban_context(request, application.job)
@@ -307,20 +250,16 @@ def application_review(request, pk):
         if stage is None:
             messages.error(request, "This job has no pipeline stages yet.")
             return redirect("web:job_detail", pk=application.job_id)
-        decision = form.cleaned_data["decision"]
-        _review, transitioned = record_review(
+        # record_review also applies the pipeline transition: a PASS at the
+        # current stage advances, a FAIL rejects, a HOLD changes nothing.
+        record_review(
             application,
             stage=stage,
             reviewer=request.user,
-            decision=decision,
+            decision=form.cleaned_data["decision"],
             rating=form.cleaned_data.get("rating") or None,
             feedback=form.cleaned_data.get("feedback", ""),
         )
-        if not transitioned:
-            if decision == StageReview.FAIL:
-                reject_application(application, user=request.user)
-            elif decision == StageReview.PASS:
-                advance_application(application, user=request.user)
         application.refresh_from_db()
         if request.headers.get("HX-Request"):
             return _application_card_response(request, application)
