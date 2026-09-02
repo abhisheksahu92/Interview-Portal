@@ -1,0 +1,50 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}My applications{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
+{% block content %}
+{% include "web/_nav.html" %}
+<h1 class="h3 mb-1">My applications</h1>
+<p class="ip-muted">
+  {% if profile.headline %}{{ profile.headline }} · {% endif %}
+  {{ profile.experience_years }} yrs experience ·
+  {% if profile.resume %}résumé on file{% else %}
+    <a href="{% url 'web:candidate_profile' %}">upload your résumé</a>{% endif %}
+</p>
+
+{% for row in rows %}
+  <div class="ip-section mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+      <div>
+        <h2 class="h6 mb-1">{{ row.application.job.title }}</h2>
+        <p class="ip-muted mb-2">{{ row.application.job.company.name }}
+          · applied {{ row.application.created_at|date:"j M Y" }}</p>
+      </div>
+      <span class="badge text-bg-{% if row.application.status == 'HIRED' %}success{% elif row.application.status == 'REJECTED' %}danger{% else %}secondary{% endif %}">
+        {{ row.application.get_status_display }}</span>
+    </div>
+
+    <ol class="ip-stepper mb-2" aria-label="Pipeline progress">
+      {% for stage in row.stages %}
+        <li class="{% if stage.order == row.current_order %}is-current{% elif stage.order < row.current_order %}is-done{% endif %}">
+          {{ stage.name }}
+        </li>
+      {% endfor %}
+    </ol>
+
+    {% if row.application.status == "ACTIVE" and row.application.current_stage.requires_assessment %}
+      {% if row.assessment_url %}
+        <a class="btn btn-sm btn-primary" href="{{ row.assessment_url }}">Take assessment</a>
+      {% else %}
+        <p class="ip-muted mb-0">
+          This stage requires an assessment — the hiring team has not published one yet.
+        </p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% empty %}
+  <div class="ip-section">
+    <p class="mb-2">You have not applied to anything yet.</p>
+    <a class="btn btn-primary" href="{% url 'web:job_browse' %}">Browse open roles</a>
+  </div>
+{% endfor %}
+{% endblock %}

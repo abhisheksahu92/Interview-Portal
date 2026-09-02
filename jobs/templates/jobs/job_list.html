@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Open jobs{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Open jobs</h1>
+<form method="get" class="row g-2 mb-4">
+  <div class="col-auto">
+    <input type="search" name="q" value="{{ query }}" class="form-control"
+           placeholder="Title, location or skill">
+  </div>
+  <div class="col-auto"><button class="btn btn-outline-primary">Search</button></div>
+</form>
+<div class="list-group">
+  {% for job in jobs %}
+    <a class="list-group-item list-group-item-action" href="{% url 'jobs:job_detail' job.pk %}">
+      <div class="d-flex justify-content-between">
+        <strong>{{ job.title }}</strong>
+        <span class="text-muted">{{ job.company.name }}</span>
+      </div>
+      <small class="text-muted">
+        {{ job.get_employment_type_display }}{% if job.location %} · {{ job.location }}{% endif %}
+      </small>
+    </a>
+  {% empty %}
+    <p class="text-muted">No open jobs right now.</p>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}{% endblock %}

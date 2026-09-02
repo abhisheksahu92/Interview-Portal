@@ -1,0 +1,49 @@
+<div class="ip-card" id="app-card-{{ application.pk }}">
+  <div class="d-flex justify-content-between align-items-start gap-2">
+    <div class="ip-card__name">
+      {{ application.candidate.user.email }}
+      {% if application.candidate.headline %}
+        <div class="ip-card__meta">{{ application.candidate.headline }}</div>
+      {% endif %}
+    </div>
+    {% if application.ai_fit_score is not None %}
+      <span class="badge text-bg-{% if application.ai_fit_score >= 70 %}success{% elif application.ai_fit_score >= 40 %}warning{% else %}secondary{% endif %}"
+            title="AI fit score">{{ application.ai_fit_score }}</span>
+    {% else %}
+      <span class="badge text-bg-light" title="No AI fit score yet">—</span>
+    {% endif %}
+  </div>
+
+  <div class="ip-card__meta mt-1">
+    {{ application.candidate.experience_years }} yrs ·
+    {% if application.status != "ACTIVE" %}
+      <span class="badge text-bg-dark">{{ application.get_status_display }}</span>
+    {% else %}
+      {{ application.current_stage.name|default:"Unassigned" }}
+    {% endif %}
+  </div>
+
+  {% if application.latest_review %}
+    <div class="ip-card__meta mt-1">
+      Latest: <strong>{{ application.latest_review.get_decision_display }}</strong>
+      {% if application.latest_review.rating %} · {{ application.latest_review.rating }}/5{% endif %}
+      by {{ application.latest_review.reviewer.email }}
+    </div>
+  {% endif %}
+
+  {% if application.status == "ACTIVE" %}
+    <div class="d-flex flex-wrap gap-1 mt-2">
+      <button class="btn btn-sm btn-outline-success"
+              hx-post="{% url 'web:application_advance' application.pk %}"
+              hx-target="#kanban" hx-swap="outerHTML">Advance</button>
+      <button class="btn btn-sm btn-outline-danger"
+              hx-post="{% url 'web:application_reject' application.pk %}"
+              hx-target="#kanban" hx-swap="outerHTML"
+              hx-confirm="Reject this application?">Reject</button>
+      <button class="btn btn-sm btn-outline-secondary"
+              hx-get="{% url 'web:application_review' application.pk %}"
+              hx-target="#review-slot-{{ application.pk }}" hx-swap="innerHTML">Review</button>
+    </div>
+    <div id="review-slot-{{ application.pk }}" class="mt-2"></div>
+  {% endif %}
+</div>

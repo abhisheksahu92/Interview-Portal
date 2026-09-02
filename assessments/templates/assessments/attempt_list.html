@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Attempts · {{ assessment.title }}{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Attempts · {{ assessment.title }}</h1>
+<table class="table">
+  <thead><tr><th>Candidate</th><th>Started</th><th>Submitted</th><th>Score</th><th>Result</th></tr></thead>
+  <tbody>
+    {% for at in attempts %}
+      <tr>
+        <td>{{ at.application.candidate.user.email }}</td>
+        <td>{{ at.started_at }}</td>
+        <td>{{ at.submitted_at|default:"—" }}</td>
+        <td>{{ at.score_percent|default:"—" }}</td>
+        <td>
+          {% if at.passed is None %}<span class="badge text-bg-secondary">pending</span>
+          {% elif at.passed %}<span class="badge text-bg-success">passed</span>
+          {% else %}<span class="badge text-bg-danger">failed</span>{% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="text-muted">No attempts yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

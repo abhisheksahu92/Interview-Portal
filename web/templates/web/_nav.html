@@ -1,0 +1,18 @@
+{% load static %}
+<div class="d-flex flex-wrap gap-2 mb-4" role="navigation" aria-label="Workspace">
+  {% if current_role %}
+    {% if current_role != "INTERVIEWER" %}
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:dashboard' %}">Dashboard</a>
+    {% endif %}
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:interviewer_queue' %}">My queue</a>
+    {% if current_role != "INTERVIEWER" %}
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:settings_members' %}">Members</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:settings_skills' %}">Skills</a>
+      <a class="btn btn-sm btn-primary ms-auto" href="{% url 'web:job_create' %}">New job</a>
+    {% endif %}
+  {% else %}
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:candidate_home' %}">My applications</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:candidate_profile' %}">My profile</a>
+    <a class="btn btn-sm btn-primary ms-auto" href="{% url 'web:job_browse' %}">Browse openings</a>
+  {% endif %}
+</div>

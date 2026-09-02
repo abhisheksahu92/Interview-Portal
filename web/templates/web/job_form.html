@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}{% if job %}Edit {{ job.title }}{% else %}New job{% endif %}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
+{% block content %}
+{% include "web/_nav.html" %}
+<h1 class="h3 mb-3">{% if job %}Edit job{% else %}New job{% endif %}</h1>
+<div class="ip-section">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit">Save job</button>
+    <a class="btn btn-link" href="{% url 'web:dashboard' %}">Cancel</a>
+  </form>
+</div>
+{% if not job %}
+  <p class="ip-muted mt-3">A default pipeline (Screening → Assessment → L1 → L2 → HR → Offer) is created automatically.</p>
+{% endif %}
+{% endblock %}

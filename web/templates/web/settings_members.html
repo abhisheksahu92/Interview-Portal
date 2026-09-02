@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Members · {{ company.name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
+{% block content %}
+{% include "web/_nav.html" %}
+<h1 class="h3 mb-3">Team members</h1>
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="ip-section">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <caption class="visually-hidden">Members of {{ company.name }}</caption>
+          <thead><tr><th scope="col">Email</th><th scope="col">Role</th>
+            <th scope="col">Status</th><th scope="col"></th></tr></thead>
+          <tbody>
+            {% for m in memberships %}
+              <tr>
+                <td>{{ m.user.email }}</td>
+                <td><span class="badge text-bg-secondary">{{ m.get_role_display }}</span></td>
+                <td>
+                  {% if m.user.is_active %}Active
+                  {% else %}<span class="text-warning-emphasis">Pending activation</span>{% endif %}
+                </td>
+                <td class="text-end">
+                  {% if current_role == "OWNER" and m.user_id != user.id %}
+                    <form method="post" action="{% url 'web:member_remove' m.pk %}" class="d-inline">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="ip-section">
+      <h2 class="h6">Invite by email</h2>
+      {% if current_role == "OWNER" %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+          <button class="btn btn-primary" type="submit">Add member</button>
+        </form>
+        <p class="ip-muted mt-3 mb-0">
+          If no account exists for that address we create an inactive placeholder
+          user; they must be activated (or sign up) before they can sign in.
+        </p>
+      {% else %}
+        <p class="ip-muted mb-0">Only company owners can invite or remove members.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

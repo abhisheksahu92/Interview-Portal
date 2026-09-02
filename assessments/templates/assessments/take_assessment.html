@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ assessment.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">{{ assessment.title }}</h1>
+  <div class="fs-5">Time left: <strong id="timer" data-seconds="{{ attempt.seconds_remaining }}">--:--</strong></div>
+</div>
+<p class="text-muted">{{ assessment.time_limit_minutes }} minute limit · pass mark {{ assessment.pass_mark_percent }}%</p>
+
+<form id="attempt-form" method="post" action="{% url 'assessments:submit_attempt' attempt.pk %}">
+  {% csrf_token %}
+  {% for q in questions %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <p class="fw-semibold">{{ forloop.counter }}. {{ q.text }}</p>
+        {% if q.kind == "MCQ" %}
+          {% for opt in q.options %}
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="q{{ q.pk }}"
+                     id="q{{ q.pk }}-{{ forloop.counter0 }}" value="{{ forloop.counter0 }}">
+              <label class="form-check-label" for="q{{ q.pk }}-{{ forloop.counter0 }}">{{ opt }}</label>
+            </div>
+          {% endfor %}
+        {% else %}
+          <textarea class="form-control" name="q{{ q.pk }}" rows="4"></textarea>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-muted">This assessment has no questions yet.</p>
+  {% endfor %}
+  <button class="btn btn-primary">Submit assessment</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var el = document.getElementById("timer");
+  if (!el) { return; }
+  var left = parseInt(el.dataset.seconds || "0", 10);
+  function tick() {
+    var m = Math.floor(left / 60), s = left % 60;
+    el.textContent = m + ":" + (s < 10 ? "0" + s : s);
+    if (left <= 0) {
+      document.getElementById("attempt-form").submit();
+      return;
+    }
+    left -= 1;
+    window.setTimeout(tick, 1000);
+  }
+  tick();
+})();
+</script>
+{% endblock %}

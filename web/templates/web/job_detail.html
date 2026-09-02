@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}{{ job.title }} · pipeline{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
+{% block content %}
+{% include "web/_nav.html" %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ job.title }}</h1>
+    <p class="ip-muted mb-0">
+      {{ job.company.name }} · {{ job.location|default:"—" }} ·
+      {{ job.get_employment_type_display }} ·
+      <span class="badge text-bg-secondary">{{ job.get_status_display }}</span>
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_edit' job.pk %}">Edit job</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:settings_stages' job.pk %}">Stages</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'assessments:job_assessments' job.pk %}">Assessments</a>
+  </div>
+</div>
+
+<h2 class="h5">Pipeline</h2>
+{% include "web/partials/kanban.html" %}
+
+<div class="row g-3 mt-3">
+  <div class="col-md-6">
+    <div class="ip-section h-100">
+      <h2 class="h6">Description</h2>
+      <p class="mb-0">{{ job.description|linebreaksbr|default:"—" }}</p>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="ip-section h-100">
+      <h2 class="h6">Requirements</h2>
+      <p class="mb-2">{{ job.requirements|linebreaksbr|default:"—" }}</p>
+      {% for skill in job.skills.all %}
+        <span class="badge text-bg-light">{{ skill.name }}</span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,141 @@
+:root {
+  --ip-ink: #16202b;
+  --ip-muted: #5b6b7c;
+  --ip-accent: #14657c;
+  --ip-accent-soft: #e8f2f5;
+  --ip-line: #dde5ea;
+}
+
+body {
+  color: var(--ip-ink);
+  background: #f7f9fa;
+}
+
+.ip-hero {
+  background: var(--ip-accent-soft);
+  border-bottom: 1px solid var(--ip-line);
+  padding: 4rem 0;
+}
+
+.ip-hero h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.ip-lede {
+  color: var(--ip-muted);
+  font-size: 1.125rem;
+  max-width: 46rem;
+}
+
+.ip-kpi {
+  border: 1px solid var(--ip-line);
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 1rem 1.25rem;
+  height: 100%;
+}
+
+.ip-kpi__label {
+  color: var(--ip-muted);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.25rem;
+}
+
+.ip-kpi__value {
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/* Kanban board: horizontal scroll, fixed-width columns. */
+.ip-board {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  align-items: flex-start;
+}
+
+.ip-board__col {
+  flex: 0 0 17rem;
+  background: #eef2f5;
+  border: 1px solid var(--ip-line);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.ip-board__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.ip-card {
+  background: #fff;
+  border: 1px solid var(--ip-line);
+  border-left: 3px solid var(--ip-accent);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 0.625rem;
+}
+
+.ip-card__name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  word-break: break-word;
+}
+
+.ip-card__meta,
+.ip-muted {
+  color: var(--ip-muted);
+  font-size: 0.8125rem;
+}
+
+/* Stage stepper for the candidate portal. */
+.ip-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ip-stepper li {
+  border: 1px solid var(--ip-line);
+  border-radius: 999px;
+  padding: 0.125rem 0.75rem;
+  font-size: 0.8125rem;
+  background: #fff;
+  color: var(--ip-muted);
+}
+
+.ip-stepper li.is-done {
+  background: var(--ip-accent-soft);
+  border-color: var(--ip-accent);
+  color: var(--ip-accent);
+}
+
+.ip-stepper li.is-current {
+  background: var(--ip-accent);
+  border-color: var(--ip-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.ip-section {
+  background: #fff;
+  border: 1px solid var(--ip-line);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.htmx-request .ip-board {
+  opacity: 0.6;
+}

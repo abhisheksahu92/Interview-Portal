@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{{ job.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 m-0">{{ job.title }}</h1>
+  <a class="btn btn-outline-secondary" href="{% url 'jobs:manage_job_edit' job.pk %}">Edit job</a>
+</div>
+<p class="text-muted">{{ job.get_status_display }} · {{ job.get_employment_type_display }}</p>
+
+<h2 class="h5 mt-4">Pipeline stages</h2>
+<form method="post" action="{% url 'jobs:stage_reorder' job.pk %}">
+  {% csrf_token %}
+  <table class="table">
+    <thead><tr><th>#</th><th>Name</th><th>Kind</th><th>Assessment</th><th></th></tr></thead>
+    <tbody>
+    {% for stage in stages %}
+      <tr>
+        <td>{{ stage.order }}<input type="hidden" name="stage_ids" value="{{ stage.pk }}"></td>
+        <td>{{ stage.name }}</td>
+        <td>{{ stage.get_kind_display }}</td>
+        <td>{{ stage.requires_assessment|yesno:"yes,no" }}</td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-secondary"
+             href="{% url 'jobs:stage_edit' job.pk stage.pk %}">Edit</a>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <button class="btn btn-sm btn-outline-primary" type="submit">Save order</button>
+</form>
+
+<h3 class="h6 mt-4">Add a stage</h3>
+<form method="post" action="{% url 'jobs:stage_create' job.pk %}" class="col-lg-6">
+  {% csrf_token %}
+  {{ stage_form|crispy }}
+  <button class="btn btn-primary btn-sm" type="submit">Add stage</button>
+</form>
+
+<h2 class="h5 mt-5">Applications</h2>
+<table class="table">
+  <thead><tr><th>Candidate</th><th>Stage</th><th>Status</th><th>Fit</th></tr></thead>
+  <tbody>
+  {% for a in applications %}
+    <tr>
+      <td>{{ a.candidate.user.email }}</td>
+      <td>{{ a.current_stage.name|default:"—" }}</td>
+      <td>{{ a.get_status_display }}</td>
+      <td>{{ a.ai_fit_score|default:"—" }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="text-muted">No applications yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+{% block scripts %}{% endblock %}

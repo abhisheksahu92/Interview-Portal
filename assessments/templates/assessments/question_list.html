@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Question bank{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Question bank</h1>
+  <a class="btn btn-primary" href="{% url 'assessments:question_create' %}">New question</a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">Generate with AI</div>
+  <div class="card-body">
+    <form class="row g-2 align-items-end"
+          hx-post="{% url 'assessments:question_generate' %}"
+          hx-target="#ai-generated" hx-swap="innerHTML"
+          method="post" action="{% url 'assessments:question_generate' %}">
+      {% csrf_token %}
+      {% for field in generate_form %}
+        <div class="col-sm-3">
+          <label class="form-label small">{{ field.label }}</label>
+          {{ field }}
+        </div>
+      {% endfor %}
+      <div class="col-sm-auto">
+        <button class="btn btn-outline-primary" type="submit">Generate</button>
+      </div>
+    </form>
+    <div id="ai-generated" class="mt-3"></div>
+  </div>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-auto">
+    <select name="kind" class="form-select">
+      <option value="">All kinds</option>
+      <option value="MCQ" {% if kind == "MCQ" %}selected{% endif %}>MCQ</option>
+      <option value="TEXT" {% if kind == "TEXT" %}selected{% endif %}>Free text</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <select name="skill" class="form-select">
+      <option value="">All skills</option>
+      {% for s in skills %}
+        <option value="{{ s.id }}" {% if skill_id == s.id|stringformat:'s' %}selected{% endif %}>{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto"><button class="btn btn-outline-secondary">Filter</button></div>
+</form>
+
+<table class="table table-striped align-middle">
+  <thead><tr><th>Question</th><th>Kind</th><th>Skill</th><th>Difficulty</th><th>Source</th><th></th></tr></thead>
+  <tbody>
+    {% for q in questions %}
+      <tr>
+        <td>{{ q.text|truncatechars:90 }}</td>
+        <td>{{ q.get_kind_display }}</td>
+        <td>{{ q.skill.name|default:"—" }}</td>
+        <td>{{ q.get_difficulty_display }}</td>
+        <td>{{ q.get_source_display }}</td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'assessments:question_edit' q.pk %}">Edit</a>
+          <form class="d-inline" method="post" action="{% url 'assessments:question_delete' q.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="text-muted">No questions yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

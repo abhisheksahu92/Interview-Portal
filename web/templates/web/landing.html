@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Interview Portal — multi-tenant hiring pipelines with AI screening{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
+{% block content %}
+<section class="ip-section mb-4">
+  <h1 class="display-6 fw-bold mb-3">Hiring pipelines your whole team can actually run</h1>
+  <p class="ip-lede mb-4">
+    Interview Portal gives every company its own workspace: configurable pipeline
+    stages, a shared kanban board, structured interview reviews, and AI screening
+    that summarises each résumé against the role and scores fit before anyone
+    opens a CV.
+  </p>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-primary btn-lg" href="{% url 'core:company_signup' %}">Start hiring — create a company</a>
+    <a class="btn btn-outline-primary btn-lg" href="{% url 'core:candidate_signup' %}">Looking for a job? Sign up</a>
+    <a class="btn btn-link btn-lg" href="{% url 'web:job_browse' %}">Browse open roles</a>
+  </div>
+</section>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="ip-section h-100">
+      <h2 class="h5">Multi-tenant by design</h2>
+      <p class="ip-muted mb-0">
+        Each company gets isolated jobs, candidates, skills and question banks.
+        Owners invite recruiters and interviewers with scoped roles.
+      </p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="ip-section h-100">
+      <h2 class="h5">Configurable pipelines</h2>
+      <p class="ip-muted mb-0">
+        Screening, assessment, L1/L2, HR, offer — rename, reorder or drop stages
+        per job, and mark the ones that require an online assessment.
+      </p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="ip-section h-100">
+      <h2 class="h5">AI-assisted screening</h2>
+      <p class="ip-muted mb-0">
+        Generate skill-tagged question banks from a job description, grade free-text
+        answers, and get a fit score per application — degrading gracefully when
+        no AI key is configured.
+      </p>
+    </div>
+  </div>
+</div>
+
+<section class="ip-section mt-4">
+  <h2 class="h5">How it works</h2>
+  <ol class="mb-0 ip-muted">
+    <li>Create your company workspace and post a job — a default pipeline is seeded for you.</li>
+    <li>Candidates apply from the public openings board with a reusable profile and résumé.</li>
+    <li>Recruiters triage on the kanban board; interviewers work a review queue.</li>
+    <li>Assessments and AI fit scores keep the top of the funnel manageable.</li>
+  </ol>
+</section>
+{% endblock %}

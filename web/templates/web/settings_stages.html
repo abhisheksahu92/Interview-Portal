@@ -1,0 +1,58 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Stages · {{ job.title }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'web/app.css' %}">{% endblock %}
+{% block content %}
+{% include "web/_nav.html" %}
+<h1 class="h3 mb-1">Pipeline stages</h1>
+<p class="ip-muted">{{ job.title }} · <a href="{% url 'web:job_detail' job.pk %}">back to board</a></p>
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="ip-section">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <caption class="visually-hidden">Stages for {{ job.title }}</caption>
+          <thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Kind</th>
+            <th scope="col">Assessment</th><th scope="col"></th></tr></thead>
+          <tbody>
+            {% for stage in stages %}
+              <tr>
+                <td>{{ stage.order }}</td>
+                <td>{{ stage.name }}</td>
+                <td>{{ stage.get_kind_display }}</td>
+                <td>{% if stage.requires_assessment %}Required{% else %}—{% endif %}</td>
+                <td class="text-end">
+                  <form method="post" action="{% url 'web:stage_delete' stage.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="ip-section">
+      <h2 class="h6">Add a stage</h2>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3 {% if field.name == 'requires_assessment' %}form-check{% endif %}">
+            {% if field.name == 'requires_assessment' %}
+              {{ field }}
+              <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% else %}
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            {% endif %}
+            {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">Add stage</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
