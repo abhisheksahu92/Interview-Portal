@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ client.name }} · Clients{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div class="d-flex align-items-center gap-2">
+    {% if client.logo %}<img src="{{ client.logo.url }}" alt="" style="height:40px;width:auto">{% endif %}
+    <div>
+      <h1>{{ client.name }}</h1>
+      <p>{{ client.contact_name|default:"No contact" }}{% if client.contact_email %} <span class="ip-meta-dot"></span>{{ client.contact_email }}{% endif %}</p>
+    </div>
+  </div>
+  <div class="ms-auto">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'clients:edit' client.pk %}">Edit</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <section class="ip-section mb-3">
+      <div class="ip-section__head"><h2>Jobs</h2></div>
+      {% if jobs %}
+        <ul class="list-group list-group-flush mb-0">
+          {% for job in jobs %}
+            <li class="list-group-item d-flex justify-content-between px-0">
+              <span>{{ job.title }} <span class="ip-muted small"><span class="ip-meta-dot"></span>{{ job.get_status_display }}</span></span>
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'clients:job_client' job.pk %}">Change client</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="ip-muted small mb-2">No jobs are linked to this client yet.</p>
+      {% endif %}
+      {% if unassigned_jobs %}
+        <details class="mt-3">
+          <summary class="small">Link an existing job</summary>
+          <ul class="list-unstyled mt-2 mb-0">
+            {% for job in unassigned_jobs %}
+              <li><a class="small" href="{% url 'clients:job_client' job.pk %}">{{ job.title }}</a></li>
+            {% endfor %}
+          </ul>
+        </details>
+      {% endif %}
+    </section>
+
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Submissions</h2></div>
+      {% if submissions %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Candidate</th><th>Job</th><th>Status</th><th>Submitted</th></tr></thead>
+            <tbody>
+              {% for submission in submissions %}
+                <tr>
+                  <td><a href="{% url 'clients:submission_detail' submission.pk %}">{{ submission.candidate }}</a></td>
+                  <td>{{ submission.job.title }}</td>
+                  <td>{% include "clients/partials/status_badge.html" with submission=submission %}</td>
+                  <td class="ip-muted small">{{ submission.created_at|date:"d M Y" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="ip-muted small mb-0">Nothing submitted to this client yet.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-lg-5">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Portal access links</h2></div>
+      {% if accesses %}
+        <ul class="list-group list-group-flush mb-3">
+          {% for access in accesses %}
+            <li class="list-group-item px-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>
+                  {{ access.email }}
+                  {% if access.revoked %}<span class="badge text-bg-secondary">Revoked</span>
+                  {% elif access.is_expired %}<span class="badge text-bg-warning">Expired</span>
+                  {% else %}<span class="badge text-bg-success">Active</span>{% endif %}
+                </span>
+                <span class="d-flex gap-1">
+                  <form method="post" action="{% url 'clients:access_resend' client.pk access.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-secondary" type="submit">Resend</button>
+                  </form>
+                  {% if not access.revoked %}
+                    <form method="post" action="{% url 'clients:access_revoke' client.pk access.pk %}">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
+                    </form>
+                  {% endif %}
+                </span>
+              </div>
+              <div class="ip-muted small">
+                {% if access.expires_at %}Expires {{ access.expires_at|date:"d M Y" }}{% endif %}
+                {% if access.last_used_at %}<span class="ip-meta-dot"></span>last opened {{ access.last_used_at|date:"d M Y H:i" }}{% endif %}
+              </div>
+              {% if access.is_active %}
+                <code class="small d-block text-truncate">{% url 'clients:portal' access.token %}</code>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="ip-muted small">No links issued yet.</p>
+      {% endif %}
+      <form method="post" action="{% url 'clients:access_create' client.pk %}" novalidate>
+        {% csrf_token %}
+        <div class="mb-2">
+          <label class="form-label" for="{{ access_form.email.id_for_label }}">Contact email</label>
+          {{ access_form.email }}
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="{{ access_form.valid_days.id_for_label }}">Valid for (days)</label>
+          {{ access_form.valid_days }}
+        </div>
+        <button class="btn btn-primary btn-sm" type="submit">Generate &amp; email link</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

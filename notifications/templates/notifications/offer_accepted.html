@@ -1,0 +1,14 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p><strong>{{ candidate_name }}</strong> has accepted the offer for
+    <strong>{{ job_title }}</strong>.</p>
+  <ul style="padding-left:18px;margin:0 0 16px">
+    {% if offer.joining_date %}<li>Joining date: {{ offer.joining_date|date:"d M Y" }}</li>{% endif %}
+    {% if offer.signed_at %}
+      <li>Signed {{ offer.signed_at|date:"d M Y, H:i" }}{% if offer.signed_name %} by {{ offer.signed_name }}{% endif %}</li>
+    {% endif %}
+  </ul>
+  <p>The application has been marked <strong>HIRED</strong>.</p>
+  <p><a href="{{ offer_url }}" style="background:#059669;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">View the signed offer</a></p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">&mdash; {{ site_name }}</p>
+</div>

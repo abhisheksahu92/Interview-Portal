@@ -1,0 +1,8 @@
+Hi {{ recipient_name }},
+
+Congratulations! We would like to move ahead with you for {{ job.title }} at {{ company.name }}.
+
+Our team will contact you shortly with the paperwork and joining details.
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

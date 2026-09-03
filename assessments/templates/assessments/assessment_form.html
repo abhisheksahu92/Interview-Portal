@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{% if assessment %}Edit assessment{% else %}New assessment{% endif %}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-muted small mb-1">
+      <a href="{% url 'assessments:job_assessments' job.pk %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Assessments</a>
+    </p>
+    <h1>{% if assessment %}Edit{% else %}New{% endif %} assessment</h1>
+    <p>{{ job.title }}</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="ip-section" style="max-width:46rem">
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <div class="d-flex gap-2 pt-2">
+      <button class="btn btn-primary">Save</button>
+      <a class="btn btn-link" href="{% url 'assessments:job_assessments' job.pk %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

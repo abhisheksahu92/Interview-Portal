@@ -1,0 +1,13 @@
+<p>Hello,</p>
+<p>
+  {% if invited_by %}<strong>{{ invited_by.email }}</strong> has invited you{% else %}You have been invited{% endif %}
+  to join <strong>{{ company.name }}</strong> on Interview Portal as <strong>{{ role }}</strong>.
+</p>
+<p><a href="{{ accept_url }}">Accept the invitation</a></p>
+<p style="color:#666;font-size:12px">
+  Or paste this link into your browser: {{ accept_url }}<br>
+  This link expires on {{ expires_at }}.
+</p>
+<p style="color:#666;font-size:12px">
+  If you were not expecting this invitation you can ignore this email.
+</p>

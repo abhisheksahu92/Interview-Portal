@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Members · {{ company.name }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Team members</h1>
+    <p>Who can see and act on the pipelines in {{ company.name }}.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Members</h2>
+        <span class="ip-badge ip-badge--neutral">{{ memberships|length }}</span></div>
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Members of {{ company.name }}</caption>
+          <thead><tr><th scope="col">Email</th><th scope="col">Role</th>
+            <th scope="col">Joined</th><th scope="col"></th></tr></thead>
+          <tbody>
+            {% for m in memberships %}
+              <tr>
+                <td>{{ m.user.email }}</td>
+                <td><span class="ip-badge ip-badge--{% if m.role == 'OWNER' %}accent{% else %}neutral{% endif %}">{{ m.get_role_display }}</span></td>
+                <td class="ip-muted text-nowrap">{{ m.created_at|date:"j M Y" }}</td>
+                <td class="text-end">
+                  {% if current_role == "OWNER" and m.user_id != user.id %}
+                    <form method="post" action="{% url 'web:member_remove' m.pk %}" class="d-inline" onsubmit="return confirm('Remove {{ m.user.email }} from {{ company.name }}?')">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="ip-section mt-3">
+      <div class="ip-section__head"><h2>Pending invitations</h2></div>
+      {% if invitations %}
+        <div class="ip-table-wrap">
+          <table class="ip-table">
+            <caption class="visually-hidden">Pending invitations for {{ company.name }}</caption>
+            <thead><tr><th scope="col">Email</th><th scope="col">Role</th>
+              <th scope="col">Status</th><th scope="col"></th></tr></thead>
+            <tbody>
+              {% for inv in invitations %}
+                <tr>
+                  <td>{{ inv.email }}</td>
+                  <td><span class="ip-badge ip-badge--neutral">{{ inv.get_role_display }}</span></td>
+                  <td class="ip-muted text-nowrap">
+                    {% if inv.is_expired %}
+                      <span class="ip-badge ip-badge--danger">Expired</span>
+                    {% else %}
+                      Invited &middot; expires {{ inv.expires_at|date:"j M Y" }}
+                    {% endif %}
+                  </td>
+                  <td class="text-end text-nowrap">
+                    {% if current_role == "OWNER" %}
+                      <form method="post" action="{% url 'web:invite_resend' inv.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">Resend</button>
+                      </form>
+                      <form method="post" action="{% url 'web:invite_revoke' inv.pk %}" class="d-inline" onsubmit="return confirm('Revoke the invitation for {{ inv.email }}?')">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="ip-empty ip-empty--sm">
+          <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-envelope"></i></span>
+          <div class="ip-empty__title">No invitations are waiting to be accepted</div>
+          <p>Invite a teammate with the form beside this list — the link expires after 7 days.</p>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-lg-5">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Invite by email</h2></div>
+      {% if current_role == "OWNER" %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+          {% for e in form.non_field_errors %}<div class="text-danger small mb-2">{{ e }}</div>{% endfor %}
+          <button class="btn btn-primary" type="submit">Send invitation</button>
+        </form>
+        <p class="ip-muted small mt-3 mb-0">
+          We email a sign-up link that expires in 7 days. Nobody joins
+          {{ company.name }} until they accept it.
+        </p>
+      {% else %}
+        <p class="ip-muted small mb-0">Only company owners can invite or remove members.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

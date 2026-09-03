@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Video answers submitted{% endblock %}
+{% block content %}
+<div class="card mx-auto" style="max-width:34rem">
+  <div class="card-body text-center">
+    <p class="display-6 mb-2" aria-hidden="true">✅</p>
+    <h1 class="h4">Thanks — your answers are in</h1>
+    <p class="text-body-secondary mb-0">
+      We received {{ invite.progress.answered }} recording{{ invite.progress.answered|pluralize }} for
+      “{{ invite.screen.title }}” ({{ invite.application.job.title }}). The hiring team will review them shortly.
+    </p>
+  </div>
+</div>
+{% endblock %}

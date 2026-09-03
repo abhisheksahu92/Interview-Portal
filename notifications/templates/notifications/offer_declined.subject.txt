@@ -1,0 +1,1 @@
+Offer declined: {{ candidate_name }} — {{ job_title }}

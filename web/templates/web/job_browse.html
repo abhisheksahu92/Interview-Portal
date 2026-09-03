@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Open roles{% endblock %}
+{% block content %}
+<div class="ip-page-head">
+  <div>
+    <h1>Open roles</h1>
+    <p>Openings published by every company on Interview Portal.</p>
+  </div>
+</div>
+
+<form class="ip-section ip-section--tight mb-4" role="search"
+      hx-get="{% url 'web:job_browse' %}" hx-target="#job-results" hx-swap="outerHTML"
+      hx-push-url="true" hx-indicator="#search-indicator"
+      hx-trigger="submit, keyup changed delay:400ms from:#q">
+  <label class="form-label" for="q">Search by title, location or skill</label>
+  <div class="d-flex gap-2">
+    <input class="form-control" type="search" id="q" name="q" value="{{ q }}"
+           placeholder="e.g. Django, Pune, contract">
+    <button class="btn btn-primary" type="submit">Search</button>
+    <span class="ip-spinner htmx-indicator align-self-center" id="search-indicator"
+          role="status" aria-label="Searching"></span>
+  </div>
+</form>
+
+{% include "web/partials/job_results.html" %}
+{% endblock %}

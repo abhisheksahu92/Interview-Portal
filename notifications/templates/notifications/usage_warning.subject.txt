@@ -1,0 +1,1 @@
+You have used {{ percent_used|default:80 }}% of your {{ usage_kind|default:"plan" }} quota

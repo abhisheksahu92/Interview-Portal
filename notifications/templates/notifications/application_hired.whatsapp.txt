@@ -1,0 +1,1 @@
+Congratulations {{ recipient_name }}! {{ company.name }} would like to move ahead with you for {{ job.title }}. Reply STOP to opt out.

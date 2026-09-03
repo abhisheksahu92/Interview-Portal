@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Branding & partners · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Branding &amp; partners</h1>
+    <p>White-label this workspace and manage the reseller programme.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<ul class="nav nav-tabs mb-4">
+  <li class="nav-item">
+    <a class="nav-link {% if tab == 'branding' %}active{% endif %}"
+       href="{% url 'partners:settings' %}?tab=branding">Branding</a>
+  </li>
+  {% if user.is_staff %}
+    <li class="nav-item">
+      <a class="nav-link {% if tab == 'partners' %}active{% endif %}"
+         href="{% url 'partners:settings' %}?tab=partners">Partners</a>
+    </li>
+  {% endif %}
+</ul>
+
+{% if tab == 'branding' %}
+  {% if can_white_label %}
+    <form method="post" enctype="multipart/form-data" class="card p-4 mb-4" style="max-width:42rem">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="branding">
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="text-danger small">{{ field.errors|join:", " }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit">Save branding</button>
+    </form>
+  {% else %}
+    <div class="alert alert-warning">
+      White-labelling is not included in your plan.
+      <a href="{% url 'billing:overview' %}">Upgrade</a> to rebrand this workspace.
+    </div>
+  {% endif %}
+
+  <div class="card p-4" style="max-width:42rem">
+    <h2 class="h6">Self-hosted licence</h2>
+    {% if licenses %}
+      <ul class="list-unstyled small mb-3">
+        {% for licence in licenses %}
+          <li>{{ licence.seats }} seats · expires {{ licence.expires_at|date:"Y-m-d" }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted small">No licence issued for this workspace.</p>
+    {% endif %}
+    <form method="post" action="{% url 'partners:verify_license' %}" class="d-flex gap-2">
+      {% csrf_token %}
+      <input class="form-control" type="text" name="key" placeholder="Paste a licence key" required>
+      <button class="btn btn-outline-secondary" type="submit">Verify</button>
+    </form>
+  </div>
+{% else %}
+  {% if referral %}
+    <p class="text-muted small">Referred by <strong>{{ referral.reseller.name }}</strong>
+      on {{ referral.signed_up_at|date:"Y-m-d" }}.</p>
+  {% endif %}
+  <div class="card p-4 mb-4" style="max-width:42rem">
+    <h2 class="h6">Add a reseller</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form" value="reseller">
+      {% for field in reseller_form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="text-danger small">{{ field.errors|join:", " }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit">Save reseller</button>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Reseller</th><th>Code</th><th>Commission</th><th>Referrals</th><th>Dashboard</th></tr></thead>
+      <tbody>
+        {% for reseller in resellers %}
+          <tr>
+            <td>{{ reseller.name }}</td>
+            <td><code>{{ reseller.code }}</code></td>
+            <td>{{ reseller.commission_pct }}%</td>
+            <td>{{ reseller.referrals.count }}</td>
+            <td><a href="{% url 'partners:reseller_dashboard' reseller.code %}?t={{ reseller.token }}">Open</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted">No resellers yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}

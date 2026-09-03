@@ -1,0 +1,28 @@
+# Production overlay for a single host. Use with the base file:
+#
+#   docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d --build
+#
+# Differences from the base stack:
+#   - no host port on postgres, DB data only on the named volume
+#   - DEBUG forced off, more gunicorn workers, always-restart policy
+#   - the web port is bound to loopback so a host TLS reverse proxy
+#     (nginx/Caddy/Traefik) terminates HTTPS in front of it
+services:
+  db:
+    restart: always
+
+  web:
+    restart: always
+    environment:
+      DEBUG: "False"
+      SEED_DEMO: "0"
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-4}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-60}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8000}:8000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

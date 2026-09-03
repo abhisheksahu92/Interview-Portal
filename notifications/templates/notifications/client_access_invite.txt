@@ -1,0 +1,11 @@
+Hello,
+
+{{ company }} has given you a private portal to review the candidates submitted to {{ client }}.
+
+Open your portal: {{ url }}
+{% if expires_at %}
+This link expires on {{ expires_at|date:"d M Y" }}. Ask your contact at {{ company }} for a fresh one after that.
+{% endif %}
+The link is personal to you — anyone with it can see the shortlist, so please do not forward it.
+
+— {{ site_name }}

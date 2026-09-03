@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}My applications{% endblock %}
+{% block content %}
+<div class="ip-page-head">
+  <div>
+    <h1>My applications</h1>
+    <p>
+      {% if profile.headline %}{{ profile.headline }}<span class="ip-meta-dot"></span>{% endif %}{{ profile.experience_years }} yrs experience<span class="ip-meta-dot"></span>{% if profile.resume %}résumé on file{% else %}<a href="{% url 'web:candidate_profile' %}">upload your résumé</a>{% endif %}
+    </p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:candidate_profile' %}">Edit profile</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'web:job_browse' %}">Browse openings</a>
+  </div>
+</div>
+
+{% for row in rows %}
+  <article class="ip-section mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+      <div>
+        <h2 class="h6 mb-1">{{ row.application.job.title }}</h2>
+        <p class="ip-muted small mb-0">
+          {{ row.application.job.company.name }}<span class="ip-meta-dot"></span>applied {{ row.application.created_at|date:"j M Y" }}
+        </p>
+      </div>
+      <span class="ip-badge ip-badge--{% if row.application.status == 'HIRED' %}success{% elif row.application.status == 'REJECTED' %}danger{% else %}accent{% endif %}">
+        {{ row.application.get_status_display }}</span>
+    </div>
+
+    <ol class="ip-stepper mb-0" aria-label="Pipeline progress">
+      {% for stage in row.stages %}
+        <li class="{% if stage.order == row.current_order %}is-current{% elif stage.order < row.current_order %}is-done{% endif %}">
+          <span class="ip-step__dot" aria-hidden="true">
+            {% if stage.order < row.current_order %}<i class="bi bi-check"></i>{% endif %}
+          </span>
+          <span>{{ stage.name }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+
+    {% if row.application.status == "ACTIVE" and row.application.current_stage.requires_assessment %}
+      <div class="mt-3 pt-3 border-top">
+        {% if row.assessment_url %}
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+              <div class="fw-semibold small">An assessment is waiting for you</div>
+              <div class="ip-muted small">Complete it to move on to the next stage.</div>
+            </div>
+            <a class="btn btn-primary" href="{{ row.assessment_url }}">
+              <i class="bi bi-clipboard-check me-1" aria-hidden="true"></i>Take assessment</a>
+          </div>
+        {% else %}
+          <p class="ip-muted small mb-0">
+            This stage requires an assessment — the hiring team has not published one yet.
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </article>
+{% empty %}
+  <div class="ip-section">
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-send"></i></span>
+      <div class="ip-empty__title">You have not applied to anything yet</div>
+      <p>Browse the open roles from every company on Interview Portal and apply with your saved profile.</p>
+      <a class="btn btn-primary" href="{% url 'web:job_browse' %}">Browse open roles</a>
+    </div>
+  </div>
+{% endfor %}
+{% endblock %}

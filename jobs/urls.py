@@ -1,14 +1,10 @@
-# urls.py
-from django.urls import path
-from . import views
+"""The ``jobs`` app is domain-only: models, services and the admin.
 
-app_name = 'jobs'
+All server-rendered job/skill/stage screens live in the ``web`` app (the
+canonical UI, mounted at ``/`` — see ``web/urls.py``), so this URLconf is
+intentionally empty and kept only so the root URLconf include stays stable.
+"""
 
-urlpatterns = [
-    path('', views.job_list, name='job-list'),
-    path('<int:pk>/', views.job_detail, name='job-detail'),
-    path('create/', views.create_job, name='create-job'),
-    path('<int:pk>/selectexam/<str:exam>', views.select_exam, name='select-exam'),
-    path('<int:pk>/update/', views.update_job, name='update-job'),
-    path('<int:pk>/delete/', views.delete_job, name='delete-job'),
-]
+app_name = "jobs"
+
+urlpatterns: list = []

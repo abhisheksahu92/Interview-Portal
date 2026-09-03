@@ -1,0 +1,1 @@
+{{ recipient_name }}: your application for {{ job.title }} has moved to {{ stage_name }}. Reply STOP to opt out.

@@ -1,0 +1,1 @@
+{{ inviter_name|default:"A teammate" }} invited you to {{ company.name }}

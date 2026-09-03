@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.display_name }} · Talent{% endblock %}
+{% block page_header %}
+<div class="ip-page-head d-flex flex-wrap gap-2 justify-content-between align-items-start">
+  <div>
+    <h1>{{ profile.display_name }}</h1>
+    <p>
+      {{ profile.email }}{% if profile.phone %} · {{ profile.phone }}{% endif %}
+      {% if profile.location %} · {{ profile.location }}{% endif %}
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'talent:index' %}">Back to pool</a>
+    <a class="btn btn-outline-secondary" href="{% url 'talent:profile_edit' profile.pk %}">Edit</a>
+    {% if profile.resume %}
+      <a class="btn btn-outline-primary" href="{% url 'talent:profile_resume' profile.pk %}" target="_blank" rel="noopener">
+        <i class="bi bi-file-earmark-text" aria-hidden="true"></i> View resume
+      </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Profile</h2></div>
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Headline</dt><dd class="col-sm-8">{{ profile.headline|default:"—" }}</dd>
+        <dt class="col-sm-4">Experience</dt><dd class="col-sm-8">{{ profile.experience_years }} years</dd>
+        <dt class="col-sm-4">Current company</dt><dd class="col-sm-8">{{ profile.current_company|default:"—" }}</dd>
+        <dt class="col-sm-4">Source</dt><dd class="col-sm-8">{{ profile.get_source_display }}</dd>
+        <dt class="col-sm-4">Last contacted</dt><dd class="col-sm-8">{{ profile.last_contacted|default:"Never" }}</dd>
+        <dt class="col-sm-4">Skills</dt>
+        <dd class="col-sm-8">
+          {% for skill in profile.skills.all %}
+            <span class="badge rounded-pill text-bg-secondary">{{ skill.name }}</span>
+          {% empty %}—{% endfor %}
+        </dd>
+        <dt class="col-sm-4">Tags</dt>
+        <dd class="col-sm-8">
+          {% for tag in profile.tags %}<span class="badge text-bg-light border">{{ tag }}</span>{% empty %}—{% endfor %}
+        </dd>
+      </dl>
+    </section>
+    {% if profile.resume_text %}
+      <section class="ip-section mt-3">
+        <div class="ip-section__head"><h2>Resume text</h2></div>
+        <pre class="small mb-0" style="max-height: 22rem; overflow: auto; white-space: pre-wrap;">{{ profile.resume_text }}</pre>
+      </section>
+    {% endif %}
+  </div>
+  <div class="col-lg-5">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Quick actions</h2></div>
+      <form method="post" action="{% url 'talent:bulk_action' %}" class="mb-3">
+        {% csrf_token %}
+        <input type="hidden" name="selected" value="{{ profile.pk }}">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <label class="form-label small mb-1" for="detail-job">Add to job</label>
+        <div class="input-group input-group-sm mb-3">
+          <select class="form-select" id="detail-job" name="job">
+            <option value="">Choose an open job…</option>
+            {% for job in jobs %}<option value="{{ job.pk }}">{{ job.title }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-outline-primary" type="submit" name="action" value="add_to_job">Add</button>
+        </div>
+        <label class="form-label small mb-1" for="detail-tag">Add tag</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" id="detail-tag" name="tag" placeholder="shortlist">
+          <button class="btn btn-outline-primary" type="submit" name="action" value="tag">Tag</button>
+        </div>
+      </form>
+      <form method="post" action="{% url 'talent:profile_contacted' profile.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn btn-sm btn-outline-secondary" type="submit">Mark as contacted</button>
+      </form>
+    </section>
+    <section class="ip-section mt-3">
+      <div class="ip-section__head"><h2>Applications</h2></div>
+      {% if applications %}
+        <ul class="list-group list-group-flush mb-0">
+          {% for application in applications %}
+            <li class="list-group-item px-0">
+              <span class="fw-semibold">{{ application.job.title }}</span>
+              <div class="ip-muted small">
+                {{ application.get_status_display }}
+                {% if application.current_stage %} · {{ application.current_stage.name }}{% endif %}
+                · applied {{ application.created_at|date:"d M Y" }}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="ip-muted small mb-0">No applications yet.</p>
+      {% endif %}
+    </section>
+    <section class="ip-section mt-3">
+      <div class="ip-section__head"><h2>Notes</h2></div>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ note_form.notes }}
+        {% for e in note_form.notes.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        <button class="btn btn-sm btn-primary mt-2" type="submit">Save notes</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

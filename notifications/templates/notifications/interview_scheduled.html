@@ -1,0 +1,11 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p>Hi {{ recipient_name }},</p>
+  <p>Your {% if stage %}{{ stage.name }} {% endif %}interview for {{ job.title }} at {{ company.name }} is confirmed.</p>
+  <p>When: {{ interview.scheduled_start|default:"see the details in your portal" }}<br>Where: {{ interview.location_or_link|default:"details to follow" }}</p>
+  <p>Please let us know as soon as possible if you need to reschedule.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">
+    &mdash; {{ site_name }} &middot;
+    <a href="{{ unsubscribe_url }}" style="color:#6b7280">Manage your notification preferences</a>
+  </p>
+</div>

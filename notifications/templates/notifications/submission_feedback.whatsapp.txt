@@ -1,0 +1,1 @@
+{{ client.name|default:"A client" }} responded to your submission for {{ job.title }}: {{ submission.status|default:"updated" }}.

@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block title %}Billing — Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Billing &amp; usage</h1>
+    <p>Plans are billed in INR (18% GST added on invoices). Candidates and assessments are unlimited.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <span class="ip-badge ip-badge--accent">Current plan: <span>{{ plan.name }}</span></span>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+
+{% if in_trial %}
+  <div class="alert alert-info d-flex flex-wrap align-items-center gap-2">
+    <i class="bi bi-stars" aria-hidden="true"></i>
+    <strong>Free trial:</strong>
+    {{ trial_days_left }} day{{ trial_days_left|pluralize }} left — every {{ plan.name }} feature is unlocked
+    until {{ subscription.trial_ends_at|date:"j M Y" }}. Pick a plan below to keep them.
+  </div>
+{% endif %}
+
+{% if not_configured %}
+  <div class="alert alert-warning">
+    No payment provider is configured on this server, so upgrades are disabled.
+    Set <code>RAZORPAY_KEY_ID</code>/<code>RAZORPAY_KEY_SECRET</code> (India) or
+    <code>STRIPE_SECRET_KEY</code> to enable checkout.
+  </div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <section class="ip-section h-100">
+      <div class="ip-section__head">
+        <h2>Subscription</h2>
+        <span class="ip-badge ip-badge--{% if subscription.status == 'ACTIVE' %}success{% elif subscription.status == 'PAST_DUE' %}danger{% else %}neutral{% endif %}">
+          {{ subscription.get_status_display }}
+        </span>
+      </div>
+      <div class="ip-kpi__value">
+        {% if plan.price_monthly_inr %}₹{{ plan.price_monthly_inr|floatformat:0 }}{% else %}Free{% endif %}
+      </div>
+      <div class="ip-kpi__trend">
+        {% if plan.price_monthly_inr %}per month ({{ subscription.get_interval_display|lower }} billing){% else %}no card required{% endif %}
+        <span class="ip-meta-dot"></span>up to {{ max_open_jobs }} open job{{ max_open_jobs|pluralize }}
+      </div>
+      {% if subscription.current_period_end %}
+        <p class="ip-muted small mt-3 mb-0">Renews {{ subscription.current_period_end|date:"j M Y" }}</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-md-4">
+    <section class="ip-section h-100">
+      <div class="ip-section__head"><h2>Seats</h2></div>
+      <div class="ip-kpi__value">{{ seats_used }} / {{ max_seats }}</div>
+      <div class="ip-kpi__trend">team members using this workspace</div>
+      <div class="progress mt-3" style="height:8px" role="progressbar" aria-label="Seats used">
+        <div class="progress-bar" style="width:{% widthratio seats_used max_seats 100 %}%"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col-md-4">
+    <section class="ip-section h-100">
+      <div class="ip-section__head"><h2>Open jobs</h2></div>
+      <div class="ip-kpi__value">{{ open_jobs }} / {{ max_open_jobs }}</div>
+      <div class="ip-kpi__trend">
+        {% if at_limit %}plan limit reached{% else %}{{ remaining }} more can be opened{% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+
+<section class="ip-section mb-4">
+  <div class="ip-section__head"><h2>Monthly usage</h2></div>
+  <div class="row g-3">
+    {% for row in usage_rows %}
+      <div class="col-md-4">
+        <div class="small fw-semibold d-flex justify-content-between">
+          <span>{{ row.label }}</span>
+          <span class="{% if row.warning %}text-danger{% else %}ip-muted{% endif %}">
+            {% if row.included %}{{ row.used }} / {{ row.quota }}{% else %}not included{% endif %}
+          </span>
+        </div>
+        <div class="progress mt-1" style="height:8px" role="progressbar"
+             aria-label="{{ row.label }} usage" aria-valuenow="{{ row.percent }}">
+          <div class="progress-bar {% if row.warning %}bg-danger{% endif %}"
+               style="width:{{ row.percent }}%"></div>
+        </div>
+        {% if row.warning %}
+          <p class="small text-danger mb-0 mt-1">Over 80% used — upgrade to avoid interruptions.</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="ip-section mb-4">
+  <div class="ip-section__head">
+    <h2>Plans</h2>
+    <div class="btn-group btn-group-sm" role="group" aria-label="Billing interval">
+      <a class="btn btn-outline-secondary {% if interval == 'MONTHLY' %}active{% endif %}"
+         href="?interval=MONTHLY">Monthly</a>
+      <a class="btn btn-outline-secondary {% if interval == 'YEARLY' %}active{% endif %}"
+         href="?interval=YEARLY">Yearly <span class="ip-muted">(2 months free)</span></a>
+    </div>
+  </div>
+  <div class="row g-3">
+    {% for p in plans %}
+      <div class="col-md-4">
+        <div class="ip-plan {% if p.pk == plan.pk %}is-current{% endif %}">
+          <div class="d-flex align-items-center gap-2">
+            <span class="ip-plan__name">{{ p.name }}</span>
+            {% if p.pk == plan.pk %}<span class="ip-badge ip-badge--accent">Current plan</span>{% endif %}
+          </div>
+          <div class="ip-plan__price">
+            {% if interval == 'YEARLY' %}
+              ₹{{ p.price_yearly_inr|floatformat:0 }} <span>/ year</span>
+            {% else %}
+              ₹{{ p.price_monthly_inr|floatformat:0 }} <span>/ month</span>
+            {% endif %}
+          </div>
+          <ul class="ip-plan__list">
+            <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_open_jobs }} open job{{ p.max_open_jobs|pluralize }}</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_seats }} seats</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.ai_credits_monthly }} AI credits / month</li>
+            {% for name, on in p.features.items %}
+              {% if on %}<li><i class="bi bi-check2" aria-hidden="true"></i> {{ name|cut:"_"|title }}</li>{% endif %}
+            {% endfor %}
+          </ul>
+          <div class="ip-plan__cta">
+            {% if not is_owner %}
+              <p class="ip-muted small mb-0">Only the company owner can change the plan.</p>
+            {% elif provider == 'RAZORPAY' %}
+              <form method="post" action="{% url 'billing:razorpay_checkout' %}" class="m-0">
+                {% csrf_token %}
+                <input type="hidden" name="plan" value="{{ p.code }}">
+                <input type="hidden" name="interval" value="{{ interval }}">
+                <button class="btn btn-primary w-100" type="submit">
+                  Pay with Razorpay — {{ p.name }}
+                </button>
+              </form>
+            {% elif provider == 'STRIPE' %}
+              <form method="post" action="{% url 'billing:checkout' %}" class="m-0">
+                {% csrf_token %}
+                <input type="hidden" name="plan" value="{{ p.code }}">
+                <button class="btn btn-primary w-100" type="submit" {% if not stripe_ready %}disabled{% endif %}>
+                  Pay with Stripe — {{ p.name }}
+                </button>
+              </form>
+            {% else %}
+              <button class="btn btn-outline-secondary w-100" type="button" disabled>Not configured</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-7">
+    <section class="ip-section h-100">
+      <div class="ip-section__head"><h2>Invoices</h2></div>
+      {% if invoices %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Number</th><th>Issued</th><th class="text-end">Total</th><th>Tax</th><th></th></tr></thead>
+            <tbody>
+              {% for inv in invoices %}
+                <tr>
+                  <td>{{ inv.number }}</td>
+                  <td>{{ inv.issued_at|date:"j M Y" }}</td>
+                  <td class="text-end">₹{{ inv.total|floatformat:2 }}</td>
+                  <td class="ip-muted small">
+                    {% if inv.is_intra_state %}CGST+SGST{% else %}IGST{% endif %} {{ inv.gst_rate|floatformat:0 }}%
+                  </td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary"
+                       href="{% url 'billing:invoice_download' inv.pk %}">Download</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="ip-muted small mb-0">No invoices yet — they appear here after your first payment.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-lg-5">
+    <section class="ip-section h-100">
+      <div class="ip-section__head"><h2>GST &amp; billing address</h2></div>
+      {% if is_owner %}
+        <form method="post" action="{% url 'billing:details' %}" class="row g-2" novalidate>
+          {% csrf_token %}
+          {% if details_form.non_field_errors %}
+            <div class="col-12"><div class="alert alert-danger py-2 mb-0 small">
+              {% for error in details_form.non_field_errors %}{{ error }}{% endfor %}
+            </div></div>
+          {% endif %}
+          {% for field in details_form %}
+            <div class="{% if field.name == 'city' or field.name == 'pincode' %}col-6{% else %}col-12{% endif %}">
+              <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}
+                <div class="invalid-feedback d-block small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+          <div class="col-12">
+            <p class="ip-muted small mb-2">
+              Place of supply:
+              <strong>{{ subscription.billing_state_code|default:"—" }}</strong>
+              (taken from the first two digits of your GSTIN)
+            </p>
+            <button class="btn btn-sm btn-primary" type="submit">Save billing details</button>
+          </div>
+        </form>
+      {% else %}
+        <p class="ip-muted small mb-0">Only the company owner can edit billing details.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+
+{% if placement_fees %}
+  <section class="ip-section mb-4">
+    <div class="ip-section__head"><h2>Placement fees</h2></div>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Hire</th><th>Job</th><th class="text-end">Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for fee in placement_fees %}
+            <tr>
+              <td>{{ fee.created_at|date:"j M Y" }}</td>
+              <td>{{ fee.application.job.title }}</td>
+              <td class="text-end">₹{{ fee.amount|floatformat:2 }}</td>
+              <td>{{ fee.get_status_display }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endif %}
+
+<div class="ip-section ip-section--tight">
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    {% if is_owner and subscription.stripe_customer_id %}
+      <form method="post" action="{% url 'billing:portal' %}" class="m-0">
+        {% csrf_token %}
+        <button class="btn btn-outline-secondary" type="submit">
+          <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>Manage subscription
+        </button>
+      </form>
+    {% endif %}
+    <p class="ip-muted small mb-0 ms-auto">
+      Payments are processed by
+      {% if provider == 'RAZORPAY' %}Razorpay{% elif provider == 'STRIPE' %}Stripe{% else %}no configured provider{% endif %}.
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Marketplace · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Marketplace</h1>
+    <p>Ready-made question packs and the verified candidate pool.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'marketplace:purchases' %}">My purchases</a>
+    {% if can_pool %}
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'marketplace:pool' %}">Talent pool</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form class="row g-2 mb-4" method="get">
+  <div class="col-sm-8 col-lg-5">
+    <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search packs by title or skill">
+  </div>
+  <div class="col-auto"><button class="btn btn-primary" type="submit">Search</button></div>
+</form>
+
+<div class="row g-3">
+  {% for pack in packs %}
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100 p-3">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <h2 class="h6 mb-1"><a href="{% url 'marketplace:pack_detail' pack.slug %}">{{ pack.title }}</a></h2>
+          {% if pack.id in installed_ids %}
+            <span class="badge text-bg-success">Installed</span>
+          {% elif pack.is_free %}
+            <span class="badge text-bg-secondary">Free</span>
+          {% else %}
+            <span class="badge text-bg-primary">₹{{ pack.price_inr }}</span>
+          {% endif %}
+        </div>
+        <div class="text-muted small mb-2">{{ pack.skill_name }} · {{ pack.question_count }} questions</div>
+        <p class="small mb-0">{{ pack.description|truncatewords:24 }}</p>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12"><div class="alert alert-info mb-0">No packs published yet.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

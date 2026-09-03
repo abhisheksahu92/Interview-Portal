@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Submission · {{ submission.client.name }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>{{ submission.candidate }}</h1>
+    <p>{{ submission.job.title }} <span class="ip-meta-dot"></span>
+      submitted to <a href="{% url 'clients:detail' submission.client.pk %}">{{ submission.client.name }}</a></p>
+  </div>
+  <div class="ms-auto">{% include "clients/partials/status_badge.html" with submission=submission %}</div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Status timeline</h2></div>
+      <ol class="list-unstyled mb-0">
+        {% for event in timeline %}
+          <li class="d-flex gap-2 mb-3">
+            <span aria-hidden="true"><i class="bi {{ event.icon }}"></i></span>
+            <div>
+              <div class="fw-semibold">{{ event.label }}</div>
+              <div class="ip-muted small">{{ event.at|date:"d M Y H:i" }}</div>
+              {% if event.rating %}<div class="small">Rating: {{ event.rating }}/5</div>{% endif %}
+              {% if event.detail %}<p class="mb-0 small">{{ event.detail|linebreaksbr }}</p>{% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+      {% if not submission.is_decided %}
+        <p class="ip-muted small mb-0">Awaiting the client's decision.</p>
+      {% endif %}
+    </section>
+  </div>
+  <div class="col-lg-5">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Candidate</h2></div>
+      <p class="mb-1">{{ submission.candidate.headline|default:"—" }}</p>
+      <p class="ip-muted small mb-0">
+        {{ submission.candidate.experience_years }} yrs experience
+        {% if submission.application.ai_fit_score %}<span class="ip-meta-dot"></span>AI fit {{ submission.application.ai_fit_score }}%{% endif %}
+      </p>
+    </section>
+  </div>
+</div>
+{% endblock %}

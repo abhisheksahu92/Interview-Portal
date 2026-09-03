@@ -1,0 +1,65 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Gate: publish whether the Fly token exists, so the deploy job can be
+  # skipped cleanly (secrets cannot be referenced in a job-level `if`).
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      has_fly_token: ${{ steps.check.outputs.has_fly_token }}
+    steps:
+      - id: check
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -n "$FLY_API_TOKEN" ]; then
+            echo "has_fly_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_fly_token=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::FLY_API_TOKEN is not set; the deploy job will be skipped."
+          fi
+
+  test:
+    runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ci-secret-key
+      DEBUG: "False"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Ruff
+        run: ruff check .
+      - name: Django checks
+        run: python manage.py check --deploy --fail-level ERROR
+      - name: Migrations are complete
+        run: python manage.py makemigrations --check --dry-run
+      - name: Tests
+        run: pytest
+      - name: Static pipeline
+        run: python manage.py collectstatic --noinput
+
+  deploy:
+    needs: [check-secrets, test]
+    if: needs.check-secrets.outputs.has_fly_token == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: flyctl deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only --wait-timeout 300

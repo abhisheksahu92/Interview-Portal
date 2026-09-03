@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Import batch #{{ batch.pk }} · Talent{% endblock %}
+{% block page_header %}
+<div class="ip-page-head d-flex flex-wrap gap-2 justify-content-between align-items-start">
+  <div>
+    <h1>Import batch #{{ batch.pk }}</h1>
+    <p>Started {{ batch.created_at|date:"d M Y H:i" }}{% if batch.uploaded_by %} by {{ batch.uploaded_by.email }}{% endif %}.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'talent:import' %}">New import</a>
+    <a class="btn btn-primary" href="{% url 'talent:index' %}">Open talent pool</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div id="batch-status">{% include "talent/partials/batch_status.html" %}</div>
+{% if batch.items %}
+  <section class="ip-section mt-3">
+    <div class="ip-section__head"><h2>Imported items</h2></div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead><tr><th scope="col">Item</th><th scope="col">Result</th><th scope="col">Details</th></tr></thead>
+        <tbody>
+          {% for row in batch.items %}
+            <tr>
+              <td class="text-break">{{ row.item }}</td>
+              <td>
+                <span class="ip-badge ip-badge--{% if row.outcome == 'created' %}success{% elif row.outcome == 'error' %}danger{% else %}neutral{% endif %}">
+                  {{ row.outcome|title }}
+                </span>
+              </td>
+              <td class="ip-muted small text-break">{{ row.message }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endif %}
+{% if batch.errors %}
+  <section class="ip-section mt-3">
+    <div class="ip-section__head"><h2>Skipped items</h2></div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead><tr><th scope="col">Item</th><th scope="col">Reason</th></tr></thead>
+        <tbody>
+          {% for row in batch.errors %}
+            <tr><td class="text-break">{{ row.item }}</td><td>{{ row.error }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

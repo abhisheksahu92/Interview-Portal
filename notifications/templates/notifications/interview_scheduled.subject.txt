@@ -1,0 +1,1 @@
+Your interview for {{ job.title }} is scheduled

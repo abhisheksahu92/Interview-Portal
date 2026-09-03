@@ -1,0 +1,1 @@
+Client feedback on {{ submission.application.candidate|default:"a submitted candidate" }}

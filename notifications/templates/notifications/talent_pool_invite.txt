@@ -1,0 +1,11 @@
+Hi {{ recipient_name }},
+
+{{ company_name|default:"A hiring team" }} found your verified profile ({{ candidate_reference }}) in the {{ site_name }} talent pool and would like you to apply{% if job_title %} for {{ job_title }}{% else %} for an open role{% endif %}.
+
+Sign in to your candidate portal to see the invitation and apply:
+{{ site_url }}/portal/
+
+You appear in the pool because you opted in and passed an assessment. You can opt out of the pool from your profile at any time.
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

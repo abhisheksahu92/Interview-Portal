@@ -1,0 +1,1 @@
+{{ recipient_name }}: your offer for {{ job.title }} at {{ company.name }} is ready. {% if offer_url %}Review it here: {{ offer_url }}{% endif %} Reply STOP to opt out.

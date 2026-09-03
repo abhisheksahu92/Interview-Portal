@@ -1,9 +1,51 @@
-version: '3'
-
+# Local / single-host stack: Django (gunicorn) + PostgreSQL 16.
+#
+#   cp .env.example .env
+#   # set DATABASE_URL=postgres://interview:interview@db:5432/interview_portal
+#   docker compose up --build
+#
+# Production-ish overlay:
+#   docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d --build
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-interview_portal}
+      POSTGRES_USER: ${POSTGRES_USER:-interview}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-interview}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-interview} -d $${POSTGRES_DB:-interview_portal}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
   web:
-    container_name: interview_portal
-    build: .
-    command: python Interview-Portal/manage.py runserver 0.0.0.0:8000
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Compose networking: the DB always lives at host `db`.
+      DATABASE_URL: ${DATABASE_URL:-postgres://interview:interview@db:5432/interview_portal}
+      PORT: "8000"
+      # Set SEED_DEMO=1 in .env to load demo data on first boot.
+      SEED_DEMO: ${SEED_DEMO:-0}
     ports:
-      - 8000:8000
+      - "${WEB_PORT:-8000}:8000"
+    volumes:
+      # Uploaded resumes survive container rebuilds. In real production use
+      # object storage instead (see interview_portal/settings_checks.md).
+      - media:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  media:

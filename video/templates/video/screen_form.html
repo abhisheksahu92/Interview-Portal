@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New{% else %}Edit{% endif %} video screen · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>{% if is_new %}New video screen{% else %}Edit video screen{% endif %}</h1>
+    <p>{{ job.title }}</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="card" style="max-width:48rem">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.title.id_for_label }}">Title</label>
+        {{ form.title }}
+        {% for error in form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="row g-3">
+        <div class="col-sm-6 mb-3">
+          <label class="form-label" for="{{ form.stage.id_for_label }}">Pipeline stage</label>
+          {{ form.stage }}
+          <div class="form-text">Applications entering this stage are invited automatically.</div>
+        </div>
+        <div class="col-sm-6 mb-3">
+          <label class="form-label" for="{{ form.deadline_days.id_for_label }}">Deadline (days)</label>
+          {{ form.deadline_days }}
+        </div>
+      </div>
+      <div class="form-check mb-3">
+        {{ form.is_active }}
+        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+      </div>
+      <fieldset class="mb-3">
+        <legend class="form-label">Questions</legend>
+        <div class="border rounded p-3" style="max-height:22rem;overflow:auto">
+          {% for choice in form.questions %}
+            <div class="form-check">{{ choice.tag }}<label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
+          {% empty %}
+            <p class="text-body-secondary mb-0">Add questions to the <a href="{% url 'video:question_list' %}">library</a> first.</p>
+          {% endfor %}
+        </div>
+        <div class="form-text">{{ form.questions.help_text }}</div>
+      </fieldset>
+      <button class="btn btn-primary" type="submit">Save screen</button>
+      <a class="btn btn-link" href="{% url 'video:job_screens' job.pk %}">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

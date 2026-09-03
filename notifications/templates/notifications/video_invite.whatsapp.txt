@@ -1,0 +1,1 @@
+{{ recipient_name }}: record your {{ question_count }} video answer{{ question_count|pluralize }} for {{ job_title }} here: {{ url }}{% if expires_at %} (expires {{ expires_at|date:"d M" }}){% endif %}. Reply STOP to opt out.

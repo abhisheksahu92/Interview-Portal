@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Import resumes · Talent{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Import resumes</h1>
+    <p>Bulk-load your talent pool from a ZIP of resumes, individual files, or a CSV.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>1 · Choose files</h2></div>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          {{ form.files }}
+          <div class="form-text">{{ form.files.help_text }}</div>
+          {% for e in form.files.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+        <button class="btn btn-primary" type="submit">Start import</button>
+      </form>
+    </section>
+    <section class="ip-section mt-3">
+      <div class="ip-section__head"><h2>2 · What happens next</h2></div>
+      <ol class="mb-0 small">
+        <li>Each resume's text is extracted (PDF, DOCX, TXT).</li>
+        <li>Name, email, phone and experience are parsed
+          {% if ai_enabled %}and refined by AI extraction{% else %}using text heuristics (AI extraction is off){% endif %}.</li>
+        <li>People already in your pool are updated, not duplicated (matched on email, then phone).</li>
+        <li>Existing candidate accounts with the same email are linked automatically.</li>
+      </ol>
+      <p class="ip-muted small mb-0 mt-2">Limits: {{ max_mb }} MB per upload, {{ max_files }} files per batch.</p>
+    </section>
+  </div>
+  <div class="col-lg-5">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Past batches</h2></div>
+      {% if batches %}
+        <ul class="list-group list-group-flush mb-0">
+          {% for batch in batches %}
+            <li class="list-group-item px-0 d-flex justify-content-between">
+              <a href="{% url 'talent:batch_report' batch.pk %}">Batch #{{ batch.pk }}</a>
+              <span class="ip-muted small">{{ batch.created }} new · {{ batch.updated }} upd · {{ batch.skipped }} skipped</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="ip-muted small mb-0">No imports yet.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

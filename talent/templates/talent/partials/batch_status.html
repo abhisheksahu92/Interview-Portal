@@ -1,0 +1,20 @@
+<section class="ip-section"
+         {% if not batch.is_finished %}hx-get="{% url 'talent:batch_status' batch.pk %}"
+         hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  <div class="ip-section__head d-flex justify-content-between align-items-center">
+    <h2>Progress</h2>
+    <span class="badge text-bg-{% if batch.status == 'DONE' %}success{% elif batch.status == 'FAILED' %}danger{% else %}secondary{% endif %}">
+      {{ batch.get_status_display }}
+    </span>
+  </div>
+  <div class="progress mb-3" role="progressbar" aria-label="Import progress"
+       aria-valuenow="{{ batch.percent }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar" style="width: {{ batch.percent }}%">{{ batch.percent }}%</div>
+  </div>
+  <div class="row text-center g-2">
+    <div class="col"><div class="h4 mb-0">{{ batch.total }}</div><div class="ip-muted small">items</div></div>
+    <div class="col"><div class="h4 mb-0">{{ batch.created }}</div><div class="ip-muted small">created</div></div>
+    <div class="col"><div class="h4 mb-0">{{ batch.updated }}</div><div class="ip-muted small">updated</div></div>
+    <div class="col"><div class="h4 mb-0">{{ batch.skipped }}</div><div class="ip-muted small">skipped</div></div>
+  </div>
+</section>

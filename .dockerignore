@@ -1,0 +1,39 @@
+# VCS / editors
+.git
+.gitignore
+.github
+.idea
+.vscode
+
+# Legacy v1 code — never shipped
+legacy/
+
+# Local virtualenv & caches
+.venv
+venv
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage*
+
+# Local databases
+*.sqlite3
+db.sqlite3
+db_v2.sqlite3
+
+# User uploads and build output (regenerated in the image / kept on a volume)
+media/
+staticfiles/
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+
+# Docs / scratch
+*.drawio*
+*.bkp
+IP Important Data.txt

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Talent pool · Marketplace{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Verified talent pool</h1>
+    <p>Candidates who opted in and passed at least one assessment. Contact details stay
+       hidden until the candidate accepts your invitation.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form class="row g-2 mb-4" method="get">
+  <div class="col-sm-5"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Headline contains…"></div>
+  <div class="col-sm-3"><input class="form-control" type="search" name="skill" value="{{ skill }}" placeholder="Skill"></div>
+  <div class="col-sm-2"><input class="form-control" type="number" step="0.5" min="0" name="min_experience" value="{{ min_experience }}" placeholder="Min yrs"></div>
+  <div class="col-auto"><button class="btn btn-primary" type="submit">Search</button></div>
+</form>
+
+<div class="row g-3">
+  {% for card in cards %}
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100 p-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <h2 class="h6 mb-1">{{ card.headline }}</h2>
+          <span class="badge text-bg-secondary">{{ card.reference }}</span>
+        </div>
+        <div class="text-muted small mb-2">
+          {{ card.experience_years }} yrs experience
+          {% if card.best_score %}· best score {{ card.best_score }}%{% endif %}
+        </div>
+        <div class="mb-3">
+          {% for skill in card.skills %}<span class="badge text-bg-light me-1">{{ skill }}</span>{% endfor %}
+        </div>
+        <form method="post" action="{% url 'marketplace:pool_invite' card.profile_id %}" class="mt-auto m-0">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-outline-primary" type="submit">Invite to apply</button>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12"><div class="alert alert-info mb-0">No verified candidates match your search.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

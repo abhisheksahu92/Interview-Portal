@@ -1,0 +1,31 @@
+{% comment %}
+Candidate talent-pool opt-in toggle.
+
+Include from the candidate profile page (web/templates/web/candidate_profile.html):
+
+    {% include "marketplace/partials/pool_opt_in.html" with profile=profile %}
+
+Requires ``profile`` to be a jobs.CandidateProfile.
+
+Keep this header a comment *block*: Django only strips hash-style comments
+within a single line, so writing it as a multi-line hash comment leaves the
+usage example above live and the partial then includes itself forever.
+{% endcomment %}
+<form method="post" action="{% url 'marketplace:pool_opt_in' %}"
+      hx-post="{% url 'marketplace:pool_opt_in' %}" hx-swap="outerHTML"
+      class="card p-3" id="ip-pool-opt-in">
+  {% csrf_token %}
+  <input type="hidden" name="share_in_pool" value="{% if profile.share_in_pool %}0{% else %}1{% endif %}">
+  <h2 class="h6">Verified talent pool</h2>
+  <p class="small text-muted mb-2">
+    {% if profile.share_in_pool %}
+      You are visible to verified employers. Your email and phone stay hidden until you accept an invitation.
+    {% else %}
+      Opt in to let verified employers discover your anonymised profile after you pass an assessment.
+    {% endif %}
+  </p>
+  <button class="btn btn-sm {% if profile.share_in_pool %}btn-outline-secondary{% else %}btn-outline-primary{% endif %}"
+          type="submit">
+    {% if profile.share_in_pool %}Leave the pool{% else %}Join the pool{% endif %}
+  </button>
+</form>

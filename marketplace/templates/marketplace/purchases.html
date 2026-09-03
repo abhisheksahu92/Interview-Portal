@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}My purchases · Marketplace{% endblock %}
+{% block page_header %}
+<div class="ip-page-head"><div><h1>My purchases</h1><p>Packs installed in this workspace.</p></div></div>
+{% endblock %}
+{% block content %}
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead><tr><th>Pack</th><th>Skill</th><th>Questions added</th><th>Installed</th><th>Invoice</th></tr></thead>
+    <tbody>
+      {% for purchase in purchases %}
+        <tr>
+          <td><a href="{% url 'marketplace:pack_detail' purchase.pack.slug %}">{{ purchase.pack.title }}</a></td>
+          <td>{{ purchase.pack.skill_name }}</td>
+          <td>{{ purchase.questions_created }}</td>
+          <td>{{ purchase.purchased_at|date:"Y-m-d" }}</td>
+          <td>{{ purchase.invoice_ref|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-muted">Nothing installed yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

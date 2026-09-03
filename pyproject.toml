@@ -1,0 +1,41 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "interview_portal.settings"
+python_files = ["test_*.py", "tests.py"]
+testpaths = [
+    "core",
+    "jobs",
+    "assessments",
+    "api",
+    "web",
+    "billing",
+    "scheduling",
+    "clients",
+    "notifications",
+    "talent",
+    "video",
+    "careers",
+    "analytics",
+    "offers",
+    "partners",
+    "marketplace",
+]
+# ``-n auto`` runs the suite across every CPU (pytest-xdist); pytest-django
+# gives each worker its own test database (``test_<db>_gwN``), so the SQLite
+# test DBs do not contend. Use ``-p no:xdist -n0`` to debug a single test.
+addopts = "-q -n auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+    "legacy",
+    ".venv",
+    "migrations",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"*/settings.py" = ["F405", "F403"]

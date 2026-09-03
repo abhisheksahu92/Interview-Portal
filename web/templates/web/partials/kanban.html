@@ -1,0 +1,76 @@
+<div id="kanban">
+{% if board_notice %}
+  <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2" role="status">
+    <i class="bi bi-info-circle" aria-hidden="true"></i>{{ board_notice }}
+  </div>
+{% endif %}
+<div class="ip-board ip-busy" role="list" aria-label="Pipeline board">
+  {% for column in columns %}
+    <div class="ip-board__col" role="listitem">
+      <div class="ip-board__head">
+        <span class="ip-board__title">{{ column.stage.name }}</span>
+        <span class="ip-board__count">{{ column.applications|length }}</span>
+      </div>
+      {% if column.stage.requires_assessment %}
+        <div class="ip-board__hint"><i class="bi bi-clipboard-check me-1" aria-hidden="true"></i>Requires assessment</div>
+      {% endif %}
+      <div class="ip-board__body">
+        {% for application in column.applications %}
+          {% include "web/partials/application_card.html" %}
+        {% empty %}
+          <p class="ip-muted small mb-0 py-2 text-center">No candidates here</p>
+        {% endfor %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="ip-empty ip-empty--sm w-100">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+      <div class="ip-empty__title">This job has no pipeline stages</div>
+      <p>Add stages to start moving candidates through a process.</p>
+    </div>
+  {% endfor %}
+
+  {% if unassigned %}
+    <div class="ip-board__col" role="listitem">
+      <div class="ip-board__head">
+        <span class="ip-board__title">Unassigned</span>
+        <span class="ip-board__count">{{ unassigned|length }}</span>
+      </div>
+      <div class="ip-board__hint">
+        <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>Not on a stage yet — pick one to put them on the board.
+      </div>
+      <div class="ip-board__body">
+        {% for application in unassigned %}
+          {% include "web/partials/application_card.html" %}
+          {% if stages %}
+            <form class="ip-stage-picker"
+                  hx-post="{% url 'web:application_set_stage' application.pk %}"
+                  hx-target="#kanban" hx-swap="outerHTML"
+                  hx-indicator="#board-indicator" hx-disabled-elt="find button">
+              {% csrf_token %}
+              <label class="visually-hidden" for="move-stage-{{ application.pk }}">
+                Move {{ application.candidate.user.email }} to a stage</label>
+              <select class="form-select form-select-sm" name="stage" id="move-stage-{{ application.pk }}" required>
+                <option value="">Move to stage…</option>
+                {% for stage in stages %}<option value="{{ stage.pk }}">{{ stage.name }}</option>{% endfor %}
+              </select>
+              <button class="btn btn-sm btn-outline-secondary" type="submit">Move</button>
+            </form>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+  {% if closed %}
+    <div class="ip-board__col" role="listitem">
+      <div class="ip-board__head">
+        <span class="ip-board__title">Closed</span>
+        <span class="ip-board__count">{{ closed|length }}</span>
+      </div>
+      <div class="ip-board__body">
+        {% for application in closed %}{% include "web/partials/application_card.html" %}{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+</div>

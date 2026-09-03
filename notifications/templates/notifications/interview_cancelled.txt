@@ -1,0 +1,13 @@
+Hi {{ recipient_name }},
+
+Your {{ stage }} for {{ job_title }} at {{ company_name }}{% if when %}, which was booked for {{ when }} ({{ timezone }}),{% endif %} has been cancelled.
+{% if cancel_reason %}
+Reason: {{ cancel_reason }}
+{% endif %}
+Nothing else is needed from you right now — we will be in touch to find a new time. You can also pick a slot yourself here:
+{{ booking_url }}
+
+Sorry for the change of plan.
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

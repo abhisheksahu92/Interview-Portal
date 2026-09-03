@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Assessments · {{ job.title }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-muted small mb-1">
+      <a href="{% url 'web:job_detail' job.pk %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to board</a>
+    </p>
+    <h1>Assessments</h1>
+    <p>{{ job.title }}</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-primary" href="{% url 'assessments:assessment_create' job.pk %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New assessment</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section">
+  {% if assessments %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Assessments for {{ job.title }}</caption>
+        <thead><tr><th scope="col">Title</th><th scope="col">Stage</th><th scope="col">Questions</th>
+          <th scope="col">Time</th><th scope="col">Pass mark</th><th scope="col">Active</th><th scope="col"></th></tr></thead>
+        <tbody>
+          {% for a in assessments %}
+            <tr>
+              <td class="fw-semibold">{{ a.title }}</td>
+              <td class="ip-muted">{{ a.stage.name|default:"—" }}</td>
+              <td>{{ a.questions.count }}</td>
+              <td class="ip-muted">{{ a.time_limit_minutes }} min</td>
+              <td class="ip-muted">{{ a.pass_mark_percent }}%</td>
+              <td>
+                {% if a.is_active %}<span class="ip-badge ip-badge--success">Yes</span>
+                {% else %}<span class="ip-badge ip-badge--neutral">No</span>{% endif %}
+              </td>
+              <td class="text-end text-nowrap">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'assessments:assessment_edit' a.pk %}">Edit</a>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'assessments:assessment_attempts' a.pk %}">Attempts</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-clipboard-check"></i></span>
+      <div class="ip-empty__title">No assessments for this job yet.</div>
+      <p>Attach a timed, skill-tagged assessment to any stage that requires one.</p>
+      <a class="btn btn-primary" href="{% url 'assessments:assessment_create' job.pk %}">New assessment</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

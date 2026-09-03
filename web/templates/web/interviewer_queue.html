@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}My interview queue{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>My queue</h1>
+    <p>Applications waiting at an interview or HR stage at {{ company.name }}.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <span class="ip-badge ip-badge--neutral">{{ rows|length }} waiting</span>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+
+{% for row in rows %}
+  <section class="ip-section mb-3">
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+          <div style="min-width:0">
+            <h2 class="h6 mb-1">{{ row.application.candidate.user.email }}</h2>
+            <p class="ip-muted small mb-0">
+              {{ row.application.job.title }}<span class="ip-meta-dot"></span>{{ row.application.current_stage.name }}<span class="ip-meta-dot"></span>{{ row.application.candidate.experience_years }} yrs experience
+            </p>
+          </div>
+          {% if row.application.ai_fit_score is not None %}
+            <span class="ip-fit ip-fit--{% if row.application.ai_fit_score >= 70 %}high{% elif row.application.ai_fit_score >= 40 %}mid{% else %}low{% endif %}"
+                  title="AI fit score">{{ row.application.ai_fit_score }}</span>
+          {% endif %}
+        </div>
+        {% if row.application.candidate.headline %}
+          <p class="ip-muted small mb-2">{{ row.application.candidate.headline }}</p>
+        {% endif %}
+        <div class="d-flex flex-wrap gap-2">
+          {% if row.application.candidate.resume %}
+            <a class="btn btn-sm btn-outline-secondary" href="{{ row.application.candidate.resume.url }}">
+              <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>Résumé</a>
+          {% endif %}
+          {% if can_open_board %}
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_detail' row.application.job_id %}">
+              <i class="bi bi-kanban me-1" aria-hidden="true"></i>Board</a>
+          {% endif %}
+        </div>
+        {% if row.my_review %}
+          <div class="alert alert-info mt-3 mb-0">
+            You already reviewed this stage:
+            <strong>{{ row.my_review.get_decision_display }}</strong>. Saving again updates it.
+          </div>
+        {% endif %}
+      </div>
+      <div class="col-lg-6">
+        <h3 class="ip-eyebrow mb-2">Your review</h3>
+        <div id="review-slot-{{ row.application.pk }}">
+          {% with form=row.form application=row.application queue_mode=True %}
+            {% include "web/partials/review_form.html" %}
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+  </section>
+{% empty %}
+  <div class="ip-section">
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-inbox"></i></span>
+      <div class="ip-empty__title">Your queue is clear</div>
+      <p>Nothing is waiting at an interview or HR stage right now. New candidates appear here as recruiters advance them.</p>
+    </div>
+  </div>
+{% endfor %}
+{% endblock %}

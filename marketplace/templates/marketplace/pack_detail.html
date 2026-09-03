@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ pack.title }} · Marketplace{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>{{ pack.title }}</h1>
+    <p>{{ pack.skill_name }} · {{ pack.question_count }} questions
+      {% if pack.author %}· by {{ pack.author }}{% endif %}</p>
+  </div>
+  <div class="ip-page-head__actions">
+    {% if purchase %}
+      <span class="badge text-bg-success">Installed</span>
+    {% else %}
+      <form method="post" action="{% url 'marketplace:pack_install' pack.slug %}" class="m-0">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">
+          {% if pack.is_free %}Install free pack{% else %}Buy for ₹{{ pack.price_inr }}{% endif %}
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<p>{{ pack.description }}</p>
+<h2 class="h6 mt-4">Preview</h2>
+<ol class="list-group list-group-numbered mb-0">
+  {% for question in preview %}
+    <li class="list-group-item">
+      <div>{{ question.text }}</div>
+      {% if question.options %}
+        <ul class="small text-muted mb-0">
+          {% for option in question.options %}<li>{{ option }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No preview available.</li>
+  {% endfor %}
+</ol>
+{% if purchase %}
+  <p class="text-muted small mt-3">
+    {{ purchase.questions_created }} questions were copied into your question bank.
+  </p>
+{% endif %}
+{% endblock %}

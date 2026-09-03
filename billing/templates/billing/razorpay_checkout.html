@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Checkout — Interview Portal{% endblock %}
+{% block content %}
+<section class="ip-section" style="max-width:32rem;margin:0 auto">
+  <div class="ip-section__head"><h2>Confirm your upgrade</h2></div>
+  <p class="mb-1"><strong>{{ plan.name }}</strong> — {{ interval|lower }} billing</p>
+  <p class="ip-kpi__value">₹{{ amount_inr|floatformat:0 }}</p>
+  <p class="ip-muted small">18% GST is added on your invoice.</p>
+  <button class="btn btn-primary" id="rzp-pay" type="button">Pay with Razorpay</button>
+  <a class="btn btn-link" href="{% url 'billing:overview' %}">Cancel</a>
+  <p class="text-danger small mt-2 d-none" id="rzp-error"></p>
+  <form method="post" action="{{ verify_url }}" id="rzp-verify" class="d-none">
+    {% csrf_token %}
+    <input type="hidden" name="plan" value="{{ plan.code }}">
+    <input type="hidden" name="interval" value="{{ interval }}">
+    <input type="hidden" name="razorpay_payment_id">
+    <input type="hidden" name="razorpay_order_id">
+    <input type="hidden" name="razorpay_subscription_id">
+    <input type="hidden" name="razorpay_signature">
+  </form>
+</section>
+
+{{ options|json_script:"rzp-options" }}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+(function () {
+  const options = JSON.parse(document.getElementById("rzp-options").textContent);
+  const form = document.getElementById("rzp-verify");
+  const error = document.getElementById("rzp-error");
+  const set = (name, value) => {
+    const field = form.elements[name];
+    if (field) { field.value = value || ""; }
+  };
+  options.handler = function (response) {
+    set("razorpay_payment_id", response.razorpay_payment_id);
+    set("razorpay_order_id", response.razorpay_order_id);
+    set("razorpay_subscription_id", response.razorpay_subscription_id);
+    set("razorpay_signature", response.razorpay_signature);
+    fetch(form.action, {
+      method: "POST",
+      body: new FormData(form),
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.ok) { window.location = data.redirect; }
+        else { error.textContent = "We could not verify that payment."; error.classList.remove("d-none"); }
+      })
+      .catch(() => { error.textContent = "Network error while verifying the payment."; error.classList.remove("d-none"); });
+  };
+  document.getElementById("rzp-pay").addEventListener("click", function () {
+    if (typeof Razorpay === "undefined") {
+      error.textContent = "Razorpay Checkout could not be loaded.";
+      error.classList.remove("d-none");
+      return;
+    }
+    new Razorpay(options).open();
+  });
+})();
+</script>
+{% endblock %}

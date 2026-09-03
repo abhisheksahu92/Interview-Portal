@@ -1,0 +1,11 @@
+Hi {{ recipient_name }},
+
+This is a reminder about your interview for {{ job.title }} at {{ company.name }}.
+
+When: {{ interview.scheduled_start|default:"see your portal" }}
+Where: {{ interview.location_or_link|default:"details in your portal" }}
+
+Good luck!
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

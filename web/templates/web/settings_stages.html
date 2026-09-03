@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Stages · {{ job.title }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-muted small mb-1">
+      <a href="{% url 'web:job_detail' job.pk %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to board</a>
+    </p>
+    <h1>Pipeline stages</h1>
+    <p>{{ job.title }}</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <section class="ip-section">
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Stages for {{ job.title }}</caption>
+          <thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Kind</th>
+            <th scope="col">Assessment</th><th scope="col">Order</th><th scope="col"></th></tr></thead>
+          <tbody>
+            {% for stage in stages %}
+              <tr {% if edit_stage and edit_stage.pk == stage.pk %}class="table-active"{% endif %}>
+                <td class="ip-muted">{{ stage.order }}</td>
+                <td class="fw-semibold">{{ stage.name }}</td>
+                <td><span class="ip-badge ip-badge--neutral">{{ stage.get_kind_display }}</span></td>
+                <td>{% if stage.requires_assessment %}<span class="ip-badge ip-badge--accent">Required</span>{% else %}<span class="ip-muted">—</span>{% endif %}</td>
+                <td class="text-nowrap">
+                  <form method="post" action="{% url 'web:stage_move' stage.pk 'up' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-secondary ip-icon-btn" type="submit"
+                            {% if forloop.first %}disabled{% endif %}
+                            aria-label="Move {{ stage.name }} earlier" title="Move up">
+                      <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                    </button>
+                  </form>
+                  <form method="post" action="{% url 'web:stage_move' stage.pk 'down' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-secondary ip-icon-btn" type="submit"
+                            {% if forloop.last %}disabled{% endif %}
+                            aria-label="Move {{ stage.name }} later" title="Move down">
+                      <i class="bi bi-arrow-down" aria-hidden="true"></i>
+                    </button>
+                  </form>
+                </td>
+                <td class="text-end text-nowrap">
+                  <a class="btn btn-sm btn-outline-secondary ip-icon-btn"
+                     href="{% url 'web:stage_edit' stage.pk %}"
+                     aria-label="Edit stage {{ stage.name }}" title="Edit">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  </a>
+                  <form method="post" action="{% url 'web:stage_delete' stage.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger ip-icon-btn" type="submit"
+                            hx-confirm="Delete the “{{ stage.name }}” stage? Candidates sitting on it must be moved first."
+                            onclick="return confirm('Delete the “{{ stage.name }}” stage?')"
+                            aria-label="Delete stage {{ stage.name }}" title="Delete">
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </button>
+                  </form>
+                  <form method="post" action="{% url 'web:stage_delete' stage.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="move_applications" value="1">
+                    <button class="btn btn-sm btn-outline-danger ip-icon-btn" type="submit"
+                            onclick="return confirm('Move any candidates on “{{ stage.name }}” to the previous stage and delete it?')"
+                            aria-label="Move candidates off {{ stage.name }} and delete it"
+                            title="Move candidates to the previous stage, then delete">
+                      <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="ip-muted small mb-0 mt-3">
+        A stage can only be deleted once no application sits on it and no assessment points at it.
+        Use <i class="bi bi-box-arrow-left" aria-hidden="true"></i> to move its candidates to the
+        previous stage and delete it in one step.
+      </p>
+    </section>
+  </div>
+  <div class="col-lg-5">
+    {% if edit_form %}
+      <section class="ip-section mb-3">
+        <div class="ip-section__head"><h2>Edit “{{ edit_stage.name }}”</h2></div>
+        <form method="post" action="{% url 'web:stage_edit' edit_stage.pk %}" novalidate>
+          {% csrf_token %}
+          {% include "web/partials/stage_fields.html" with form=edit_form %}
+          <button class="btn btn-primary" type="submit">Save stage</button>
+          <a class="btn btn-outline-secondary" href="{% url 'web:settings_stages' job.pk %}">Cancel</a>
+        </form>
+      </section>
+    {% endif %}
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Add a stage</h2></div>
+      <form method="post" action="{% url 'web:settings_stages' job.pk %}" novalidate>
+        {% csrf_token %}
+        {% include "web/partials/stage_fields.html" with form=form %}
+        <button class="btn btn-primary" type="submit">Add stage</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

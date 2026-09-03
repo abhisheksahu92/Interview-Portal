@@ -1,0 +1,12 @@
+Hi {{ recipient_name }},
+
+{{ client.name|default:"The client" }} has responded to your submission for {{ job.title }}.
+
+Status: {{ submission.status|default:"updated" }}
+{% if submission.client_feedback %}
+Feedback:
+{{ submission.client_feedback }}
+{% endif %}
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

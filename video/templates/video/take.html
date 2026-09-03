@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+{% block title %}Record your answers · {{ invite.application.job.title }}{% endblock %}
+{% block main_class %}container-fluid px-3 py-3{% endblock %}
+{% block extra_head %}
+<style>
+  .vid-head { position: sticky; top: 0; z-index: 10; background: var(--bs-body-bg);
+              padding: .5rem 0; border-bottom: 1px solid var(--bs-border-color); }
+  .vid-stage { max-width: 44rem; margin: 0 auto; }
+  .vid-preview { width: 100%; aspect-ratio: 4 / 3; background: #000; border-radius: .75rem; object-fit: cover; }
+  .vid-placeholder { border: 1px dashed var(--bs-border-color); border-radius: .75rem;
+                     padding: 2rem 1rem; background: var(--bs-tertiary-bg); }
+  .vid-timer { font-variant-numeric: tabular-nums; font-size: 2.25rem; font-weight: 700; }
+  .vid-big { width: 100%; padding: 1rem; font-size: 1.125rem; border-radius: .75rem; }
+  .vid-dot { display:inline-block; width:.6rem; height:.6rem; border-radius:50%; background:#dc3545;
+             margin-right:.35rem; animation: vid-pulse 1s infinite; }
+  @keyframes vid-pulse { 50% { opacity: .25; } }
+  @media (max-width: 576px) { .vid-timer { font-size: 1.75rem; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="vid-stage" id="vidApp"
+     data-upload-url="{{ upload_url }}"
+     data-submit-url="{{ submit_url }}"
+     data-max-bytes="{{ max_bytes }}">
+  <div class="vid-head d-flex align-items-center gap-2">
+    <strong class="text-truncate">{{ invite.screen.title }}</strong>
+    <span class="ms-auto badge text-bg-light" id="vidProgress">
+      {{ invite.progress.answered }} / {{ invite.progress.total }}
+    </span>
+  </div>
+
+  <noscript>
+    <div class="alert alert-warning mt-3">Recording needs JavaScript. Please enable it and reload.</div>
+  </noscript>
+
+  {# ---------------- Intro / device check ---------------- #}
+  <section id="vidIntro" class="mt-3">
+    <h1 class="h4">Record your video answers</h1>
+    <p class="text-body-secondary">
+      {{ invite.application.job.title }} — {{ questions|length }} question{{ questions|length|pluralize }}.
+      Each question shows a short think timer, then recording starts automatically and stops at the time limit.
+      You can only record each answer once. Finish by {{ invite.expires_at|date:"d M Y" }}.
+    </p>
+    <div class="vid-placeholder text-center" id="vidPlaceholder">
+      <p class="display-6 mb-2" aria-hidden="true">📷</p>
+      <p class="mb-3 small text-body-secondary">
+        Your camera stays off until you turn it on. Nothing is recorded or uploaded
+        before you start a question.
+      </p>
+      <button class="btn btn-outline-primary" id="vidEnable" type="button">Enable camera</button>
+    </div>
+    <video id="vidPreview" class="vid-preview d-none" autoplay muted playsinline></video>
+    <p class="small mt-2 mb-3" id="vidDeviceStatus">Turn on your camera and microphone to begin.</p>
+    <button class="btn btn-primary vid-big d-none" id="vidStart" type="button" disabled>Allow camera to continue</button>
+    <ol class="mt-4 small text-body-secondary">
+      {% for question in questions %}
+        <li class="{% if question.pk in answered_ids %}text-decoration-line-through{% endif %}">
+          {{ question.text }} ({{ question.answer_seconds }}s)
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  {# ---------------- Runner ---------------- #}
+  <section id="vidRunner" class="mt-3 d-none">
+    <p class="text-body-secondary small mb-1" id="vidQCount"></p>
+    <h2 class="h5" id="vidQText"></h2>
+    <video id="vidLive" class="vid-preview my-2" autoplay muted playsinline></video>
+    <div class="d-flex align-items-center gap-3 mb-2">
+      <span class="vid-timer" id="vidTimer">--</span>
+      <span class="text-body-secondary small" id="vidPhase"></span>
+    </div>
+    <div class="progress mb-2 d-none" id="vidUploadWrap" style="height:1.25rem">
+      <div class="progress-bar" id="vidUploadBar" role="progressbar" style="width:0%"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</div>
+    </div>
+    <button class="btn btn-danger vid-big" id="vidAction" type="button">Start</button>
+    <p class="text-danger small mt-2 mb-0 d-none" id="vidError" role="alert"></p>
+  </section>
+
+  {# ---------------- Submit ---------------- #}
+  <section id="vidFinish" class="mt-3 d-none text-center">
+    <p class="display-6 mb-2" aria-hidden="true">🎬</p>
+    <h2 class="h5">All questions answered</h2>
+    <p class="text-body-secondary">Submit to send your recordings to the hiring team.</p>
+    <form method="post" action="{{ submit_url }}">
+      {% csrf_token %}
+      <button class="btn btn-primary vid-big" type="submit">Submit my answers</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var app = document.getElementById("vidApp");
+  if (!app) { return; }
+
+  var QUESTIONS = [
+    {% for question in questions %}{% if question.pk not in answered_ids %}
+    { id: {{ question.pk }}, text: "{{ question.text|escapejs }}",
+      think: {{ question.think_seconds }}, answer: {{ question.answer_seconds }} },
+    {% endif %}{% endfor %}
+  ];
+  var UPLOAD_URL = app.dataset.uploadUrl;
+  var MAX_BYTES = parseInt(app.dataset.maxBytes, 10) || 209715200;
+  var ANSWERED = {{ invite.progress.answered }};
+  var TOTAL = {{ invite.progress.total }};
+
+  var intro = document.getElementById("vidIntro");
+  var runner = document.getElementById("vidRunner");
+  var finish = document.getElementById("vidFinish");
+  var preview = document.getElementById("vidPreview");
+  var live = document.getElementById("vidLive");
+  var startBtn = document.getElementById("vidStart");
+  var enableBtn = document.getElementById("vidEnable");
+  var placeholder = document.getElementById("vidPlaceholder");
+  var actionBtn = document.getElementById("vidAction");
+  var deviceStatus = document.getElementById("vidDeviceStatus");
+  var timerEl = document.getElementById("vidTimer");
+  var phaseEl = document.getElementById("vidPhase");
+  var qText = document.getElementById("vidQText");
+  var qCount = document.getElementById("vidQCount");
+  var errEl = document.getElementById("vidError");
+  var progressEl = document.getElementById("vidProgress");
+  var upWrap = document.getElementById("vidUploadWrap");
+  var upBar = document.getElementById("vidUploadBar");
+
+  var stream = null, recorder = null, chunks = [], tick = null;
+  var index = 0, recordedSeconds = 0;
+
+  function csrf() {
+    var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/);
+    return m ? decodeURIComponent(m[1]) : "";
+  }
+  function show(el) { el.classList.remove("d-none"); }
+  function hide(el) { el.classList.add("d-none"); }
+  function fail(message) { errEl.textContent = message; show(errEl); }
+  function clearFail() { errEl.textContent = ""; hide(errEl); }
+  function setProgress() { progressEl.textContent = ANSWERED + " / " + TOTAL; }
+
+  function pickMime() {
+    var options = [
+      "video/webm;codecs=vp8,opus",
+      "video/webm;codecs=vp9,opus",
+      "video/webm",
+      "video/mp4"
+    ];
+    if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) { return ""; }
+    for (var i = 0; i < options.length; i++) {
+      if (MediaRecorder.isTypeSupported(options[i])) { return options[i]; }
+    }
+    return "";
+  }
+
+  function getMedia() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+      deviceStatus.textContent = "This browser cannot record video. Please use a recent Chrome, Edge, Firefox or Safari.";
+      deviceStatus.className = "small text-danger mt-2 mb-3";
+      return;
+    }
+    deviceStatus.textContent = "Waiting for camera permission…";
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function (s) {
+      stream = s;
+      preview.srcObject = s;
+      // Only now is there anything to show, so grow the video box.
+      if (placeholder) { hide(placeholder); }
+      show(preview);
+      show(startBtn);
+      deviceStatus.textContent = "Camera and microphone look good.";
+      deviceStatus.className = "small text-success mt-2 mb-3";
+      startBtn.disabled = false;
+      startBtn.textContent = QUESTIONS.length ? "I'm ready — start" : "Continue";
+    }).catch(function () {
+      deviceStatus.textContent = "We could not access your camera or microphone. Allow access, then try again.";
+      deviceStatus.className = "small text-danger mt-2 mb-3";
+      if (enableBtn) { enableBtn.disabled = false; enableBtn.textContent = "Try again"; }
+    });
+  }
+
+  function stopTick() { if (tick) { window.clearInterval(tick); tick = null; } }
+
+  function countdown(seconds, label, onDone) {
+    var left = seconds;
+    phaseEl.textContent = label;
+    timerEl.textContent = left + "s";
+    stopTick();
+    tick = window.setInterval(function () {
+      left -= 1;
+      timerEl.textContent = (left > 0 ? left : 0) + "s";
+      if (left <= 0) { stopTick(); onDone(); }
+    }, 1000);
+    return function cancel() { stopTick(); };
+  }
+
+  function renderQuestion() {
+    if (index >= QUESTIONS.length) {
+      hide(runner);
+      show(finish);
+      return;
+    }
+    var q = QUESTIONS[index];
+    clearFail();
+    hide(upWrap);
+    qCount.textContent = "Question " + (ANSWERED + 1) + " of " + TOTAL;
+    qText.textContent = q.text;
+    live.srcObject = stream;
+    actionBtn.textContent = "Start think timer";
+    actionBtn.className = "btn btn-primary vid-big";
+    actionBtn.disabled = false;
+    timerEl.textContent = q.think + "s";
+    phaseEl.textContent = "Read the question, then recording starts automatically.";
+    actionBtn.onclick = function () { beginThink(q); };
+  }
+
+  function beginThink(q) {
+    actionBtn.disabled = true;
+    actionBtn.textContent = "Get ready…";
+    countdown(q.think, "Preparing — recording starts when this hits zero.", function () {
+      beginRecording(q);
+    });
+  }
+
+  function beginRecording(q) {
+    var mime = pickMime();
+    chunks = [];
+    try {
+      recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    } catch (e) {
+      fail("Recording could not start in this browser.");
+      return;
+    }
+    recorder.ondataavailable = function (e) { if (e.data && e.data.size) { chunks.push(e.data); } };
+    recorder.onstop = function () { uploadAnswer(q); };
+    recorder.start(1000);
+
+    recordedSeconds = 0;
+    actionBtn.disabled = false;
+    actionBtn.className = "btn btn-danger vid-big";
+    actionBtn.innerHTML = '<span class="vid-dot"></span>Stop and upload';
+    actionBtn.onclick = function () { stopRecording(); };
+
+    var left = q.answer;
+    phaseEl.textContent = "Recording…";
+    timerEl.textContent = left + "s";
+    stopTick();
+    tick = window.setInterval(function () {
+      left -= 1; recordedSeconds += 1;
+      timerEl.textContent = (left > 0 ? left : 0) + "s";
+      if (left <= 0) { stopRecording(); }
+    }, 1000);
+  }
+
+  function stopRecording() {
+    stopTick();
+    actionBtn.disabled = true;
+    actionBtn.textContent = "Uploading…";
+    if (recorder && recorder.state !== "inactive") { recorder.stop(); }
+  }
+
+  function uploadAnswer(q) {
+    var type = (recorder && recorder.mimeType) || "video/webm";
+    var blob = new Blob(chunks, { type: type });
+    if (blob.size > MAX_BYTES) {
+      fail("That recording is too large (limit 200 MB). Please try a shorter answer.");
+      actionBtn.disabled = false;
+      actionBtn.textContent = "Retry upload";
+      actionBtn.onclick = function () { uploadAnswer(q); };
+      return;
+    }
+    var ext = type.indexOf("mp4") !== -1 ? "mp4" : "webm";
+    var data = new FormData();
+    data.append("question", q.id);
+    data.append("duration", recordedSeconds);
+    data.append("file", blob, "answer-" + q.id + "." + ext);
+
+    show(upWrap);
+    upBar.style.width = "0%"; upBar.textContent = "0%";
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", UPLOAD_URL, true);
+    xhr.setRequestHeader("X-CSRFToken", csrf());
+    xhr.upload.onprogress = function (e) {
+      if (!e.lengthComputable) { return; }
+      var pct = Math.round((e.loaded / e.total) * 100);
+      upBar.style.width = pct + "%"; upBar.textContent = pct + "%";
+      upBar.setAttribute("aria-valuenow", pct);
+    };
+    xhr.onload = function () {
+      var payload = {};
+      try { payload = JSON.parse(xhr.responseText || "{}"); } catch (e) { payload = {}; }
+      if (xhr.status >= 200 && xhr.status < 300 && payload.ok) {
+        ANSWERED = payload.answered || (ANSWERED + 1);
+        TOTAL = payload.total || TOTAL;
+        setProgress();
+        index += 1;
+        renderQuestion();
+        return;
+      }
+      if (xhr.status === 409) {
+        index += 1;
+        renderQuestion();
+        return;
+      }
+      fail(payload.error || "The upload failed. Check your connection and retry.");
+      actionBtn.disabled = false;
+      actionBtn.textContent = "Retry upload";
+      actionBtn.onclick = function () { uploadAnswer(q); };
+    };
+    xhr.onerror = function () {
+      fail("The upload failed. Check your connection and retry.");
+      actionBtn.disabled = false;
+      actionBtn.textContent = "Retry upload";
+      actionBtn.onclick = function () { uploadAnswer(q); };
+    };
+    xhr.send(data);
+  }
+
+  startBtn.addEventListener("click", function () {
+    hide(intro);
+    if (!QUESTIONS.length) { show(finish); return; }
+    show(runner);
+    renderQuestion();
+  });
+
+  window.addEventListener("beforeunload", function (e) {
+    if (recorder && recorder.state === "recording") {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  if (enableBtn) {
+    enableBtn.addEventListener("click", function () {
+      enableBtn.disabled = true;
+      enableBtn.textContent = "Requesting access…";
+      getMedia();
+    });
+  }
+
+  setProgress();
+  if (!QUESTIONS.length) {
+    hide(intro);
+    show(finish);
+  }
+})();
+</script>
+{% endblock %}

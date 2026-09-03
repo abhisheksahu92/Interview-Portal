@@ -1,0 +1,210 @@
+{% if oob %}{% include "analytics/_range_subtitle.html" %}{% endif %}
+{# HTMX-swapped body of the dashboard: KPI tiles, charts and tables for the current filters. #}
+<div class="viz" id="viz-body">
+  <div class="viz-kpi mb-4">
+    <div class="viz-card">
+      <p class="viz-kpi__label">Open jobs</p>
+      <p class="viz-kpi__value mb-0">{{ overview.open_jobs }}</p>
+    </div>
+    <div class="viz-card">
+      <p class="viz-kpi__label">Applications</p>
+      <p class="viz-kpi__value mb-0">{{ overview.applications }}</p>
+    </div>
+    <div class="viz-card">
+      <p class="viz-kpi__label">Hires</p>
+      <p class="viz-kpi__value mb-0">{{ overview.hires }}</p>
+    </div>
+    <div class="viz-card">
+      <p class="viz-kpi__label">Hire rate</p>
+      <p class="viz-kpi__value mb-0">{{ overview.hire_rate_percent }}%</p>
+    </div>
+    <div class="viz-card">
+      <p class="viz-kpi__label">Median time to hire</p>
+      <p class="viz-kpi__value mb-0">
+        {% if overview.median_time_to_hire_days is None %}—{% else %}{{ overview.median_time_to_hire_days }}<span class="fs-6 fw-normal"> days</span>{% endif %}
+      </p>
+    </div>
+    <div class="viz-card">
+      <p class="viz-kpi__label">Avg AI fit score</p>
+      <p class="viz-kpi__value mb-0">{{ overview.avg_fit_score|default_if_none:"—" }}</p>
+    </div>
+    {% if offers %}
+      <div class="viz-card">
+        <p class="viz-kpi__label">Offer acceptance</p>
+        <p class="viz-kpi__value mb-0">{{ offers.acceptance_rate_percent }}%</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-6">
+      <div class="viz-card">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+          <div>
+            <h2>Pipeline funnel</h2>
+            <p class="viz-card__sub">Applications that entered each stage kind, split into those that
+              moved on and those that stopped there.</p>
+          </div>
+          <a class="btn btn-sm btn-outline-secondary viz-noprint"
+             href="{% url 'analytics:export_csv' 'funnel' %}?{{ query_string }}">CSV</a>
+        </div>
+        {% if has_funnel %}
+          <div class="viz-canvas"><canvas id="vizFunnel" role="img"
+            aria-label="Applications passed and dropped per pipeline stage kind"></canvas></div>
+        {% else %}
+          <p class="viz-empty mb-0">No stage movement recorded in this date range.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-6">
+      <div class="viz-card">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+          <div>
+            <h2>Applications and hires per week</h2>
+            <p class="viz-card__sub">Weekly volume across the selected window.</p>
+          </div>
+          <a class="btn btn-sm btn-outline-secondary viz-noprint"
+             href="{% url 'analytics:export_csv' 'weekly' %}?{{ query_string }}">CSV</a>
+        </div>
+        {% if has_weekly %}
+          <div class="viz-canvas"><canvas id="vizWeekly" role="img"
+            aria-label="Applications and hires per week"></canvas></div>
+        {% else %}
+          <p class="viz-empty mb-0">No applications in this date range.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-6">
+      <div class="viz-card">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+          <div>
+            <h2>Median time in stage</h2>
+            <p class="viz-card__sub">Days an application waits in each stage kind before moving.</p>
+          </div>
+          <a class="btn btn-sm btn-outline-secondary viz-noprint"
+             href="{% url 'analytics:export_csv' 'time-in-stage' %}?{{ query_string }}">CSV</a>
+        </div>
+        {% if has_time_in_stage %}
+          <div class="viz-canvas"><canvas id="vizTimeInStage" role="img"
+            aria-label="Median days spent in each pipeline stage kind"></canvas></div>
+        {% else %}
+          <p class="viz-empty mb-0">Not enough stage history yet to measure stage duration.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% include "analytics/_tables.html" %}
+  </div>
+
+  {{ chart_data|json_script:"viz-data" }}
+  <script>
+    (function () {
+      var payload = JSON.parse(document.getElementById("viz-data").textContent);
+      function boot() {
+        if (!window.Chart) { window.setTimeout(boot, 60); return; }
+        var root = document.getElementById("viz-body");
+        var css = getComputedStyle(root);
+        var ink = css.getPropertyValue("--viz-text").trim() || "#0b0b0b";
+        var ink2 = css.getPropertyValue("--viz-text-2").trim() || "#52514e";
+        var grid = css.getPropertyValue("--viz-grid").trim() || "#e6e5e1";
+        var s1 = css.getPropertyValue("--series-1").trim();
+        var s2 = css.getPropertyValue("--series-2").trim();
+        var surface = css.getPropertyValue("--viz-surface").trim() || "#ffffff";
+
+        window.ipVizCharts = window.ipVizCharts || [];
+        window.ipVizCharts.forEach(function (c) { try { c.destroy(); } catch (e) {} });
+        window.ipVizCharts = [];
+
+        Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+        Chart.defaults.color = ink2;
+
+        function axes(xTitle, yTitle, stacked) {
+          return {
+            x: { stacked: !!stacked, grid: { display: false }, border: { color: grid },
+                 ticks: { color: ink2 }, title: { display: true, text: xTitle, color: ink } },
+            y: { stacked: !!stacked, beginAtZero: true, grid: { color: grid },
+                 border: { display: false }, ticks: { color: ink2, precision: 0 },
+                 title: { display: true, text: yTitle, color: ink } }
+          };
+        }
+        var tooltip = { backgroundColor: surface, titleColor: ink, bodyColor: ink,
+                        borderColor: grid, borderWidth: 1, padding: 10, displayColors: true };
+        function legend(show) {
+          return { display: !!show, position: "top", align: "end",
+                   labels: { color: ink2, boxWidth: 10, boxHeight: 10, usePointStyle: true } };
+        }
+        function make(id, config) {
+          var el = document.getElementById(id);
+          if (!el) { return; }
+          window.ipVizCharts.push(new Chart(el, config));
+        }
+
+        make("vizFunnel", {
+          type: "bar",
+          data: {
+            labels: payload.funnel.labels,
+            datasets: [
+              { label: "Moved on", data: payload.funnel.passed, backgroundColor: s1,
+                borderColor: surface, borderWidth: 2, borderRadius: 4, borderSkipped: "bottom" },
+              { label: "Stopped here", data: payload.funnel.dropped, backgroundColor: s2,
+                borderColor: surface, borderWidth: 2, borderRadius: 4, borderSkipped: "bottom" }
+            ]
+          },
+          options: { maintainAspectRatio: false, responsive: true,
+                     scales: axes("Stage kind", "Applications", true),
+                     plugins: { legend: legend(true), tooltip: tooltip } }
+        });
+
+        make("vizWeekly", {
+          type: "line",
+          data: {
+            labels: payload.weekly.labels,
+            datasets: [
+              { label: "Applications", data: payload.weekly.applications, borderColor: s1,
+                backgroundColor: s1, borderWidth: 2, pointRadius: 4, pointHoverRadius: 6, tension: 0.25 },
+              { label: "Hires", data: payload.weekly.hires, borderColor: s2,
+                backgroundColor: s2, borderWidth: 2, pointRadius: 4, pointHoverRadius: 6, tension: 0.25 }
+            ]
+          },
+          options: { maintainAspectRatio: false, responsive: true,
+                     interaction: { mode: "index", intersect: false },
+                     scales: axes("Week beginning", "Count", false),
+                     plugins: { legend: legend(true), tooltip: tooltip } }
+        });
+
+        make("vizTimeInStage", {
+          type: "bar",
+          data: {
+            labels: payload.timeInStage.labels,
+            datasets: [{ label: "Median days", data: payload.timeInStage.days,
+                         backgroundColor: s1, borderRadius: 4, borderSkipped: "bottom" }]
+          },
+          options: { maintainAspectRatio: false, responsive: true,
+                     scales: axes("Stage kind", "Median days", false),
+                     plugins: { legend: legend(false), tooltip: tooltip } }
+        });
+
+        make("vizInterviewers", {
+          type: "bar",
+          data: {
+            labels: payload.interviewers.labels,
+            datasets: [{ label: "Average rating", data: payload.interviewers.avg,
+                         backgroundColor: s1, borderRadius: 4, borderSkipped: "start" }]
+          },
+          options: { maintainAspectRatio: false, responsive: true, indexAxis: "y",
+                     scales: {
+                       x: { beginAtZero: true, max: 5, grid: { color: grid }, border: { display: false },
+                            ticks: { color: ink2 },
+                            title: { display: true, text: "Average rating (1–5)", color: ink } },
+                       y: { grid: { display: false }, border: { color: grid }, ticks: { color: ink2 },
+                            title: { display: true, text: "Reviewer", color: ink } }
+                     },
+                     plugins: { legend: legend(false), tooltip: tooltip } }
+        });
+      }
+      boot();
+    })();
+  </script>
+</div>

@@ -1,0 +1,35 @@
+{% load tz %}{% comment %}One interview as a list row. Expects `interview`.{% endcomment %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 py-2 border-bottom">
+  <div>
+    <div class="fw-semibold">
+      {{ interview.application.candidate.user.email }}
+      <span class="text-body-secondary">· {{ interview.application.job.title }}</span>
+    </div>
+    <div class="small text-body-secondary">
+      {% if interview.scheduled_start %}
+        <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>
+        {% timezone interview.timezone %}{{ interview.scheduled_start|date:"D d M Y, H:i" }}–{{ interview.scheduled_end|date:"H:i" }}{% endtimezone %}
+        ({{ interview.timezone }})
+      {% else %}
+        <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Awaiting the candidate's choice
+      {% endif %}
+      {% if interview.stage %}· {{ interview.stage.name }}{% endif %}
+      {% if interview.location_or_link %}· {{ interview.location_or_link }}{% endif %}
+    </div>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="badge text-bg-{% if interview.status == 'CONFIRMED' %}success{% elif interview.status == 'CANCELLED' %}danger{% elif interview.status == 'COMPLETED' %}secondary{% else %}warning{% endif %}">
+      {{ interview.get_status_display }}
+    </span>
+    {% if interview.scheduled_start %}
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'scheduling:interview_ics' interview.pk %}">.ics</a>
+    {% endif %}
+    {% if interview.is_open %}
+      <form method="post" action="{% url 'scheduling:interview_cancel' interview.pk %}" class="m-0">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
+      </form>
+    {% endif %}
+  </div>
+</div>

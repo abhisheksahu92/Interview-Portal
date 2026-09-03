@@ -1,0 +1,1 @@
+Reminder: your interview for {{ job.title }} is at {{ interview.scheduled_start|default:"the time in your portal" }}. Reply STOP to opt out.

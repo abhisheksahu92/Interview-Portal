@@ -1,0 +1,14 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p>Hi {{ recipient_name }},</p>
+  <p><strong>{{ company_name|default:"A hiring team" }}</strong> found your verified profile
+    ({{ candidate_reference }}) in the {{ site_name }} talent pool and would like you to apply
+    {% if job_title %}for <strong>{{ job_title }}</strong>{% else %}for an open role{% endif %}.</p>
+  <p><a href="{{ site_url }}/portal/" style="background:#2563eb;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">See the invitation</a></p>
+  <p style="font-size:13px;color:#6b7280">You appear in the pool because you opted in and passed an
+    assessment. You can opt out from your profile at any time.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">
+    &mdash; {{ site_name }} &middot;
+    <a href="{{ unsubscribe_url }}" style="color:#6b7280">Manage your notification preferences</a>
+  </p>
+</div>

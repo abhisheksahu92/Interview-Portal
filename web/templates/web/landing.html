@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Interview Portal — multi-tenant hiring pipelines with AI screening{% endblock %}
+{% block main_class %}{% endblock %}
+{% block content %}
+
+<section class="ip-hero">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-9">
+        <span class="ip-pill"><span class="dot" aria-hidden="true"></span> Multi-tenant hiring, AI-assisted</span>
+        <h1 class="mx-auto mb-3">Hiring pipelines your whole team can actually run</h1>
+        <p class="ip-lede mx-auto mb-4">
+          Every company gets its own workspace: configurable pipeline stages, a shared
+          kanban board, structured interview reviews, and AI screening that summarises
+          each résumé against the role and scores fit before anyone opens a CV.
+        </p>
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+          <a class="btn btn-primary btn-lg" href="{% url 'core:company_signup' %}">Start hiring — Create a company</a>
+          <a class="btn btn-outline-secondary btn-lg" href="{% url 'core:candidate_signup' %}">Looking for a job? Sign up</a>
+        </div>
+        <p class="ip-muted small mt-3 mb-0">
+          No credit card needed on the Free plan ·
+          <a href="{% url 'web:job_browse' %}">Browse open roles</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ip-band">
+  <div class="container">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="ip-feature">
+          <span class="ip-feature__icon" aria-hidden="true"><i class="bi bi-kanban"></i></span>
+          <h3>Configurable pipelines</h3>
+          <p>
+            Screening, assessment, L1/L2, HR, offer — rename, reorder or drop stages per
+            job, mark the ones that require an online assessment, then work the board.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="ip-feature">
+          <span class="ip-feature__icon" aria-hidden="true"><i class="bi bi-stars"></i></span>
+          <h3>AI screening</h3>
+          <p>
+            Generate skill-tagged question banks from a job description, grade free-text
+            answers, and get a 0–100 fit score per application — degrading gracefully
+            when no AI key is configured.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="ip-feature">
+          <span class="ip-feature__icon" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+          <h3>Candidate portal</h3>
+          <p>
+            Candidates keep one profile and résumé, apply in a click from the public job
+            board, take timed assessments, and watch every stage of their application.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ip-band ip-band--alt">
+  <div class="container">
+    <p class="ip-eyebrow mb-2">How it works</p>
+    <h2 class="h4 mb-4">Three steps from sign-up to signed offer</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="ip-step">
+          <span class="ip-step__n" aria-hidden="true">1</span>
+          <div>
+            <h3>Create your workspace</h3>
+            <p>Register the company, post a job, and a default six-stage pipeline is seeded for you.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="ip-step">
+          <span class="ip-step__n" aria-hidden="true">2</span>
+          <div>
+            <h3>Candidates apply</h3>
+            <p>They apply from the public openings board with a reusable profile and résumé, and get scored on arrival.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="ip-step">
+          <span class="ip-step__n" aria-hidden="true">3</span>
+          <div>
+            <h3>Your team decides</h3>
+            <p>Recruiters triage on the kanban board; interviewers work a review queue with PASS / FAIL / HOLD.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ip-band" id="pricing">
+  <div class="container">
+    <div class="text-center mb-4">
+      <p class="ip-eyebrow mb-2">Pricing</p>
+      <h2 class="h4 mb-2">Metered on open jobs, nothing else</h2>
+      <p class="ip-muted mb-0">Unlimited members, candidates and assessments on every plan.</p>
+    </div>
+    <div class="row g-3 justify-content-center">
+      <div class="col-md-5 col-lg-4">
+        <div class="ip-plan">
+          <div class="ip-plan__name">Free</div>
+          <div class="ip-plan__price">$0 <span>/ month</span></div>
+          <p class="ip-muted small mb-0">For your first role.</p>
+          <ul class="ip-plan__list">
+            <li><i class="bi bi-check2" aria-hidden="true"></i> 1 open job</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> Configurable pipelines and assessments</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> Unlimited team members</li>
+          </ul>
+          <div class="ip-plan__cta">
+            <a class="btn btn-outline-secondary w-100" href="{% url 'core:company_signup' %}">Get started free</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5 col-lg-4">
+        <div class="ip-plan is-current">
+          <div class="d-flex align-items-center gap-2">
+            <span class="ip-plan__name">Pro</span>
+            <span class="ip-badge ip-badge--accent">Most popular</span>
+          </div>
+          <div class="ip-plan__price">$49 <span>/ month</span></div>
+          <p class="ip-muted small mb-0">For teams hiring continuously.</p>
+          <ul class="ip-plan__list">
+            <li><i class="bi bi-check2" aria-hidden="true"></i> 25 open jobs</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> AI screening and résumé fit scores</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> REST API and Stripe self-serve billing</li>
+          </ul>
+          <div class="ip-plan__cta">
+            <a class="btn btn-primary w-100" href="{% url 'core:company_signup' %}">Start with Pro</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block after_main %}
+<footer class="ip-footer">
+  <div class="container d-flex flex-wrap justify-content-between gap-3">
+    <span>© Interview Portal — multi-tenant hiring for small IT and staffing firms.</span>
+    <span class="d-flex flex-wrap gap-3">
+      <a href="{% url 'web:job_browse' %}">Open roles</a>
+      <a href="{% url 'core:login' %}">Sign in</a>
+      <a href="{% url 'core:company_signup' %}">Create a company</a>
+    </span>
+  </div>
+</footer>
+{% endblock %}

@@ -1,0 +1,12 @@
+Hi {{ recipient_name }},
+
+Please complete the "{{ screen_title }}" video screen for {{ job_title }}{% if company %} at {{ company.name }}{% endif %}.
+
+It has {{ question_count }} question{{ question_count|pluralize }}. You get a few seconds to think before each answer is recorded, and you can only record each answer once.
+
+Start recording: {{ url }}
+{% if expires_at %}
+This link expires on {{ expires_at|date:"d M Y" }}.
+{% endif %}
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

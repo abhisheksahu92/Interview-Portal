@@ -1,0 +1,23 @@
+<tr id="pref-row-{{ row.event.name }}">
+  <th scope="row" class="fw-normal">
+    {{ row.event.label }}
+    <div class="small text-body-secondary">{{ row.event.description }}</div>
+  </th>
+  {% for cell in row.cells %}
+    <td class="text-center">
+      {% if cell.supported %}
+        <button type="button"
+                class="btn btn-sm {% if cell.enabled %}btn-success{% else %}btn-outline-secondary{% endif %}"
+                hx-post="{% url 'notifications:toggle' row.event.name cell.channel %}"
+                hx-target="#pref-row-{{ row.event.name }}"
+                hx-swap="outerHTML"
+                aria-pressed="{% if cell.enabled %}true{% else %}false{% endif %}"
+                aria-label="{{ cell.label }} for {{ row.event.label }}">
+          {% if cell.enabled %}On{% else %}Off{% endif %}
+        </button>
+      {% else %}
+        <span class="text-body-tertiary small">n/a</span>
+      {% endif %}
+    </td>
+  {% endfor %}
+</tr>

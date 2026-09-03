@@ -1,0 +1,12 @@
+Hi {{ recipient_name }},
+
+We could not take the latest payment for {{ company.name }}'s subscription
+{% if amount %}({{ currency|default:"INR" }} {{ amount }}){% endif %}.
+
+Please update your payment method to keep your account active.
+{% if billing_url %}
+Update it here: {{ billing_url }}
+{% endif %}
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

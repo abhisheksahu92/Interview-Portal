@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Schedule interview · {{ application.job.title }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Schedule interview</h1>
+    <p>{{ application.candidate.user.email }} — {{ application.job.title }}
+      {% if application.current_stage %}({{ application.current_stage.name }}){% endif %}</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'scheduling:index' %}">Back to schedule</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-6">
+    <div class="ip-card p-3">
+      <h2 class="h6">Propose a time</h2>
+      {% if not eligible_count %}
+        <div class="alert alert-warning small">
+          No member has declared availability yet — ask interviewers to fill in
+          <a href="{% url 'scheduling:availability' %}">My availability</a> first.
+        </div>
+      {% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger small">{{ form.non_field_errors }}</div>{% endif %}
+        <fieldset class="mb-3">
+          <legend class="form-label h6">Interviewers</legend>
+          {% for choice in form.interviewers %}
+            <div class="form-check">
+              {{ choice.tag }}
+              <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+            </div>
+          {% empty %}
+            <p class="small text-body-secondary mb-0">No bookable members.</p>
+          {% endfor %}
+          <div class="form-text">{{ form.interviewers.help_text }}</div>
+          {{ form.interviewers.errors }}
+        </fieldset>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.duration.id_for_label }}">Duration</label>
+          {{ form.duration }}{{ form.duration.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.timezone.id_for_label }}">{{ form.timezone.label }}</label>
+          {{ form.timezone }}{{ form.timezone.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.location_or_link.id_for_label }}">{{ form.location_or_link.label }}</label>
+          {{ form.location_or_link }}{{ form.location_or_link.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.notes.id_for_label }}">Notes</label>
+          {{ form.notes }}{{ form.notes.errors }}
+        </div>
+        <button class="btn btn-primary" type="submit">
+          <i class="bi bi-send me-1" aria-hidden="true"></i>Propose &amp; send booking link
+        </button>
+      </form>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    {% include "scheduling/partials/application_interviews.html" with application=application interviews=interviews %}
+  </div>
+</div>
+{% endblock %}

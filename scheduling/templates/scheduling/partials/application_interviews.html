@@ -1,0 +1,27 @@
+{% comment %}
+Include-able partial: interviews for one application.
+
+Usage from any app's template (e.g. web/ application detail):
+
+    {% include "scheduling/partials/application_interviews.html" with application=application interviews=application.interviews.all %}
+
+`interviews` is optional — it defaults to `application.interviews.all`. For a
+live, feature-gated fragment instead, load it over HTMX:
+
+    <div hx-get="{% url 'scheduling:application_interviews' application.pk %}"
+         hx-trigger="load" hx-swap="innerHTML"></div>
+{% endcomment %}
+<div class="ip-card p-3" id="scheduling-application-interviews">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h6 mb-0"><i class="bi bi-calendar2-week me-1" aria-hidden="true"></i>Interviews</h2>
+    <a class="btn btn-sm btn-outline-primary"
+       href="{% url 'scheduling:application_schedule' application.pk %}">Schedule interview</a>
+  </div>
+  {% with rows=interviews|default:application.interviews.all %}
+    {% for interview in rows %}
+      {% include "scheduling/partials/interview_row.html" with interview=interview %}
+    {% empty %}
+      <p class="text-body-secondary small mb-0">No interviews scheduled for this application yet.</p>
+    {% endfor %}
+  {% endwith %}
+</div>

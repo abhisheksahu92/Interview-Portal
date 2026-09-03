@@ -1,7 +1,22 @@
-*.pyc
-*.xml
-*.pdf
-/.idea
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Django
+*.sqlite3
+media/
+staticfiles/
+
+# Secrets
+.env
+"IP Important Data.txt"
 IP Important Data.txt
-*.ipynb
-*.txt
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.idea/
+.vscode/

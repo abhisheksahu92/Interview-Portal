@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{% if job %}Edit {{ job.title }}{% else %}New job{% endif %}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-muted small mb-1"><a href="{% url 'web:dashboard' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Jobs</a></p>
+    <h1>{% if job %}Edit job{% else %}New job{% endif %}</h1>
+    {% if not job %}
+      <p>A default pipeline (Screening → Assessment → L1 → L2 → HR → Offer) is created automatically.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="ip-section">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if plan_limit_hit %}
+          <div class="alert alert-warning">
+            Your plan's open-job limit is reached.
+            <a href="{% url 'billing:overview' %}">Upgrade your plan</a> or close an existing job.
+          </div>
+        {% endif %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        {% if client_form %}
+          <hr class="my-4">
+          <h2 class="h6 mb-3">End client</h2>
+          <p class="ip-muted small">
+            Link this opening to the client you are staffing for. Client contacts only
+            ever see candidates you explicitly submit to them.
+          </p>
+          {% for field in client_form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+              {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+        {% endif %}
+        <div class="d-flex gap-2 pt-2">
+          <button class="btn btn-primary" type="submit">Save job</button>
+          <a class="btn btn-link" href="{% url 'web:dashboard' %}">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="ip-section h-100">
+      <h2 class="h6 mb-2">What happens next</h2>
+      <ul class="ip-plan__list">
+        <li><i class="bi bi-check2" aria-hidden="true"></i> A six-stage pipeline is seeded and fully editable.</li>
+        <li><i class="bi bi-check2" aria-hidden="true"></i> Open jobs count towards your billing plan.</li>
+        <li><i class="bi bi-check2" aria-hidden="true"></i> Draft jobs stay hidden from the public board.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{{ candidate_name }} has accepted the offer for {{ job_title }}.
+{% if offer.joining_date %}
+Joining date: {{ offer.joining_date|date:"d M Y" }}
+{% endif %}{% if offer.signed_at %}Signed at: {{ offer.signed_at|date:"d M Y, H:i" }}{% if offer.signed_name %} by {{ offer.signed_name }}{% endif %}
+{% endif %}
+The application has been marked HIRED. Review the signed offer and its audit trail here:
+{{ offer_url }}
+
+— {{ site_name }}

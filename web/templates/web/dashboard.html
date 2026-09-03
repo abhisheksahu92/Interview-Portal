@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · {{ company.name }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>{{ company.name }}</h1>
+    <p>Recruiting overview across every open pipeline.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:interviewer_queue' %}">
+      <i class="bi bi-inbox me-1" aria-hidden="true"></i>My queue</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'web:job_create' %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New job</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="ip-kpi">
+      <div class="ip-kpi__label">Open jobs</div>
+      <div class="ip-kpi__value">{{ kpis.open_jobs }}</div>
+      <div class="ip-kpi__trend">of {{ jobs|length }} total posting{{ jobs|length|pluralize }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="ip-kpi">
+      <div class="ip-kpi__label">Active applications</div>
+      <div class="ip-kpi__value">{{ kpis.active_applications }}</div>
+      <div class="ip-kpi__trend">currently moving through a stage</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="ip-kpi">
+      <div class="ip-kpi__label">Hires this month</div>
+      <div class="ip-kpi__value">{{ kpis.hires_this_month }}</div>
+      <div class="ip-kpi__trend">reached the final stage</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="ip-kpi">
+      <div class="ip-kpi__label">Avg fit score</div>
+      <div class="ip-kpi__value">
+        {% if kpis.avg_fit_score %}{{ kpis.avg_fit_score|floatformat:0 }}{% else %}—{% endif %}
+      </div>
+      <div class="ip-kpi__trend">
+        {% if kpis.avg_fit_score %}AI résumé match, 0–100{% else %}no AI scores yet{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if upcoming_interviews is not None or pending_offer_count is not None %}
+<div class="row g-3 mb-4">
+  {% if upcoming_interviews is not None %}
+    <div class="col-lg-8">
+      <div class="ip-section h-100">
+        <div class="ip-section__head">
+          <h2>Upcoming interviews</h2>
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'scheduling:index' %}">Schedule</a>
+        </div>
+        {% if upcoming_interviews %}
+          <ul class="list-unstyled mb-0">
+            {% for interview in upcoming_interviews %}
+              <li class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom">
+                <span style="min-width:0">
+                  <a class="fw-semibold" href="{% url 'scheduling:application_interviews' interview.application_id %}">
+                    {{ interview.application.candidate.user.email }}</a>
+                  <span class="ip-muted small d-block text-truncate">
+                    {{ interview.application.job.title }}{% if interview.stage %} · {{ interview.stage.name }}{% endif %}
+                  </span>
+                </span>
+                <span class="text-end">
+                  <span class="d-block small">{{ interview.scheduled_start|date:"D j M, H:i" }}</span>
+                  <span class="ip-badge ip-badge--{% if interview.status == 'CONFIRMED' %}success{% else %}neutral{% endif %}">
+                    {{ interview.get_status_display }}</span>
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="ip-muted small mb-0">Nothing on the calendar yet — schedule an interview from any pipeline card.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+  {% if pending_offer_count is not None %}
+    <div class="col-6 col-lg-4">
+      <a class="ip-kpi d-block text-decoration-none h-100" href="{% url 'offers:index' %}">
+        <div class="ip-kpi__label">Pending offers</div>
+        <div class="ip-kpi__value">{{ pending_offer_count }}</div>
+        <div class="ip-kpi__trend">sent, awaiting a signature</div>
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<section class="ip-section" id="jobs">
+  <div class="ip-section__head">
+    <h2>Jobs</h2>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_create' %}">New job</a>
+  </div>
+  {% if jobs %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Jobs at {{ company.name }}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Title</th><th scope="col">Location</th>
+            <th scope="col">Type</th><th scope="col">Status</th>
+            <th scope="col" class="text-end">Applications</th><th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in jobs %}
+            <tr>
+              <td><a class="fw-semibold" href="{% url 'web:job_detail' job.pk %}">{{ job.title }}</a></td>
+              <td class="ip-muted">{{ job.location|default:"—" }}</td>
+              <td class="ip-muted">{{ job.get_employment_type_display }}</td>
+              <td>
+                <span class="ip-badge ip-badge--{% if job.status == 'OPEN' %}success{% elif job.status == 'DRAFT' %}neutral{% else %}danger{% endif %}">{{ job.get_status_display }}</span>
+              </td>
+              <td class="text-end">{{ job.application_count }}</td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_detail' job.pk %}">Board</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-briefcase"></i></span>
+      <div class="ip-empty__title">No jobs yet</div>
+      <p>Create your first opening and we will seed a six-stage pipeline for you automatically.</p>
+      <a class="btn btn-primary" href="{% url 'web:job_create' %}">Create your first job</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,1 @@
+You have moved to {{ stage_name }} for {{ job.title }}

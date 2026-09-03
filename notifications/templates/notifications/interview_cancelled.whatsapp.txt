@@ -1,0 +1,1 @@
+{{ recipient_name }}: your {{ stage }} for {{ job_title }}{% if when %} on {{ when }}{% endif %} has been cancelled. Pick a new time: {{ booking_url }}. Reply STOP to opt out.

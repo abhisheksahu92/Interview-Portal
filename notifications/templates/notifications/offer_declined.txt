@@ -1,0 +1,8 @@
+{{ candidate_name }} has declined the offer for {{ job_title }}.
+
+Reason given: {{ decline_reason|default:"(none given)" }}
+
+The application is still open, so you can re-open the pipeline or send a revised offer:
+{{ offer_url }}
+
+— {{ site_name }}

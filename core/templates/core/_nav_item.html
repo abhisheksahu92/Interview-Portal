@@ -1,0 +1,28 @@
+{% comment %}
+One sidebar link, optionally locked behind a paid plan.
+
+    {% url 'video:index' as ip_href %}
+    {% feature_enabled "video" as ip_ok %}
+    {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="video" label="Video" icon="bi-camera-video" active_prefix="video:" %}
+
+When ``enabled`` is false the item is still shown — it just points at the
+billing page and carries a "Pro" badge, so the upsell stays visible instead of
+the feature silently disappearing. ``vn`` (the current view name) comes from the
+including sidebar's ``{% with %}`` block.
+{% endcomment %}
+<li>
+  {% if enabled %}
+    <a class="ip-nav__link {% if active_prefix and active_prefix in vn %}is-active{% endif %}" href="{{ href }}">
+      <i class="bi {{ icon }}" aria-hidden="true"></i> {{ label }}
+    </a>
+  {% else %}
+    <a class="ip-nav__link ip-nav__link--locked" href="{% url 'billing:overview' %}"
+       title="{{ label }} is available on a paid plan — upgrade to unlock it">
+      <i class="bi {{ icon }}" aria-hidden="true"></i> {{ label }}
+      <span class="ip-nav__lock" data-ip-lock="{{ feature }}">
+        <i class="bi bi-lock-fill" aria-hidden="true"></i> Pro
+      </span>
+      <span class="visually-hidden">— requires a paid plan</span>
+    </a>
+  {% endif %}
+</li>
