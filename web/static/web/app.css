@@ -922,7 +922,7 @@ html { scroll-padding-top: 8rem; }
   .ip-exam-bar__title h1 { font-size: 0.9375rem; margin-bottom: 0 !important; max-width: 42vw; }
   .ip-exam-bar__meta { display: none; }
   .ip-timer { padding: 0.15rem 0.5rem; font-size: 0.875rem; }
-  html { scroll-padding-top: 6.5rem; }
+  html { scroll-padding-top: 8.5rem; }
 }
 .ip-timer {
   display: inline-flex;

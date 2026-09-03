@@ -27,7 +27,7 @@
                 <td class="ip-muted text-nowrap">{{ m.created_at|date:"j M Y" }}</td>
                 <td class="text-end">
                   {% if current_role == "OWNER" and m.user_id != user.id %}
-                    <form method="post" action="{% url 'web:member_remove' m.pk %}" class="d-inline">
+                    <form method="post" action="{% url 'web:member_remove' m.pk %}" class="d-inline" onsubmit="return confirm('Remove {{ m.user.email }} from {{ company.name }}?')">
                       {% csrf_token %}
                       <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
                     </form>
@@ -66,7 +66,7 @@
                         {% csrf_token %}
                         <button class="btn btn-sm btn-outline-secondary" type="submit">Resend</button>
                       </form>
-                      <form method="post" action="{% url 'web:invite_revoke' inv.pk %}" class="d-inline">
+                      <form method="post" action="{% url 'web:invite_revoke' inv.pk %}" class="d-inline" onsubmit="return confirm('Revoke the invitation for {{ inv.email }}?')">
                         {% csrf_token %}
                         <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
                       </form>
