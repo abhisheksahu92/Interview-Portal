@@ -1,0 +1,1 @@
+{{ recipient_name }}: {{ company_name|default:"a hiring team" }} would like you to apply{% if job_title %} for {{ job_title }}{% endif %}. See it in your portal: {{ site_url }}/portal/. Reply STOP to opt out.

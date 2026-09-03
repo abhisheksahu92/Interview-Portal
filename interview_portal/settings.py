@@ -42,6 +42,9 @@ env = environ.Env(
     RAZORPAY_WEBHOOK_SECRET=(str, ""),
     WHATSAPP_TOKEN=(str, ""),
     WHATSAPP_PHONE_ID=(str, ""),
+    WHATSAPP_VERIFY_TOKEN=(str, ""),
+    VIDEO_TRANSCRIBE_API_KEY=(str, ""),
+    VIDEO_TRANSCRIBE_URL=(str, ""),
     GOOGLE_OAUTH_CLIENT_ID=(str, ""),
     GOOGLE_OAUTH_CLIENT_SECRET=(str, ""),
     MS_OAUTH_CLIENT_ID=(str, ""),
@@ -111,6 +114,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "core.middleware.TenantMiddleware",
+    "partners.middleware.ReferralMiddleware",
     "core.middleware.HtmxRedirectMiddleware",
 ]
 
@@ -295,6 +299,13 @@ COMPANY_STATE_CODE = env("COMPANY_STATE_CODE")
 # --- Notifications (WhatsApp Business Cloud API) --------------------------
 WHATSAPP_TOKEN = env("WHATSAPP_TOKEN")
 WHATSAPP_PHONE_ID = env("WHATSAPP_PHONE_ID")
+# Handshake token for the inbound webhook verification GET.
+WHATSAPP_VERIFY_TOKEN = env("WHATSAPP_VERIFY_TOKEN")
+
+# --- Video screening transcription adapter -------------------------------
+# Blank key = responses are stored and playable, transcripts stay empty.
+VIDEO_TRANSCRIBE_API_KEY = env("VIDEO_TRANSCRIBE_API_KEY")
+VIDEO_TRANSCRIBE_URL = env("VIDEO_TRANSCRIBE_URL")
 
 # --- Calendar OAuth (scheduling) -----------------------------------------
 GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID")

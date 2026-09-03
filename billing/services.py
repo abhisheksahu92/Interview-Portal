@@ -43,6 +43,7 @@ PLAN_SPECS = {
             "careers_page": True,
             "offers": True,
             "whatsapp": True,
+            "ai_extraction": True,
         },
     },
     Plan.AGENCY: {
@@ -66,6 +67,7 @@ PLAN_SPECS = {
             "talent_pool_search": True,
             "marketplace": True,
             "white_label": True,
+            "ai_extraction": True,
         },
     },
 }

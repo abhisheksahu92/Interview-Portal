@@ -32,6 +32,7 @@ FEATURES = (
     "video",
     "api",
     "talent_pool_search",
+    "ai_extraction",
     "offers",
     "analytics",
     "marketplace",

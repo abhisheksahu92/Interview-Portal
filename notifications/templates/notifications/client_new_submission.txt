@@ -1,0 +1,9 @@
+Hello,
+
+A new candidate has been submitted to {{ client }} for {{ job }}:
+
+  {{ candidate }}
+
+Sign in with your client portal link to read their profile, view the resume and leave feedback.
+
+— {{ site_name }}

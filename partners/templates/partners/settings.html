@@ -39,7 +39,7 @@
   {% else %}
     <div class="alert alert-warning">
       White-labelling is not included in your plan.
-      <a href="/billing/">Upgrade</a> to rebrand this workspace.
+      <a href="{% url 'billing:overview' %}">Upgrade</a> to rebrand this workspace.
     </div>
   {% endif %}
 

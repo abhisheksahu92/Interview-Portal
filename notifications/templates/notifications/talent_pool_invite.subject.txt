@@ -1,0 +1,1 @@
+{{ company_name|default:"A hiring team" }} would like you to apply{% if job_title %} for {{ job_title }}{% endif %}

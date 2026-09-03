@@ -1,0 +1,14 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p>Hi {{ recipient_name }},</p>
+  <p>Please complete the &ldquo;{{ screen_title }}&rdquo; video screen for
+    <strong>{{ job_title }}</strong>{% if company %} at {{ company.name }}{% endif %}.</p>
+  <p>It has {{ question_count }} question{{ question_count|pluralize }}. You get a few seconds to
+    think before each answer is recorded, and you can only record each answer once.</p>
+  <p><a href="{{ url }}" style="background:#2563eb;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Start recording</a></p>
+  {% if expires_at %}<p>This link expires on {{ expires_at|date:"d M Y" }}.</p>{% endif %}
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">
+    &mdash; {{ site_name }} &middot;
+    <a href="{{ unsubscribe_url }}" style="color:#6b7280">Manage your notification preferences</a>
+  </p>
+</div>
