@@ -9,7 +9,7 @@ from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from billing.models import Invoice
+from billing.models import Invoice, InvoiceCounter
 
 logger = logging.getLogger(__name__)
 
@@ -26,22 +26,36 @@ def financial_year(moment=None):
 
 
 def next_number(moment=None, fy=None):
-    """Next sequential invoice number for the FY, e.g. ``IP/2026-27/0001``."""
+    """Allocate the next invoice number for the FY, e.g. ``IP/2026-27/0001``.
+
+    The FY counter row is locked with ``SELECT ... FOR UPDATE`` inside a
+    transaction, so concurrent payments queue up instead of racing for the same
+    sequence number (the old "read the highest existing number" scan could hand
+    the same number to two writers). SQLite has no row locks but serialises
+    writers with a whole-database write lock, which gives the same guarantee —
+    ``select_for_update`` is simply a no-op there, so the code path is identical.
+
+    Note this *consumes* a number; use :func:`peek_number` for a read-only look.
+    """
     fy = fy or financial_year(moment)
-    prefix = f"{NUMBER_PREFIX}/{fy}/"
-    last = (
-        Invoice.objects.filter(number__startswith=prefix)
-        .order_by("-number")
-        .values_list("number", flat=True)
-        .first()
-    )
-    seq = 1
-    if last:
-        try:
-            seq = int(last.rsplit("/", 1)[1]) + 1
-        except (IndexError, ValueError):  # pragma: no cover - defensive
-            seq = Invoice.objects.filter(number__startswith=prefix).count() + 1
-    return f"{prefix}{seq:04d}"
+    with transaction.atomic():
+        counter = InvoiceCounter.objects.select_for_update().filter(fy=fy).first()
+        if counter is None:
+            # Another writer may create the row first; create-then-lock.
+            InvoiceCounter.objects.get_or_create(fy=fy, defaults={"last_seq": 0})
+            counter = InvoiceCounter.objects.select_for_update().get(fy=fy)
+        counter.last_seq += 1
+        counter.save(update_fields=["last_seq", "updated_at"])
+        seq = counter.last_seq
+    return f"{NUMBER_PREFIX}/{fy}/{seq:04d}"
+
+
+def peek_number(moment=None, fy=None):
+    """The number :func:`next_number` would hand out next, without taking it."""
+    fy = fy or financial_year(moment)
+    counter = InvoiceCounter.objects.filter(fy=fy).first()
+    seq = (counter.last_seq if counter else 0) + 1
+    return f"{NUMBER_PREFIX}/{fy}/{seq:04d}"
 
 
 def _q(value):

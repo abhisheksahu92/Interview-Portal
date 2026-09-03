@@ -18,6 +18,14 @@
     {{ application.candidate.experience_years }} yrs<span class="ip-meta-dot"></span>{% if application.status != "ACTIVE" %}<span class="ip-badge ip-badge--{% if application.status == 'HIRED' %}success{% else %}danger{% endif %}">{{ application.get_status_display }}</span>{% else %}{{ application.updated_at|timesince }} in stage{% endif %}
   </div>
 
+  {% if application.upcoming_interview %}
+    <div class="ip-card__meta mt-1" title="Next interview for this candidate">
+      <i class="bi bi-calendar2-check me-1" aria-hidden="true"></i>
+      {{ application.upcoming_interview.scheduled_start|date:"D j M, H:i" }}
+      <span class="ip-badge ip-badge--neutral ms-1">{{ application.upcoming_interview.get_status_display }}</span>
+    </div>
+  {% endif %}
+
   {% if application.latest_review %}
     <div class="ip-card__meta mt-1">
       <i class="bi bi-chat-left-text me-1" aria-hidden="true"></i>
@@ -54,6 +62,7 @@
               aria-label="Review {{ application.candidate.user.email }}">
         <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Review
       </button>
+      {% include "web/partials/application_actions.html" %}
     </div>
     <div id="review-slot-{{ application.pk }}"></div>
   {% endif %}

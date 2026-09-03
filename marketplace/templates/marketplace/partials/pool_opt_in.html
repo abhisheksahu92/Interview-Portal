@@ -1,7 +1,16 @@
-{# Candidate talent-pool opt-in toggle.
-   Include from the candidate profile page (web/templates/web/candidate_profile.html):
-     {% include "marketplace/partials/pool_opt_in.html" with profile=profile %}
-   Requires ``profile`` to be a jobs.CandidateProfile. #}
+{% comment %}
+Candidate talent-pool opt-in toggle.
+
+Include from the candidate profile page (web/templates/web/candidate_profile.html):
+
+    {% include "marketplace/partials/pool_opt_in.html" with profile=profile %}
+
+Requires ``profile`` to be a jobs.CandidateProfile.
+
+Keep this header a comment *block*: Django only strips hash-style comments
+within a single line, so writing it as a multi-line hash comment leaves the
+usage example above live and the partial then includes itself forever.
+{% endcomment %}
 <form method="post" action="{% url 'marketplace:pool_opt_in' %}"
       hx-post="{% url 'marketplace:pool_opt_in' %}" hx-swap="outerHTML"
       class="card p-3" id="ip-pool-opt-in">

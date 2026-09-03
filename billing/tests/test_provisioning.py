@@ -34,10 +34,11 @@ def test_saving_a_company_again_does_not_duplicate_the_subscription(db):
 
 
 @pytest.mark.django_db
-def test_seed_demo_upgrades_the_demo_company_to_pro():
+def test_seed_demo_upgrades_the_demo_company_to_a_paid_plan():
     call_command("seed_demo", verbosity=0)
     subscription = Subscription.objects.get(company__name="Demo Staffing")
-    assert subscription.plan.code == Plan.PRO
+    assert subscription.plan.code != Plan.FREE
+    assert subscription.plan.max_open_jobs != 1
     assert subscription.status == Subscription.ACTIVE
-    # PRO headroom means the demo's two open jobs are fine
+    # A paid plan's headroom means the demo's two open jobs are fine
     assert Job.objects.filter(company=subscription.company, status=Job.OPEN).count() >= 2

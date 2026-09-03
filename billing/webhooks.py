@@ -1,12 +1,20 @@
-"""Apply Stripe webhook events to local Subscription rows."""
+"""Apply Stripe / Razorpay webhook events to local Subscription rows.
 
+Every event is recorded in :class:`billing.models.ProcessedWebhookEvent` before
+it is applied, keyed by the gateway's own event id. Gateways retry and replay
+deliveries, so without that guard one payment could mint two invoices and two
+placement fees.
+"""
+
+import hashlib
+import json
 import logging
 from datetime import UTC, datetime
 
 from django.conf import settings
 from django.utils import timezone
 
-from billing.models import Plan, Subscription
+from billing.models import Plan, ProcessedWebhookEvent, Subscription
 from billing.services import free_plan, get_subscription, pro_plan
 from core.models import Company
 
@@ -28,6 +36,51 @@ _STRIPE_STATUS_MAP = {
     "canceled": Subscription.CANCELED,
     "incomplete_expired": Subscription.CANCELED,
 }
+
+
+
+# --- Idempotency ---------------------------------------------------------
+
+
+def event_fingerprint(body) -> str:
+    """A stable id for an event that carries no id of its own: hash of the body."""
+    if body is None:
+        body = b""
+    if isinstance(body, str):
+        body = body.encode("utf-8", "ignore")
+    elif not isinstance(body, bytes | bytearray):
+        body = json.dumps(body, sort_keys=True, default=str).encode()
+    return "sha256:" + hashlib.sha256(bytes(body)).hexdigest()
+
+
+def mark_processed(provider, event_id, event_type="") -> bool:
+    """Claim ``event_id`` for ``provider``.
+
+    Returns ``True`` the first time an event is seen and ``False`` for a replay,
+    relying on the unique constraint so two simultaneous deliveries cannot both
+    win the claim.
+    """
+    if not event_id:
+        return True
+    _row, created = ProcessedWebhookEvent.objects.get_or_create(
+        provider=provider,
+        event_id=str(event_id)[:200],
+        defaults={"event_type": (event_type or "")[:100]},
+    )
+    if not created:
+        logger.info(
+            "billing: skipping replayed %s webhook %s (%s)", provider, event_id, event_type
+        )
+    return created
+
+
+def already_processed(provider, event_id) -> bool:
+    """True when this event has been applied before."""
+    if not event_id:
+        return False
+    return ProcessedWebhookEvent.objects.filter(
+        provider=provider, event_id=str(event_id)[:200]
+    ).exists()
 
 
 def _as_dict(value):
@@ -101,6 +154,10 @@ def handle_event(event):
 
     if event_type not in HANDLED_EVENTS:
         logger.info("billing: ignoring stripe event %s", event_type)
+        return None
+
+    event_id = event.get("id") or event_fingerprint(event)
+    if not mark_processed(Subscription.STRIPE, event_id, event_type):
         return None
 
     subscription = _subscription_for(obj)
@@ -223,14 +280,24 @@ def _razorpay_interval(event, fallback):
     return fallback
 
 
-def handle_razorpay_event(event):
-    """Apply one verified Razorpay event. Returns the touched Subscription."""
+def handle_razorpay_event(event, event_id=None):
+    """Apply one verified Razorpay event. Returns the touched Subscription.
+
+    Razorpay puts its delivery id in the ``X-Razorpay-Event-Id`` header rather
+    than the body, so the view passes it in; without one we fall back to a hash
+    of the payload, which still catches a verbatim replay.
+    """
     from billing.invoicing import invoice_for_payment
 
     event = _as_dict(event)
     name = event.get("event")
     if name not in RAZORPAY_EVENTS:
         logger.info("billing: ignoring razorpay event %s", name)
+        return None
+
+    if not mark_processed(
+        Subscription.RAZORPAY, event_id or event_fingerprint(event), name
+    ):
         return None
 
     subscription = _razorpay_subscription_for(event)

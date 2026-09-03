@@ -51,6 +51,52 @@
   </div>
 </div>
 
+{% if upcoming_interviews is not None or pending_offer_count is not None %}
+<div class="row g-3 mb-4">
+  {% if upcoming_interviews is not None %}
+    <div class="col-lg-8">
+      <div class="ip-section h-100">
+        <div class="ip-section__head">
+          <h2>Upcoming interviews</h2>
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'scheduling:index' %}">Schedule</a>
+        </div>
+        {% if upcoming_interviews %}
+          <ul class="list-unstyled mb-0">
+            {% for interview in upcoming_interviews %}
+              <li class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom">
+                <span style="min-width:0">
+                  <a class="fw-semibold" href="{% url 'scheduling:application_interviews' interview.application_id %}">
+                    {{ interview.application.candidate.user.email }}</a>
+                  <span class="ip-muted small d-block text-truncate">
+                    {{ interview.application.job.title }}{% if interview.stage %} · {{ interview.stage.name }}{% endif %}
+                  </span>
+                </span>
+                <span class="text-end">
+                  <span class="d-block small">{{ interview.scheduled_start|date:"D j M, H:i" }}</span>
+                  <span class="ip-badge ip-badge--{% if interview.status == 'CONFIRMED' %}success{% else %}neutral{% endif %}">
+                    {{ interview.get_status_display }}</span>
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="ip-muted small mb-0">Nothing on the calendar yet — schedule an interview from any pipeline card.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+  {% if pending_offer_count is not None %}
+    <div class="col-6 col-lg-4">
+      <a class="ip-kpi d-block text-decoration-none h-100" href="{% url 'offers:index' %}">
+        <div class="ip-kpi__label">Pending offers</div>
+        <div class="ip-kpi__value">{{ pending_offer_count }}</div>
+        <div class="ip-kpi__trend">sent, awaiting a signature</div>
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endif %}
+
 <section class="ip-section" id="jobs">
   <div class="ip-section__head">
     <h2>Jobs</h2>

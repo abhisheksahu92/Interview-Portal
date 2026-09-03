@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from video.models import VideoResponse
 
-from .conftest import webm_upload
+from .conftest import WEBM_HEADER, webm_upload
 
 pytestmark = pytest.mark.usefixtures("video_plan")
 
@@ -33,7 +33,9 @@ def test_company_member_streams_the_whole_file(client, owner, response_row):
     assert reply.status_code == 200
     assert reply["Accept-Ranges"] == "bytes"
     assert reply["Content-Length"] == "1000"
-    assert b"".join(reply.streaming_content) == b"0" * 1000
+    body = b"".join(reply.streaming_content)
+    assert len(body) == 1000
+    assert body.startswith(WEBM_HEADER)
 
 
 def test_range_request_returns_206_with_the_slice(client, owner, response_row):
@@ -42,7 +44,7 @@ def test_range_request_returns_206_with_the_slice(client, owner, response_row):
     assert reply.status_code == 206
     assert reply["Content-Range"] == "bytes 10-19/1000"
     assert reply["Content-Length"] == "10"
-    assert b"".join(reply.streaming_content) == b"0" * 10
+    assert b"".join(reply.streaming_content) == b"0" * 10  # past the header
 
 
 def test_open_ended_and_unsatisfiable_ranges(client, owner, response_row):

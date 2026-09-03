@@ -283,3 +283,48 @@ class PlacementFee(models.Model):
 
     def __str__(self):
         return f"{self.company} placement fee ₹{self.amount}"
+
+
+class InvoiceCounter(models.Model):
+    """Per-financial-year invoice sequence.
+
+    Numbers are allocated by locking this row (``select_for_update``) inside a
+    transaction, so two concurrent payments can never mint the same number —
+    the old "read the highest existing number" approach raced.
+    """
+
+    fy = models.CharField(max_length=10, unique=True)
+    last_seq = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["fy"]
+
+    def __str__(self):
+        return f"{self.fy} @ {self.last_seq}"
+
+
+class ProcessedWebhookEvent(models.Model):
+    """One row per payment-gateway event we have already applied.
+
+    Gateways retry aggressively and replay on failure, so every webhook is
+    recorded here first; a repeat delivery is skipped instead of issuing a
+    second invoice or placement fee.
+    """
+
+    provider = models.CharField(max_length=20, choices=Subscription.PROVIDER_CHOICES)
+    event_id = models.CharField(max_length=200)
+    event_type = models.CharField(max_length=100, blank=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-received_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["provider", "event_id"], name="billing_webhook_event_unique"
+            )
+        ]
+        indexes = [models.Index(fields=["provider", "event_id"])]
+
+    def __str__(self):
+        return f"{self.provider}:{self.event_id}"

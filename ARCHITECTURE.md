@@ -7,7 +7,8 @@ for small IT services / staffing firms, with AI-assisted screening.
 - Django 5.x, Python 3.12, Django REST Framework, HTMX + Bootstrap 5 (CDN) for UI, django-environ for settings.
 - DB: PostgreSQL in prod (DATABASE_URL); SQLite fallback for local dev/tests.
 - Anthropic Python SDK for AI features (agent working on it must load the `claude-api` skill).
-- pytest + pytest-django, ruff, GitHub Actions CI.
+- pytest + pytest-django (parallel via pytest-xdist, `-n auto` in pyproject addopts), ruff, GitHub Actions CI.
+- Scheduled work: one `manage.py run_periodic` entry point runs every maintenance command in order, logging failures.
 
 ## Apps (each agent owns ONLY its app directory unless told otherwise)
 - `core/`        — Company (tenant), CustomUser (email login), Membership(user, company, role: OWNER/RECRUITER/INTERVIEWER), TenantMiddleware (request.company), base templates, auth views. [Foundation agent]
@@ -16,6 +17,16 @@ for small IT services / staffing firms, with AI-assisted screening.
 - `api/`         — DRF viewsets/serializers for everything above, token auth, OpenAPI schema (drf-spectacular), scoped by request.company.
 - `billing/`     — Plan (FREE/PRO, max_open_jobs) + Subscription (per company, Stripe ids/status), Stripe checkout/portal/webhooks, `manage.py provision_subscriptions`, and a `pre_save` signal on `jobs.Job` enforcing the open-job limit for companies that have a Subscription row. Depends on core + jobs; jobs never imports billing.
 - `web/`         — **the canonical server-rendered UI** (all job/skill/stage/pipeline screens live here; `jobs/` is domain-only and ships no views or templates). HTMX/Bootstrap 5 templates + views: recruiter dashboard (pipeline kanban), candidate portal (apply, take assessment, track status), interviewer review screens, company settings (stages, skills, members).
+- `scheduling/`  — interviewer availability, calendar OAuth adapters, Interview rows, candidate self-booking pages, `.ics` invites. [Phase 3]
+- `clients/`     — clients of a staffing firm, tokenised client portal, Submission + client feedback. [Phase 3]
+- `notifications/` — channel adapters (email / WhatsApp Cloud / SMS stub), event template registry, preferences, OutboundMessage with retry; the single `notifications.send(...)` entrypoint. [Phase 3]
+- `talent/`      — talent CRM: TalentProfile, bulk resume import, search, "add to job". [Phase 3]
+- `video/`       — one-way video screening: VideoQuestion/VideoScreen/VideoInvite/VideoResponse, recorder + playback, upload sniffing and metered minutes. [Phase 3]
+- `careers/`     — public careers site per company, JobDistribution adapters, Indeed XML feed, JSON-LD. [Phase 3]
+- `analytics/`   — read-time hiring metrics, charts, CSV export (owner-only). [Phase 3]
+- `offers/`      — OfferTemplate/Offer, rendered letter + PDF, click-to-sign audit trail. [Phase 3]
+- `partners/`    — Reseller/Referral/CommissionLedger, WhiteLabel, Ed25519-signed self-hosted License keys. [Phase 3]
+- `marketplace/` — paid QuestionPack + PackPurchase, opt-in cross-company verified talent pool. [Phase 3]
 
 ## Shared-file rules
 - `interview_portal/settings.py`, root `urls.py`, `requirements.txt`, `pyproject.toml` are written ONCE by the foundation agent, which pre-registers all five apps and includes all five url modules (`core.urls`, `jobs.urls`, `assessments.urls`, `api.urls`, `web.urls`) with stub urlpatterns.
@@ -75,6 +86,10 @@ that reads env keys, returns a clear "not configured" state when keys are missin
 - Subscription gains: provider choices STRIPE/RAZORPAY, interval MONTHLY/YEARLY, trial_ends_at (14-day full-featured trial on company creation),
   seats_used property, gstin CharField blank, billing_address JSON.
 - UsageRecord(company, kind AI_SCREEN/WHATSAPP_MSG/VIDEO_MINUTE, quantity, period_start); helper `billing.usage.consume(company, kind, qty=1)` raises `QuotaExceeded` past plan quota; `usage.warn_threshold=0.8` triggers a notification via notifications app.
+- InvoiceCounter(fy unique, last_seq): invoice numbers are allocated by locking this row (`select_for_update` in `transaction.atomic()`), never by scanning
+  existing numbers — two concurrent payments must not mint the same number.
+- ProcessedWebhookEvent(provider, event_id unique together, event_type, received_at): every Stripe/Razorpay event is claimed before it is applied, so a
+  replay cannot create a second Invoice / PlacementFee / commission. Stripe uses `event.id`; Razorpay the `X-Razorpay-Event-Id` header, else a body hash.
 - Invoice(company, number sequential per FY like IP/2026-27/0001, amount, gst_rate 18, cgst/sgst/igst split by state code, gstin, pdf FileField, issued_at, paid_at, provider_ref). PDF via reportlab or weasyprint-free HTML→PDF (xhtml2pdf) — pin whatever you use.
 - Razorpay gateway: create subscription/order, verify webhook signature, handle payment.captured/subscription.charged/failed. Dunning: PAST_DUE → 3 reminder emails over 7 days then downgrade.
 - PlacementFee(company, application, amount, status) auto-created on HIRED when plan has per_hire_fee set.
@@ -103,7 +118,8 @@ that reads env keys, returns a clear "not configured" state when keys are missin
 
 ### video/
 - VideoQuestion(company, text, think_seconds, answer_seconds), VideoScreen(job, stage, questions M2M, deadline_days), VideoResponse(application, screen, question, file FileField/S3 key, duration, transcript, ai_summary, status).
-- Candidate recorder page using MediaRecorder API (webm), upload in chunks or single POST, size cap; recruiter review page with playback + AI summary (assessments.ai style; transcript via env-gated adapter, otherwise blank). Consumes VIDEO_MINUTE usage.
+- Candidate recorder page using MediaRecorder API (webm), upload in chunks or single POST, size cap, container magic-byte sniffing (webm `1A 45 DF A3`,
+  mp4 `ftyp` at offset 4) mirroring jobs/validators.py, and a server-side duration cap of `question.answer_seconds + 5` (client duration is never trusted); recruiter review page with playback + AI summary (assessments.ai style; transcript via env-gated adapter, otherwise blank). Consumes VIDEO_MINUTE usage.
 
 ### careers/
 - CareersSite(company OneToOne, slug, custom_domain, headline, about, brand_color, logo, published). Public page at /careers/<slug>/ (and by Host header for custom domains) listing OPEN jobs with apply flow reusing web apply.
@@ -118,7 +134,10 @@ that reads env keys, returns a clear "not configured" state when keys are missin
 ### partners/
 - Reseller(name, code, commission_pct, contact), Referral(reseller, company, signed_up_at, first_payment_at), CommissionLedger entries computed from Invoices paid. Signup accepts ?ref=CODE (cookie 30 days). Reseller dashboard at /partners/<code>/ via token login.
 - WhiteLabel(company OneToOne, brand_name, logo, primary_color, custom_domain, hide_powered_by) applied via context processor in base.html when present (partners agent may edit base.html brand block ONLY).
-- License(company, kind SELF_HOSTED, key, seats, expires_at) + `manage.py issue_license` — key verification helper.
+- License(company, kind SELF_HOSTED, key, seats, expires_at) + `manage.py issue_license` / `verify_license` / `generate_license_keypair`.
+  Keys are **Ed25519**-signed (`IPL2.<payload>.<sig>`), never HMAC over SECRET_KEY — a self-hosted customer holds SECRET_KEY and must not be able to
+  forge keys. The private key comes from env `LICENSE_SIGNING_KEY` (base64 raw 32 bytes) and is used only by `issue_license`; the public key is embedded
+  as `partners.licensing.LICENSE_PUBLIC_KEY` so `verify_license` works offline on every install.
 
 ### marketplace/
 - QuestionPack(title, skill_name, description, price_inr, questions JSON, published, author), PackPurchase(company, pack, invoice FK null, purchased_at); purchase copies questions into the company's Question bank (source=MARKETPLACE — add choice in assessments/ is allowed for marketplace agent, one line). Verified candidate pool: opt-in flag on CandidateProfile `share_in_pool` (marketplace agent may add this field + migration to jobs/), cross-company search of candidates who passed any assessment, gated by feature `talent_pool_search`.

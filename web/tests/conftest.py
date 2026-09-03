@@ -72,3 +72,51 @@ def make_application(db):
         )
 
     return factory
+
+
+# --- billing plan helpers -------------------------------------------------
+# Creating a Company gives it a 14-day full-featured trial (billing signal), so
+# by default the web tests see every paid feature. These flip a company onto a
+# steady-state paid plan or onto expired-trial FREE.
+
+
+def paid(company):
+    """Put ``company`` on a genuinely paid AGENCY plan (no trial)."""
+    from billing.models import Subscription
+    from billing.services import agency_plan, set_plan
+
+    set_plan(
+        Subscription.objects.get(company=company),
+        agency_plan(),
+        status=Subscription.ACTIVE,
+        trial_ends_at=None,
+    )
+    return company
+
+
+def free_expired(company):
+    """Push ``company`` onto FREE with its trial already over."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from billing.models import Subscription
+    from billing.services import free_plan, set_plan
+
+    set_plan(
+        Subscription.objects.get(company=company),
+        free_plan(),
+        status=Subscription.ACTIVE,
+        trial_ends_at=timezone.now() - timedelta(days=1),
+    )
+    return company
+
+
+@pytest.fixture
+def paid_company(company):
+    return paid(company)
+
+
+@pytest.fixture
+def free_company(company):
+    return free_expired(company)

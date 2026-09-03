@@ -125,8 +125,50 @@ def dashboard(request):
     return render(
         request,
         "web/dashboard.html",
-        {"company": company, "jobs": jobs, "kpis": kpis},
+        {
+            "company": company,
+            "jobs": jobs,
+            "kpis": kpis,
+            **_dashboard_extras(request, company),
+        },
     )
+
+
+def _dashboard_extras(request, company):
+    """Plan-dependent dashboard cards: upcoming interviews and pending offers.
+
+    Each block is skipped entirely (no query at all) when the tenant's plan does
+    not include the feature, so the FREE dashboard stays exactly as cheap as it
+    was before these cards existed.
+    """
+    from billing.entitlements import has_feature
+
+    extras = {"upcoming_interviews": None, "pending_offer_count": None}
+    if has_feature(company, "scheduling"):
+        from scheduling.models import Interview
+
+        extras["upcoming_interviews"] = list(
+            Interview.objects.filter(
+                company=company,
+                status__in=[Interview.CONFIRMED, Interview.PROPOSED],
+                scheduled_start__gte=timezone.now(),
+            )
+            .select_related("application__candidate__user", "application__job", "stage")
+            .order_by("scheduled_start")[:5]
+        )
+    if has_feature(company, "offers"):
+        from offers.models import Offer
+
+        extras["pending_offer_count"] = Offer.objects.filter(
+            application__job__company=company,
+            status__in=[Offer.SENT, Offer.VIEWED],
+        ).count()
+    return extras
+
+
+def _valid(form):
+    """True when ``form`` is absent (feature off) or validates."""
+    return form is None or form.is_valid()
 
 
 def _add_plan_limit_errors(form, error):
@@ -141,12 +183,30 @@ def _add_plan_limit_errors(form, error):
             form.add_error(None, message)
 
 
+def _job_client_form(request, job=None):
+    """``clients.JobClientForm`` for the job screens, or None when not entitled.
+
+    The end-client field only exists for tenants on a plan with the client
+    portal, so the job form renders (and applies) it conditionally.
+    """
+    from billing.entitlements import has_feature
+
+    if not has_feature(getattr(request, "company", None), "client_portal"):
+        return None
+    from clients.forms import JobClientForm
+
+    return JobClientForm(
+        request.POST or None, company=request.company, job=job
+    )
+
+
 @login_required
 @role_required(*STAFF_ROLES)
 def job_create(request):
     form = JobForm(request.POST or None, company=request.company)
+    client_form = _job_client_form(request)
     plan_limit_hit = False
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST" and form.is_valid() and _valid(client_form):
         job = form.save(commit=False)
         job.created_by = request.user
         job.company = request.company
@@ -157,12 +217,19 @@ def job_create(request):
             plan_limit_hit = True
         else:
             form.save_m2m()
+            if client_form is not None:
+                client_form.apply(job)
             messages.success(request, f"Job “{job.title}” created with a default pipeline.")
             return redirect("web:job_detail", pk=job.pk)
     return render(
         request,
         "web/job_form.html",
-        {"form": form, "job": None, "plan_limit_hit": plan_limit_hit},
+        {
+            "form": form,
+            "client_form": client_form,
+            "job": None,
+            "plan_limit_hit": plan_limit_hit,
+        },
     )
 
 
@@ -171,21 +238,56 @@ def job_create(request):
 def job_edit(request, pk):
     job = get_object_or_404(_company_jobs(request), pk=pk)
     form = JobForm(request.POST or None, instance=job, company=request.company)
+    client_form = _job_client_form(request, job=job)
     plan_limit_hit = False
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST" and form.is_valid() and _valid(client_form):
         try:
             form.save()
         except ValidationError as exc:
             _add_plan_limit_errors(form, exc)
             plan_limit_hit = True
         else:
+            if client_form is not None:
+                client_form.apply(job)
             messages.success(request, "Job updated.")
             return redirect("web:job_detail", pk=job.pk)
     return render(
         request,
         "web/job_form.html",
-        {"form": form, "job": job, "plan_limit_hit": plan_limit_hit},
+        {
+            "form": form,
+            "client_form": client_form,
+            "job": job,
+            "plan_limit_hit": plan_limit_hit,
+        },
     )
+
+
+def _upcoming_interview(application):
+    """The soonest still-open interview on ``application``, or None.
+
+    Reads the ``interviews`` prefetch rather than querying, so the board stays
+    at a constant number of queries however many cards it renders.
+    """
+    from scheduling.models import Interview
+
+    now = timezone.now()
+    upcoming = [
+        interview
+        for interview in application.interviews.all()
+        if interview.status in Interview.OPEN_STATUSES
+        and interview.scheduled_start is not None
+        and interview.scheduled_start >= now
+    ]
+    upcoming.sort(key=lambda i: i.scheduled_start)
+    return upcoming[0] if upcoming else None
+
+
+def _active_video_screen(job):
+    """The job's live video screen, or None — used by the card's video action."""
+    from video.models import VideoScreen
+
+    return VideoScreen.objects.filter(job=job, is_active=True).order_by("pk").first()
 
 
 def _kanban_context(request, job, notice=None):
@@ -193,12 +295,13 @@ def _kanban_context(request, job, notice=None):
     applications = (
         Application.objects.filter(job=job)
         .select_related("candidate__user", "current_stage")
-        .prefetch_related("reviews__reviewer")
+        .prefetch_related("reviews__reviewer", "interviews")
     )
     by_stage = {stage.pk: [] for stage in stages}
     unassigned, closed = [], []
     for application in applications:
         application.latest_review = application.reviews.all().first()
+        application.upcoming_interview = _upcoming_interview(application)
         if application.status != Application.ACTIVE:
             closed.append(application)
         elif application.current_stage_id in by_stage:
@@ -213,6 +316,7 @@ def _kanban_context(request, job, notice=None):
         "closed": closed,
         "stages": stages,
         "board_notice": notice,
+        "active_video_screen": _active_video_screen(job),
     }
 
 

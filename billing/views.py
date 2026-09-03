@@ -223,7 +223,10 @@ def razorpay_webhook(request):
     except (ValueError, UnicodeDecodeError):
         return HttpResponse("invalid payload", status=400)
 
-    webhooks.handle_razorpay_event(event)
+    event_id = request.META.get("HTTP_X_RAZORPAY_EVENT_ID", "") or webhooks.event_fingerprint(
+        request.body
+    )
+    webhooks.handle_razorpay_event(event, event_id=event_id)
     return HttpResponse(status=200)
 
 

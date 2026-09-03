@@ -1,0 +1,63 @@
+{% comment %}
+The kanban card's "more actions" dropdown: the paid-feature actions that do not
+warrant their own button. Needs ``application`` in context, plus the board's
+``active_video_screen`` (see ``web.views._active_video_screen``).
+
+Every item is gated on the tenant's plan and simply absent when the feature is
+not entitled — the target views re-check the entitlement themselves, so nothing
+here can leak access.
+{% endcomment %}
+{% load features %}
+{% feature_enabled "scheduling" as can_schedule %}
+{% feature_enabled "client_portal" as can_submit %}
+{% feature_enabled "offers" as can_offer %}
+{% feature_enabled "video" as can_video %}
+{% if can_schedule or can_submit or can_offer or can_video %}
+  <div class="dropdown">
+    <button class="btn btn-sm btn-outline-secondary ip-icon-btn" type="button"
+            id="app-actions-{{ application.pk }}" data-bs-toggle="dropdown" aria-expanded="false"
+            aria-label="More actions for {{ application.candidate.user.email }}" title="More actions">
+      <i class="bi bi-three-dots" aria-hidden="true"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="app-actions-{{ application.pk }}">
+      {% if can_schedule %}
+        <li>
+          <a class="dropdown-item" href="{% url 'scheduling:application_schedule' application.pk %}">
+            <i class="bi bi-calendar-plus me-2" aria-hidden="true"></i>Schedule interview
+          </a>
+        </li>
+      {% endif %}
+      {% if can_submit %}
+        <li>
+          <a class="dropdown-item" href="{% url 'clients:submit_application' application.pk %}">
+            <i class="bi bi-send me-2" aria-hidden="true"></i>Submit to client
+          </a>
+        </li>
+      {% endif %}
+      {% if can_offer %}
+        <li>
+          <a class="dropdown-item" href="{% url 'offers:create' application.pk %}">
+            <i class="bi bi-file-earmark-check me-2" aria-hidden="true"></i>Create offer
+          </a>
+        </li>
+      {% endif %}
+      {% if can_video %}
+        <li>
+          {% if active_video_screen %}
+            <form method="post" class="m-0"
+                  action="{% url 'video:invite_create' active_video_screen.pk application.pk %}">
+              {% csrf_token %}
+              <button class="dropdown-item" type="submit">
+                <i class="bi bi-camera-video me-2" aria-hidden="true"></i>Send video screen
+              </button>
+            </form>
+          {% else %}
+            <a class="dropdown-item" href="{% url 'video:job_screens' application.job_id %}">
+              <i class="bi bi-camera-video me-2" aria-hidden="true"></i>Set up a video screen
+            </a>
+          {% endif %}
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+{% endif %}

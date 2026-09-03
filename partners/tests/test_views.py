@@ -66,5 +66,5 @@ def test_reseller_dashboard_shows_referrals_and_commissions(client, db, company)
 
 def test_verify_license_view_reports_invalid_key(client, owner):
     client.force_login(owner)
-    response = client.post(reverse("partners:verify_license"), {"key": "IPL.a.b"}, follow=True)
+    response = client.post(reverse("partners:verify_license"), {"key": "IPL2.a.b"}, follow=True)
     assert b"not valid" in response.content

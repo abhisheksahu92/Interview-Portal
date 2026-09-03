@@ -1,3 +1,4 @@
+{% load features %}
 {% with vn=request.resolver_match.view_name %}
 <aside class="{% if offcanvas %}d-flex flex-column h-100{% else %}ip-sidebar d-none d-lg-flex{% endif %}">
   <div class="ip-sidebar__brand">
@@ -31,49 +32,37 @@
           <i class="bi bi-inbox" aria-hidden="true"></i> Queue
         </a>
       </li>
-      <li>
-        <a class="ip-nav__link {% if vn|slice:":11" == "scheduling:" %}is-active{% endif %}" href="{% url 'scheduling:index' %}">
-          <i class="bi bi-calendar-week" aria-hidden="true"></i> Schedule
-        </a>
-      </li>
+      {% url 'scheduling:index' as ip_href %}
+      {% feature_enabled "scheduling" as ip_ok %}
+      {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="scheduling" label="Schedule" icon="bi-calendar-week" active_prefix="scheduling:" %}
       {% if current_role != "INTERVIEWER" %}
         <li>
           <a class="ip-nav__link {% if vn|slice:":7" == "talent:" %}is-active{% endif %}" href="{% url 'talent:index' %}">
             <i class="bi bi-person-lines-fill" aria-hidden="true"></i> Talent
           </a>
         </li>
-        <li>
-          <a class="ip-nav__link {% if vn|slice:":6" == "video:" %}is-active{% endif %}" href="{% url 'video:index' %}">
-            <i class="bi bi-camera-video" aria-hidden="true"></i> Video
-          </a>
-        </li>
-        <li>
-          <a class="ip-nav__link {% if vn|slice:":7" == "offers:" %}is-active{% endif %}" href="{% url 'offers:index' %}">
-            <i class="bi bi-file-earmark-check" aria-hidden="true"></i> Offers
-          </a>
-        </li>
+        {% url 'video:index' as ip_href %}
+        {% feature_enabled "video" as ip_ok %}
+        {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="video" label="Video" icon="bi-camera-video" active_prefix="video:" %}
+        {% url 'offers:index' as ip_href %}
+        {% feature_enabled "offers" as ip_ok %}
+        {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="offers" label="Offers" icon="bi-file-earmark-check" active_prefix="offers:" %}
 
         <li class="ip-nav__label" aria-hidden="true">Grow</li>
-        <li>
-          <a class="ip-nav__link {% if vn|slice:":8" == "careers:" %}is-active{% endif %}" href="{% url 'careers:index' %}">
-            <i class="bi bi-globe2" aria-hidden="true"></i> Careers
-          </a>
-        </li>
-        <li>
-          <a class="ip-nav__link {% if vn|slice:":10" == "analytics:" %}is-active{% endif %}" href="{% url 'analytics:index' %}">
-            <i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Analytics
-          </a>
-        </li>
+        {% url 'careers:index' as ip_href %}
+        {% feature_enabled "careers_page" as ip_ok %}
+        {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="careers_page" label="Careers" icon="bi-globe2" active_prefix="careers:" %}
+        {% url 'analytics:index' as ip_href %}
+        {% feature_enabled "analytics" as ip_ok %}
+        {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="analytics" label="Analytics" icon="bi-graph-up-arrow" active_prefix="analytics:" %}
         <li>
           <a class="ip-nav__link {% if vn|slice:":12" == "marketplace:" %}is-active{% endif %}" href="{% url 'marketplace:index' %}">
             <i class="bi bi-bag" aria-hidden="true"></i> Marketplace
           </a>
         </li>
-        <li>
-          <a class="ip-nav__link {% if vn|slice:":8" == "clients:" %}is-active{% endif %}" href="{% url 'clients:index' %}">
-            <i class="bi bi-buildings" aria-hidden="true"></i> Clients
-          </a>
-        </li>
+        {% url 'clients:index' as ip_href %}
+        {% feature_enabled "client_portal" as ip_ok %}
+        {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="client_portal" label="Clients" icon="bi-buildings" active_prefix="clients:" %}
 
         <li class="ip-nav__label" aria-hidden="true">Company</li>
         <li>

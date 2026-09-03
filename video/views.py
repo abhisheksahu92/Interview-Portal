@@ -6,7 +6,6 @@ token (no login needed) and is bounded by the invite's deadline.
 """
 
 import logging
-import os
 import re
 
 from django.contrib import messages
@@ -28,7 +27,7 @@ from billing.entitlements import require_feature
 from core.models import Membership
 from core.permissions import for_company, role_required
 from jobs.models import Application, Job, StageReview
-from video import services
+from video import services, validators
 from video.forms import QuickReviewForm, VideoQuestionForm, VideoScreenForm
 from video.models import (
     ALLOWED_MIME_TYPES,
@@ -432,7 +431,7 @@ def take_upload(request, token):
             status=413,
         )
     mime = normalise_mime(getattr(upload, "content_type", "") or "")
-    extension = os.path.splitext(upload.name or "")[1].lower().lstrip(".")
+    extension = validators.extension_of(upload.name)
     if mime not in ALLOWED_MIME_TYPES and extension not in ("webm", "mp4"):
         return JsonResponse(
             {"ok": False, "error": "Only .webm and .mp4 recordings are accepted."},
@@ -440,14 +439,24 @@ def take_upload(request, token):
         )
     if mime not in ALLOWED_MIME_TYPES:
         mime = "video/mp4" if extension == "mp4" else "video/webm"
+
+    # The declared type is candidate-controlled; check the container's bytes.
+    try:
+        sniffed = validators.check_container(upload, mime, extension)
+    except validators.UnsupportedContainer as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=415)
+    if sniffed:
+        mime = f"video/{sniffed}"
+        extension = sniffed
+
     if not (upload.name or "").lower().endswith((".webm", ".mp4")):
         upload.name = f"answer.{'mp4' if mime == 'video/mp4' else 'webm'}"
 
-    try:
-        duration = int(float(request.POST.get("duration") or 0))
-    except (TypeError, ValueError):
-        duration = 0
-    duration = max(0, min(duration, 60 * 60))
+    # Video minutes are billed, so never trust the client's duration: read the
+    # real one when that is cheap, and cap it at what the question allowed.
+    duration = validators.metered_duration(
+        upload, request.POST.get("duration"), question
+    )
 
     if not services.consume_minutes(invite.company, duration):
         return JsonResponse(

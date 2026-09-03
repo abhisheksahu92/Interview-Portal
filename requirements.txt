@@ -26,3 +26,5 @@ msal==1.38.0
 icalendar==7.3.0
 python-dateutil==2.9.0.post0
 requests==2.34.2
+cryptography==50.0.1
+pytest-xdist==3.8.0

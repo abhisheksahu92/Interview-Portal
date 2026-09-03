@@ -1,13 +1,26 @@
 """Create a fully populated demo company: team, skills, jobs, questions,
 an assessment, candidates with applications spread across the pipeline, and a
-review. Idempotent -- re-running only tops up what is missing.
+review — plus one of every Phase 3 paid artefact (end client + portal link,
+client submission, interviewer availability, a confirmed interview, a small
+talent pool, an offer out for signature, a published careers site and a video
+screen) so every screen in the product has something real to show.
+
+Idempotent -- re-running only tops up what is missing. The three shareable
+tokens (client portal, candidate booking, offer signing) are printed at the end
+for manual testing.
 """
 
+from datetime import time, timedelta
+from decimal import Decimal
+
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.urls import reverse
+from django.utils import timezone
 
 from billing.models import Subscription
-from billing.services import pro_plan, set_plan
+from billing.services import agency_plan, set_plan
 from core.models import Company, Membership, User
 
 DEMO_PASSWORD = "demo1234"
@@ -21,6 +34,15 @@ DEMO_TEAM = [
 DEMO_CANDIDATE = ("candidate@demo.test", "Cam", "Candidate")
 
 DEMO_SKILLS = ["Python", "Django", "React"]
+
+DEMO_TIMEZONE = "Asia/Kolkata"
+
+# (email, name, headline, experience_years, skills) -- sourced, not applicants.
+DEMO_TALENT = [
+    ("divya@talent.test", "Divya Nair", "Senior Python engineer", 7, ["Python", "Django"]),
+    ("farid@talent.test", "Farid Khan", "React / TypeScript lead", 6, ["React"]),
+    ("gita@talent.test", "Gita Bose", "Full-stack (Django + React)", 4, ["Django", "React"]),
+]
 
 DEMO_JOBS = [
     {
@@ -108,17 +130,28 @@ class Command(BaseCommand):
 
         # --- billing ------------------------------------------------------
         # The demo seeds more than one OPEN job, which the FREE plan forbids
-        # (billing enforces the limit via a pre_save signal on Job), so give
-        # the demo company a PRO subscription before any job is created.
-        plan = pro_plan()
+        # (billing enforces the limit via a pre_save signal on Job), and every
+        # Phase 3 feature below is entitlement-gated. So put the demo company on
+        # a genuinely paid AGENCY plan -- not a trial, whose expiry would quietly
+        # turn the demo back into a FREE tenant -- before any job is created.
+        plan = agency_plan()
         subscription = Subscription.objects.filter(company=company).first()
         if subscription is None:
             subscription = Subscription.objects.create(
-                company=company, plan=plan, status=Subscription.ACTIVE
+                company=company,
+                plan=plan,
+                status=Subscription.ACTIVE,
+                trial_ends_at=None,
             )
-        elif subscription.plan_id != plan.pk or not subscription.is_usable:
-            set_plan(subscription, plan, status=Subscription.ACTIVE)
-        self.stdout.write(f"  plan: {subscription.plan.name}")
+        elif (
+            subscription.plan_id != plan.pk
+            or not subscription.is_usable
+            or subscription.trial_ends_at is not None
+        ):
+            set_plan(
+                subscription, plan, status=Subscription.ACTIVE, trial_ends_at=None
+            )
+        self.stdout.write(f"  plan: {subscription.plan.name} (paid, not trialing)")
 
         # --- team ---------------------------------------------------------
         team = {}
@@ -238,8 +271,219 @@ class Command(BaseCommand):
             )
             self.stdout.write(f"  review: {reviewed.candidate.user.email} (HOLD)")
 
+        # --- Phase 3 paid artefacts ---------------------------------------
+        tokens = {}
+        tokens.update(self._seed_client(company, applications[0], team))
+        self._seed_availability(company, team[Membership.INTERVIEWER])
+        tokens.update(self._seed_interview(company, applications, stages, team))
+        self._seed_talent(company, skills)
+        tokens.update(self._seed_offer(company, applications[-1], team))
+        self._seed_careers(company)
+        self._seed_video(company, jobs[1])
+
+        # Analytics reads StageTransition history; the applications above were
+        # created directly, so give them their synthetic first transition.
+        call_command("backfill_stage_transitions", company=company.slug, verbosity=0)
+        self.stdout.write("  analytics: stage transitions backfilled")
+
         self.stdout.write(
             self.style.SUCCESS(f"Demo data ready. Password for all users: {DEMO_PASSWORD}")
+        )
+        self.stdout.write("Shareable tokens (no login needed):")
+        for label, path in sorted(tokens.items()):
+            self.stdout.write(f"  {label:<14} {path}")
+
+    # --- Phase 3 seeders --------------------------------------------------
+
+    def _seed_client(self, company, application, team):
+        """An end client, a live portal link, and one candidate submitted to it."""
+        from clients.models import Client, ClientAccess, Submission
+
+        client, _ = Client.objects.get_or_create(
+            company=company,
+            name="Northwind Retail",
+            defaults={
+                "contact_name": "Nina Wells",
+                "contact_email": "nina@northwind.test",
+                "notes": "Long-running Django staffing account.",
+            },
+        )
+        access = client.accesses.filter(email="nina@northwind.test").first()
+        if access is None:
+            access = ClientAccess.objects.create(
+                client=client,
+                email="nina@northwind.test",
+                expires_at=timezone.now()
+                + timedelta(days=ClientAccess.DEFAULT_VALID_DAYS),
+            )
+        elif not access.is_active:
+            access.revoked = False
+            access.rotate()
+        submission, created = Submission.objects.get_or_create(
+            application=application,
+            client=client,
+            defaults={
+                "submitted_by": team.get(Membership.RECRUITER),
+                "note": "Strong Django match — available at 30 days notice.",
+            },
+        )
+        self.stdout.write(
+            f"  client: {client.name} (1 portal link, submission "
+            f"{'created' if created else 'reused'} for {submission.candidate.user.email})"
+        )
+        return {"client portal": reverse("clients:portal", args=[access.token])}
+
+    def _seed_availability(self, company, interviewer):
+        """Mon-Fri 10:00-17:00 IST for the demo interviewer."""
+        from scheduling.models import InterviewerAvailability
+
+        created = 0
+        for weekday in range(5):  # Monday..Friday
+            _, made = InterviewerAvailability.objects.get_or_create(
+                company=company,
+                user=interviewer,
+                weekday=weekday,
+                start=time(10, 0),
+                end=time(17, 0),
+                defaults={"timezone": DEMO_TIMEZONE},
+            )
+            created += 1 if made else 0
+        self.stdout.write(
+            f"  availability: {interviewer.email} Mon-Fri 10:00-17:00 {DEMO_TIMEZONE}"
+            f" ({created} new)"
+        )
+
+    def _seed_interview(self, company, applications, stages, team):
+        """One confirmed interview on the L2 stage, for the booking page."""
+        from scheduling.models import Interview
+
+        l2_stage = next(
+            (s for s in stages if s.name.startswith("L2")),
+            None,
+        )
+        application = next(
+            (a for a in applications if a.current_stage_id == getattr(l2_stage, "pk", None)),
+            applications[-1],
+        )
+        interview = (
+            Interview.objects.filter(application=application)
+            .order_by("scheduled_start", "pk")
+            .first()
+        )
+        if interview is None:
+            start = (timezone.now() + timedelta(days=2)).replace(
+                minute=0, second=0, microsecond=0
+            )
+            interview = Interview.objects.create(
+                company=company,
+                application=application,
+                stage=l2_stage,
+                scheduled_start=start,
+                scheduled_end=start + timedelta(minutes=60),
+                timezone=DEMO_TIMEZONE,
+                location_or_link="https://meet.example.test/demo-l2",
+                status=Interview.CONFIRMED,
+                created_by=team.get(Membership.RECRUITER),
+                notes="System design deep dive.",
+            )
+            interview.interviewers.set([team[Membership.INTERVIEWER]])
+        self.stdout.write(
+            f"  interview: {application.candidate.user.email} "
+            f"{interview.scheduled_start:%Y-%m-%d %H:%M} [{interview.status}]"
+        )
+        return {"booking": reverse("scheduling:book", args=[interview.booking_token])}
+
+    def _seed_talent(self, company, skills):
+        """A small sourced talent pool so the talent search has results."""
+        from talent.models import TalentProfile
+
+        for email, name, headline, years, skill_names in DEMO_TALENT:
+            profile, _ = TalentProfile.objects.get_or_create(
+                company=company,
+                email=email,
+                defaults={
+                    "name": name,
+                    "headline": headline,
+                    "experience_years": years,
+                    "location": "Pune, IN",
+                    "source": TalentProfile.MANUAL,
+                    "resume_text": f"{name} — {headline}. Skills: {', '.join(skill_names)}.",
+                },
+            )
+            profile.skills.set([skills[s] for s in skill_names if s in skills])
+        self.stdout.write(f"  talent: {len(DEMO_TALENT)} sourced profiles")
+
+    def _seed_offer(self, company, application, team):
+        """A default offer template plus one offer already out for signature."""
+        from offers.models import Offer, OfferTemplate
+        from offers.services import render_offer
+
+        template = OfferTemplate.default_for(company)
+        offer = Offer.objects.filter(application=application).order_by("pk").first()
+        if offer is None:
+            offer = Offer.objects.create(
+                application=application,
+                template=template,
+                salary=Decimal("2400000"),
+                currency="INR",
+                joining_date=(timezone.now() + timedelta(days=30)).date(),
+                expires_at=timezone.now() + timedelta(days=10),
+                created_by=team.get(Membership.OWNER),
+            )
+        if offer.status == Offer.DRAFT:
+            # Marked SENT directly rather than through offers.services.send_offer:
+            # seeding must never touch email or the PDF gateway.
+            render_offer(offer, save=True)
+            offer.status = Offer.SENT
+            offer.sent_at = timezone.now()
+            offer.save(update_fields=["status", "sent_at", "updated_at"])
+        self.stdout.write(
+            f"  offer: {application.candidate.user.email} [{offer.status}] "
+            f"via template “{template.name}”"
+        )
+        return {"offer sign": reverse("offers:sign", args=[offer.sign_token])}
+
+    def _seed_careers(self, company):
+        """A published careers site so the public page and Indeed feed work."""
+        from careers.models import CareersSite
+
+        site, _ = CareersSite.objects.get_or_create(
+            company=company,
+            defaults={
+                "slug": company.slug,
+                "headline": f"Build with {company.name}",
+                "about": "We staff and run product engineering teams for growing companies.",
+                "published": True,
+            },
+        )
+        if not site.published:
+            site.published = True
+            site.save(update_fields=["published"])
+        self.stdout.write(f"  careers: /careers/{site.slug}/ (published)")
+
+    def _seed_video(self, company, job):
+        """One video question and an active screen on the job's Screening stage."""
+        from jobs.models import PipelineStage
+        from video.models import VideoQuestion, VideoScreen
+
+        question, _ = VideoQuestion.objects.get_or_create(
+            company=company,
+            text="Walk us through a React component you are proud of and why.",
+            defaults={"think_seconds": 30, "answer_seconds": 120},
+        )
+        stage = job.stages.filter(kind=PipelineStage.SCREENING).first()
+        screen, created = VideoScreen.objects.get_or_create(
+            job=job,
+            title=f"{job.title} video screen",
+            defaults={"stage": stage, "deadline_days": 5, "is_active": True},
+        )
+        if not created and not screen.is_active:
+            screen.is_active = True
+            screen.save(update_fields=["is_active"])
+        screen.questions.set([question])
+        self.stdout.write(
+            f"  video: “{screen.title}” on {stage.name if stage else '—'} "
+            f"({screen.questions.count()} question)"
         )
 
     def _upsert_user(self, email, first_name, last_name, *, is_candidate):

@@ -3,7 +3,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from core.models import Company
-from partners.licensing import issue_license
+from partners.licensing import LicenseSigningUnavailable, issue_license
 
 
 class Command(BaseCommand):
@@ -21,7 +21,10 @@ class Command(BaseCommand):
             company = Company.objects.filter(pk=int(ident)).first()
         if company is None:
             raise CommandError(f"No company matching {ident!r}.")
-        licence = issue_license(company, seats=options["seats"], days=options["days"])
+        try:
+            licence = issue_license(company, seats=options["seats"], days=options["days"])
+        except LicenseSigningUnavailable as exc:
+            raise CommandError(str(exc)) from exc
         self.stdout.write(
             self.style.SUCCESS(
                 f"Issued licence for {company.name}: {licence.seats} seats, "

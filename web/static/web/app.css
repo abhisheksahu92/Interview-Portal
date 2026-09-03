@@ -410,6 +410,23 @@ form ul.errorlist {
 [data-bs-theme="dark"] .ip-nav__link.is-active { color: var(--ip-accent-700); }
 .ip-nav__count { margin-left: auto; font-size: 0.75rem; color: var(--ip-muted); font-weight: 600; }
 
+.ip-nav__link--locked { opacity: 0.72; }
+.ip-nav__link--locked:hover { opacity: 1; }
+.ip-nav__lock {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--ip-border, rgba(128,128,128,0.35));
+  color: var(--ip-muted);
+}
+
 .ip-main { margin-left: var(--ip-sidebar-w); min-width: 0; }
 .ip-main--full { margin-left: 0; }
 

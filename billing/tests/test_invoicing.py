@@ -91,3 +91,63 @@ def test_invoices_are_scoped_to_the_company(client, owner, company, db):
     invoice = invoicing.create_invoice(other, 1000, with_pdf=False)
     client.force_login(owner)
     assert client.get(reverse("billing:invoice_download", args=[invoice.pk])).status_code == 404
+
+
+# --- Counter-based numbering ---------------------------------------------
+
+
+def test_number_allocation_uses_a_locked_fy_counter(company):
+    from billing.models import InvoiceCounter
+
+    assert invoicing.next_number(_aware(2026, 5, 1)) == "IP/2026-27/0001"
+    assert invoicing.next_number(_aware(2026, 5, 1)) == "IP/2026-27/0002"
+    assert invoicing.next_number(_aware(2026, 5, 1)) == "IP/2026-27/0003"
+    counter = InvoiceCounter.objects.get(fy="2026-27")
+    assert counter.last_seq == 3
+    assert InvoiceCounter.objects.count() == 1
+
+
+def test_counter_is_per_financial_year(company):
+    from billing.models import InvoiceCounter
+
+    assert invoicing.next_number(_aware(2026, 3, 31)) == "IP/2025-26/0001"
+    assert invoicing.next_number(_aware(2026, 4, 1)) == "IP/2026-27/0001"
+    assert invoicing.next_number(_aware(2026, 4, 2)) == "IP/2026-27/0002"
+    assert set(InvoiceCounter.objects.values_list("fy", flat=True)) == {
+        "2025-26",
+        "2026-27",
+    }
+
+
+def test_peek_number_does_not_consume_a_sequence(company):
+    assert invoicing.peek_number(_aware(2026, 5, 1)) == "IP/2026-27/0001"
+    assert invoicing.peek_number(_aware(2026, 5, 1)) == "IP/2026-27/0001"
+    assert invoicing.next_number(_aware(2026, 5, 1)) == "IP/2026-27/0001"
+    assert invoicing.peek_number(_aware(2026, 5, 1)) == "IP/2026-27/0002"
+
+
+def test_deleting_invoices_never_reissues_a_number(company):
+    """The old "highest existing number" scan reused numbers after a delete."""
+    first = invoicing.create_invoice(
+        company, 1000, issued_at=_aware(2026, 4, 2), with_pdf=False
+    )
+    first.delete()
+    second = invoicing.create_invoice(
+        company, 1000, issued_at=_aware(2026, 4, 3), with_pdf=False
+    )
+    assert second.number == "IP/2026-27/0002"
+
+
+def test_a_duplicate_invoice_number_is_impossible(company):
+    """Many allocations in a row are all distinct, and the DB refuses a repeat."""
+    from django.db import IntegrityError
+
+    numbers = [invoicing.next_number(_aware(2026, 5, 1)) for _ in range(25)]
+    assert len(set(numbers)) == 25
+    invoice = invoicing.create_invoice(
+        company, 1000, issued_at=_aware(2026, 5, 2), with_pdf=False
+    )
+    with pytest.raises(IntegrityError):
+        Invoice.objects.create(
+            company=company, number=invoice.number, fy="2026-27", amount=1
+        )

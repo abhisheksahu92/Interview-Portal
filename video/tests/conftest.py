@@ -105,6 +105,24 @@ def invite(application, screen):
     return VideoInvite.objects.create(application=application, screen=screen)
 
 
+#: Real container magic bytes, so uploads survive the sniffing in
+#: :mod:`video.validators` the way a browser recording would.
+WEBM_HEADER = b"\x1a\x45\xdf\xa3"
+MP4_HEADER = b"\x00\x00\x00\x18ftypisom"
+
+
 def webm_upload(name="answer.webm", size=1024, content_type="video/webm"):
-    """A tiny in-memory recording."""
-    return SimpleUploadedFile(name, b"0" * size, content_type=content_type)
+    """A tiny in-memory WebM recording."""
+    body = WEBM_HEADER + b"0" * max(0, size - len(WEBM_HEADER))
+    return SimpleUploadedFile(name, body, content_type=content_type)
+
+
+def mp4_upload(name="answer.mp4", size=1024, content_type="video/mp4"):
+    """A tiny in-memory MP4 recording (valid ``ftyp``, no ``mvhd``)."""
+    body = MP4_HEADER + b"0" * max(0, size - len(MP4_HEADER))
+    return SimpleUploadedFile(name, body, content_type=content_type)
+
+
+def bogus_upload(name="answer.webm", content_type="video/webm"):
+    """A file that claims to be a recording but is really something else."""
+    return SimpleUploadedFile(name, b"%PDF-1.7 not a video at all", content_type=content_type)
