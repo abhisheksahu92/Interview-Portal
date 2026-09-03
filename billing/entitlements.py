@@ -15,7 +15,8 @@ available to the current tenant::
 
 Flags live in ``Plan.features`` (a JSON dict). A company with no Subscription
 row falls back to the FREE plan, and an unusable subscription (CANCELED) loses
-its paid flags.
+its paid flags. Companies inside their 14-day trial get the full AGENCY flag
+set until ``Subscription.trial_ends_at`` passes.
 """
 
 from functools import wraps
@@ -47,12 +48,22 @@ class FeatureNotAvailable(PermissionDenied):
 
 
 def plan_for(company):
-    """The Plan governing ``company``, or None when it cannot be determined."""
+    """The Plan governing ``company``, or None when it cannot be determined.
+
+    Honours the 14-day trial: a company still inside its trial window and not
+    yet on a paid plan is entitled to the full trial tier (AGENCY). Once the
+    trial has expired it falls back to FREE unless it has paid.
+    """
     if company is None:
         return None
     subscription = getattr(company, "subscription", None)
-    if subscription is not None and subscription.is_usable:
-        return subscription.plan
+    if subscription is not None:
+        if subscription.plan.is_free and subscription.in_trial:
+            from billing.services import trial_plan
+
+            return trial_plan()
+        if subscription.is_usable:
+            return subscription.plan
     from billing.services import free_plan
 
     return free_plan()

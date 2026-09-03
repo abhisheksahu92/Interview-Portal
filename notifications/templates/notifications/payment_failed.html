@@ -1,0 +1,10 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p>Hi {{ recipient_name }},</p>
+  <p>We could not take the latest payment for {{ company.name }}'s subscription<br>{% if amount %}({{ currency|default:"INR" }} {{ amount }}){% endif %}.</p>
+  <p>Please update your payment method to keep your account active.<br>{% if billing_url %}<br>Update it here: {{ billing_url }}<br>{% endif %}</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">
+    &mdash; {{ site_name }} &middot;
+    <a href="{{ unsubscribe_url }}" style="color:#6b7280">Manage your notification preferences</a>
+  </p>
+</div>

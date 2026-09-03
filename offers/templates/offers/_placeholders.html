@@ -1,0 +1,15 @@
+<div class="card">
+  <div class="card-header py-2"><strong>Placeholders</strong></div>
+  <ul class="list-group list-group-flush small">
+    {% for name, help in placeholders %}
+      <li class="list-group-item d-flex flex-column">
+        <code>{% templatetag openvariable %}{{ name }}{% templatetag closevariable %}</code>
+        <span class="text-muted">{{ help }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  <div class="card-footer small text-muted">
+    Only these names are substituted. Anything else stays as plain text — template
+    tags are never executed.
+  </div>
+</div>

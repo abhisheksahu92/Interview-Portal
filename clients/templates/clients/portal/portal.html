@@ -1,0 +1,111 @@
+{% extends "clients/portal/base.html" %}
+{% block content %}
+{% if groups %}
+  {% for group in groups %}
+    <section class="mb-4">
+      <h2 class="h6 text-uppercase cp-muted">{{ group.job.title }}{% if group.job.location %} · {{ group.job.location }}{% endif %}</h2>
+      <div class="row g-3">
+        {% for submission in group.submissions %}
+          {% with application=submission.application candidate=submission.application.candidate %}
+          <div class="col-lg-6">
+            <article class="cp-card p-3 h-100">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h3 class="h6 mb-1">{{ candidate.headline|default:"Candidate" }}</h3>
+                  <p class="cp-muted small mb-0">
+                    {{ candidate.experience_years }} yrs experience
+                    {% if candidate.notice_period_days %} · {{ candidate.notice_period_days }}-day notice{% endif %}
+                  </p>
+                </div>
+                {% include "clients/partials/status_badge.html" with submission=submission %}
+              </div>
+
+              {% if candidate.skills.all %}
+                <p class="mb-2">
+                  {% for skill in candidate.skills.all %}<span class="badge text-bg-light border me-1">{{ skill.name }}</span>{% endfor %}
+                </p>
+              {% endif %}
+
+              {% if application.ai_summary or application.ai_fit_score %}
+                <div class="border-start ps-2 mb-2">
+                  {% if application.ai_fit_score %}
+                    <p class="small mb-1"><strong>AI fit score:</strong> {{ application.ai_fit_score }}%</p>
+                  {% endif %}
+                  {% if application.ai_summary %}
+                    <p class="small mb-0">{{ application.ai_summary|linebreaksbr }}</p>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              {% for attempt in application.attempts.all %}
+                {% if attempt.score_percent is not None %}
+                  <p class="small mb-1">
+                    <strong>Assessment:</strong> {{ attempt.score_percent }}%
+                    {% if attempt.passed %}<span class="badge text-bg-success">Passed</span>
+                    {% elif attempt.passed is False %}<span class="badge text-bg-secondary">Not passed</span>{% endif %}
+                  </p>
+                {% endif %}
+              {% endfor %}
+
+              {% if submission.note %}
+                <p class="small cp-muted mb-2"><em>Recruiter note:</em> {{ submission.note|linebreaksbr }}</p>
+              {% endif %}
+
+              {% if candidate.resume %}
+                <p class="mb-3">
+                  <a class="btn btn-sm btn-outline-secondary"
+                     href="{% url 'clients:portal_resume' access.token submission.pk %}">
+                    <i class="bi bi-file-earmark-arrow-down me-1" aria-hidden="true"></i>Download resume
+                  </a>
+                </p>
+              {% endif %}
+
+              {% if submission.is_decided %}
+                <div class="alert alert-light border small mb-0">
+                  You marked this candidate <strong>{{ submission.get_status_display }}</strong>
+                  on {{ submission.decided_at|date:"d M Y" }}.
+                  {% if submission.client_rating %}<br>Rating: {{ submission.client_rating }}/5{% endif %}
+                  {% if submission.client_feedback %}<br>{{ submission.client_feedback|linebreaksbr }}{% endif %}
+                </div>
+              {% else %}
+                <form method="post" action="{% url 'clients:portal_feedback' access.token submission.pk %}">
+                  {% csrf_token %}
+                  <fieldset class="mb-2">
+                    <legend class="small fw-semibold">Your decision</legend>
+                    {% for choice in feedback_form.decision %}
+                      <div class="form-check form-check-inline small">
+                        <input class="form-check-input" type="radio"
+                               name="decision" value="{{ choice.data.value }}"
+                               id="d{{ submission.pk }}-{{ forloop.counter }}" required>
+                        <label class="form-check-label" for="d{{ submission.pk }}-{{ forloop.counter }}">{{ choice.choice_label }}</label>
+                      </div>
+                    {% endfor %}
+                  </fieldset>
+                  <div class="mb-2">
+                    <label class="form-label small" for="c{{ submission.pk }}">Comment</label>
+                    <textarea class="form-control form-control-sm" rows="2" name="comment" id="c{{ submission.pk }}"></textarea>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label small" for="r{{ submission.pk }}">Rating</label>
+                    <select class="form-select form-select-sm" name="rating" id="r{{ submission.pk }}">
+                      <option value="">No rating</option>
+                      {% for i in "12345" %}<option value="{{ i }}">{{ i }} / 5</option>{% endfor %}
+                    </select>
+                  </div>
+                  <button class="btn btn-sm btn-primary" type="submit">Send feedback</button>
+                </form>
+              {% endif %}
+            </article>
+          </div>
+          {% endwith %}
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+{% else %}
+  <div class="cp-card p-4 text-center">
+    <h2 class="h6">No candidates yet</h2>
+    <p class="cp-muted mb-0">Your recruiting partner has not submitted anyone for review yet.</p>
+  </div>
+{% endif %}
+{% endblock %}

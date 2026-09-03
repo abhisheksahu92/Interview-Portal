@@ -1,4 +1,4 @@
-{% load static %}<!doctype html>
+{% load static %}{% load whitelabel %}<!doctype html>
 <html lang="en" data-bs-theme="light">
 <head>
 <meta charset="utf-8">
@@ -43,8 +43,13 @@
                 aria-controls="ipSidebarOffcanvas" aria-label="Open navigation">
           <i class="bi bi-list" aria-hidden="true"></i>
         </button>
-        <a class="ip-brand d-lg-none" href="/" aria-label="Interview Portal home">
-          <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+        <a class="ip-brand d-lg-none" href="/" aria-label="{% brand_name %} home">
+          {% brand_logo_url as ip_brand_logo %}
+          {% if ip_brand_logo %}
+            <img src="{{ ip_brand_logo }}" alt="{% brand_name %}" height="24">
+          {% else %}
+            <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+          {% endif %}
         </a>
         <p class="ip-topbar__title text-truncate">{{ current_company.name }}</p>
         <div class="ms-auto d-flex align-items-center gap-2">
@@ -58,8 +63,13 @@
     <div class="container">
       <div class="ip-navbar__inner">
         <a class="ip-brand" href="/">
-          <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
-          <span>Interview&nbsp;Portal</span>
+          {% brand_logo_url as ip_brand_logo %}
+          {% if ip_brand_logo %}
+            <img src="{{ ip_brand_logo }}" alt="{% brand_name %}" height="24">
+          {% else %}
+            <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+          {% endif %}
+          <span>{% brand_name %}</span>
         </a>
         {% if user.is_authenticated %}
           <div class="ip-navbar__links d-none d-md-flex">
@@ -140,6 +150,10 @@
 {% endif %}
 {% endwith %}
 
+{% powered_by as ip_powered_by %}
+{% if ip_powered_by %}
+  <p class="text-center text-muted small py-3 mb-0">{{ ip_powered_by }}</p>
+{% endif %}
 
 {% if messages %}
   <div class="ip-toasts" role="status" aria-live="polite">

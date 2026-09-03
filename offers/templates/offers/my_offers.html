@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}My offers · Interview Portal{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">My offers</h1>
+{% if offers %}
+<div class="list-group">
+  {% for offer in offers %}
+    <a class="list-group-item list-group-item-action d-flex align-items-center gap-3"
+       href="{% url 'offers:sign' offer.sign_token %}">
+      <div class="flex-grow-1">
+        <div class="fw-semibold">{{ offer.application.job.title }}</div>
+        <div class="small text-muted">
+          {{ offer.application.job.company.name }} ·
+          {{ offer.currency }} {{ offer.salary|floatformat:0 }}
+          {% if offer.expires_at %}· expires {{ offer.expires_at|date:"d M Y" }}{% endif %}
+        </div>
+      </div>
+      {% include "offers/_status_badge.html" %}
+    </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info mb-0">You have no offers yet.</div>
+{% endif %}
+{% endblock %}

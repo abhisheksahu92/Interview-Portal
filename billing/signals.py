@@ -5,8 +5,8 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from billing.limits import can_open_job
-from billing.models import Subscription
-from billing.services import free_plan
+from billing.models import PlacementFee, Subscription
+from billing.services import free_plan, trial_end_from
 
 
 @receiver(pre_save, sender="jobs.Job", dispatch_uid="billing_job_open_limit")
@@ -39,7 +39,11 @@ def enforce_open_job_limit(sender, instance, raw=False, **kwargs):
 
 @receiver(post_save, sender="core.Company", dispatch_uid="billing_company_subscription")
 def provision_company_subscription(sender, instance, created, raw=False, **kwargs):
-    """Give every new company a FREE subscription so plan limits apply from day one.
+    """Give every new company a 14-day full-featured trial subscription.
+
+    The row is billed on FREE, but ``billing.entitlements.plan_for`` returns the
+    trial tier (AGENCY) until ``trial_ends_at`` passes, so the plan limits apply
+    from day one while every paid feature is unlocked during the trial.
 
     ``manage.py provision_subscriptions`` remains the backfill path for companies
     created before billing existed (or by ``loaddata``, which sets ``raw``).
@@ -49,5 +53,26 @@ def provision_company_subscription(sender, instance, created, raw=False, **kwarg
     if Subscription.objects.filter(company_id=instance.pk).exists():
         return
     Subscription.objects.create(
-        company_id=instance.pk, plan=free_plan(), status=Subscription.ACTIVE
+        company_id=instance.pk,
+        plan=free_plan(),
+        status=Subscription.TRIALING,
+        trial_ends_at=trial_end_from(),
+    )
+
+
+@receiver(post_save, sender="jobs.Application", dispatch_uid="billing_placement_fee")
+def create_placement_fee(sender, instance, raw=False, **kwargs):
+    """Charge a per-hire success fee when an application reaches HIRED."""
+    if raw or instance.status != sender.HIRED:
+        return
+    from billing.entitlements import plan_for
+
+    company = instance.job.company
+    plan = plan_for(company)
+    fee = getattr(plan, "per_hire_fee_inr", None)
+    if not fee:
+        return
+    PlacementFee.objects.get_or_create(
+        application=instance,
+        defaults={"company": company, "amount": fee, "status": PlacementFee.PENDING},
     )

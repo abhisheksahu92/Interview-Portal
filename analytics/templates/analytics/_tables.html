@@ -1,0 +1,121 @@
+{# Source-effectiveness, interviewer and assessment tables (also the chart "table view"). #}
+<div class="col-12 col-xl-6">
+  <div class="viz-card">
+    <div class="d-flex align-items-start justify-content-between gap-2">
+      <div>
+        <h2>Source effectiveness</h2>
+        <p class="viz-card__sub">Applications and hires by where the candidate came from.</p>
+      </div>
+      <a class="btn btn-sm btn-outline-secondary viz-noprint"
+         href="{% url 'analytics:export_csv' 'sources' %}?{{ query_string }}">CSV</a>
+    </div>
+    {% if sources.sources %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <caption class="visually-hidden">Applications and hires per candidate source</caption>
+          <thead>
+            <tr><th scope="col">Source</th><th scope="col" class="text-end">Applications</th>
+                <th scope="col" class="text-end">Hires</th><th scope="col" class="text-end">Hire rate</th></tr>
+          </thead>
+          <tbody>
+            {% for row in sources.sources %}
+              <tr>
+                <th scope="row" class="fw-normal">{{ row.source }}</th>
+                <td class="text-end">{{ row.applications }}</td>
+                <td class="text-end">{{ row.hires }}</td>
+                <td class="text-end">{{ row.hire_rate_percent }}%</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="viz-empty mb-0">No applications in this date range.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="col-12 col-xl-6">
+  <div class="viz-card">
+    <div class="d-flex align-items-start justify-content-between gap-2">
+      <div>
+        <h2>Assessment pass rates</h2>
+        <p class="viz-card__sub">Submitted attempts per assessment in this window.</p>
+      </div>
+      <a class="btn btn-sm btn-outline-secondary viz-noprint"
+         href="{% url 'analytics:export_csv' 'assessments' %}?{{ query_string }}">CSV</a>
+    </div>
+    {% if assessments.assessments %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <caption class="visually-hidden">Pass rate and average score per assessment</caption>
+          <thead>
+            <tr><th scope="col">Assessment</th><th scope="col" class="text-end">Attempts</th>
+                <th scope="col" class="text-end">Passed</th><th scope="col" class="text-end">Pass rate</th>
+                <th scope="col" class="text-end">Avg score</th></tr>
+          </thead>
+          <tbody>
+            {% for row in assessments.assessments %}
+              <tr>
+                <th scope="row" class="fw-normal">{{ row.assessment }}</th>
+                <td class="text-end">{{ row.attempts }}</td>
+                <td class="text-end">{{ row.passed }}</td>
+                <td class="text-end">{{ row.pass_rate_percent }}%</td>
+                <td class="text-end">{{ row.avg_score_percent|default_if_none:"—" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="viz-empty mb-0">No assessment attempts were submitted in this date range.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="col-12">
+  <div class="viz-card">
+    <div class="d-flex align-items-start justify-content-between gap-2">
+      <div>
+        <h2>Interviewer consistency</h2>
+        <p class="viz-card__sub">Average rating with its spread (standard deviation) per reviewer —
+          a wide spread or an outlying average is worth a calibration chat.</p>
+      </div>
+      <a class="btn btn-sm btn-outline-secondary viz-noprint"
+         href="{% url 'analytics:export_csv' 'interviewers' %}?{{ query_string }}">CSV</a>
+    </div>
+    {% if interviewers.reviewers %}
+      <div class="row g-3">
+        <div class="col-12 col-lg-6">
+          <div class="viz-canvas"><canvas id="vizInterviewers"
+            aria-label="Average interview rating per reviewer" role="img"></canvas></div>
+        </div>
+        <div class="col-12 col-lg-6">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <caption class="visually-hidden">Reviews, average rating, spread and pass rate per reviewer</caption>
+              <thead>
+                <tr><th scope="col">Reviewer</th><th scope="col" class="text-end">Reviews</th>
+                    <th scope="col" class="text-end">Avg rating</th><th scope="col" class="text-end">Spread</th>
+                    <th scope="col" class="text-end">Pass rate</th></tr>
+              </thead>
+              <tbody>
+                {% for row in interviewers.reviewers %}
+                  <tr>
+                    <th scope="row" class="fw-normal">{{ row.reviewer }}</th>
+                    <td class="text-end">{{ row.reviews }}</td>
+                    <td class="text-end">{{ row.avg_rating|default_if_none:"—" }}</td>
+                    <td class="text-end">{{ row.rating_stddev|default_if_none:"—" }}</td>
+                    <td class="text-end">{{ row.pass_rate_percent }}%</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p class="viz-empty mb-0">No stage reviews were recorded in this date range.</p>
+    {% endif %}
+  </div>
+</div>

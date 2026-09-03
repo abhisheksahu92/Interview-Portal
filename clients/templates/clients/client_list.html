@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Clients · {{ current_company.name }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Clients</h1>
+    <p>End clients you submit candidates to, and their branded review portals.</p>
+  </div>
+  <div class="ms-auto">
+    <a class="btn btn-primary btn-sm" href="{% url 'clients:create' %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New client
+    </a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% if clients %}
+  <div class="row g-3">
+    {% for client in clients %}
+      <div class="col-md-6 col-xl-4">
+        <section class="ip-section h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            {% if client.logo %}
+              <img src="{{ client.logo.url }}" alt="" style="height:32px;width:auto">
+            {% endif %}
+            <h2 class="h6 mb-0"><a href="{% url 'clients:detail' client.pk %}">{{ client.name }}</a></h2>
+          </div>
+          <p class="ip-muted small mb-2">
+            {{ client.contact_name|default:"No contact" }}
+            {% if client.contact_email %}<span class="ip-meta-dot"></span>{{ client.contact_email }}{% endif %}
+          </p>
+          <p class="small mb-0">
+            {{ client.jobs.count }} job{{ client.jobs.count|pluralize }}
+            <span class="ip-meta-dot"></span>
+            {{ client.submissions.count }} submission{{ client.submissions.count|pluralize }}
+            <span class="ip-meta-dot"></span>
+            {{ client.active_accesses|length }} live link{{ client.active_accesses|length|pluralize }}
+          </p>
+        </section>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-building"></i></span>
+    <div class="ip-empty__title">No clients yet</div>
+    <p>Add the companies you recruit for, then share a branded portal link with them.</p>
+    <a class="btn btn-primary btn-sm" href="{% url 'clients:create' %}">Add your first client</a>
+  </div>
+{% endif %}
+{% endblock %}

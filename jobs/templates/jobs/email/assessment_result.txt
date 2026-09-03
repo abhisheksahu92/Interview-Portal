@@ -1,8 +1,0 @@
-Hi {{ candidate.user.email }},
-
-Your submission for "{{ assessment.title }}" ({{ job.title }} at {{ company.name }})
-has been recorded.
-
-{% if attempt.needs_review %}Some answers need a manual review by the hiring team, so your final score is not available yet.{% elif attempt.score_percent is not None %}Score: {{ attempt.score_percent }}% (pass mark {{ assessment.pass_mark_percent }}%){% if attempt.passed %} — you passed.{% else %} — unfortunately below the pass mark.{% endif %}{% endif %}
-
-— {{ site_name }}

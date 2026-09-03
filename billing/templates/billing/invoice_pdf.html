@@ -1,0 +1,47 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 11pt; color: #111; }
+    h1 { font-size: 16pt; margin: 0 0 4px; }
+    .muted { color: #666; font-size: 9pt; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { border-bottom: 1px solid #ddd; padding: 6px 4px; text-align: left; }
+    td.num, th.num { text-align: right; }
+    .total td { font-weight: bold; border-top: 2px solid #333; }
+  </style>
+</head>
+<body>
+  <h1>Tax invoice {{ invoice.number }}</h1>
+  <p class="muted">
+    Issued {{ invoice.issued_at|date:"j M Y" }}
+    {% if invoice.paid_at %}&middot; Paid {{ invoice.paid_at|date:"j M Y" }}{% endif %}
+  </p>
+
+  <p>
+    <strong>Billed to</strong><br>
+    {{ invoice.company.name }}<br>
+    {% if invoice.gstin %}GSTIN: {{ invoice.gstin }}<br>{% endif %}
+    {% if invoice.place_of_supply %}Place of supply: {{ invoice.place_of_supply }}{% endif %}
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Description</th><th class="num">Amount (INR)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>{{ invoice.description }}</td><td class="num">{{ invoice.amount|floatformat:2 }}</td></tr>
+      {% if invoice.is_intra_state %}
+        <tr><td>CGST @ {{ invoice.gst_rate|floatformat:2 }}% / 2</td><td class="num">{{ invoice.cgst|floatformat:2 }}</td></tr>
+        <tr><td>SGST @ {{ invoice.gst_rate|floatformat:2 }}% / 2</td><td class="num">{{ invoice.sgst|floatformat:2 }}</td></tr>
+      {% else %}
+        <tr><td>IGST @ {{ invoice.gst_rate|floatformat:2 }}%</td><td class="num">{{ invoice.igst|floatformat:2 }}</td></tr>
+      {% endif %}
+      <tr class="total"><td>Total</td><td class="num">{{ invoice.total|floatformat:2 }}</td></tr>
+    </tbody>
+  </table>
+
+  {% if invoice.provider_ref %}<p class="muted">Payment reference: {{ invoice.provider_ref }}</p>{% endif %}
+  <p class="muted">This is a computer-generated invoice.</p>
+</body>
+</html>

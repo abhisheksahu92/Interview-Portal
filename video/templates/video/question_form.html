@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New{% else %}Edit{% endif %} video question · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div><h1>{% if is_new %}New video question{% else %}Edit video question{% endif %}</h1></div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="card" style="max-width:44rem">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+          {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit">Save</button>
+      <a class="btn btn-link" href="{% url 'video:question_list' %}">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -20,7 +20,8 @@ class Question(models.Model):
 
     MANUAL = "MANUAL"
     AI = "AI"
-    SOURCE_CHOICES = [(MANUAL, "Manual"), (AI, "AI generated")]
+    MARKETPLACE = "MARKETPLACE"
+    SOURCE_CHOICES = [(MANUAL, "Manual"), (AI, "AI generated"), (MARKETPLACE, "Marketplace")]
 
     company = models.ForeignKey(
         "core.Company", on_delete=models.CASCADE, related_name="questions"
@@ -39,7 +40,7 @@ class Question(models.Model):
     difficulty = models.CharField(
         max_length=10, choices=DIFFICULTY_CHOICES, default=MEDIUM
     )
-    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=MANUAL)
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default=MANUAL)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

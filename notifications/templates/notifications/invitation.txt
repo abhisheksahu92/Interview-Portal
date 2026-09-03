@@ -1,0 +1,12 @@
+Hi {{ recipient_name }},
+
+{{ inviter_name|default:"A teammate" }} invited you to join {{ company.name }} on {{ site_name }}
+as {{ role|default:"a team member" }}.
+
+Accept the invitation:
+{{ accept_url|default:site_url }}
+
+{% if expires_in_days %}This link expires in {{ expires_in_days }} days.{% endif %}
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

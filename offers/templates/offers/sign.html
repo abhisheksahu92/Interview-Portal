@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Your offer from {{ offer.company.name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="mb-4">
+      <h1 class="h3 mb-1">Your offer from {{ offer.company.name }}</h1>
+      <p class="text-muted mb-0">
+        {{ offer.application.job.title }} ·
+        {{ offer.currency }} {{ offer.salary|floatformat:0 }}
+        {% if offer.joining_date %}· joining {{ offer.joining_date|date:"d M Y" }}{% endif %}
+      </p>
+    </div>
+
+    {% if blocked %}
+      <div class="alert {% if offer.status == 'ACCEPTED' %}alert-success{% elif offer.status == 'DECLINED' %}alert-secondary{% else %}alert-warning{% endif %}"
+           id="offer-status-message">
+        {{ blocked }}
+      </div>
+    {% elif offer.expires_at %}
+      <div class="alert alert-info">Please respond by {{ offer.expires_at|date:"d M Y, H:i" }}.</div>
+    {% endif %}
+
+    <div class="card mb-4">
+      <div class="card-body">{{ offer.body_rendered|safe }}</div>
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <span class="small text-muted">Offer #{{ offer.pk }}</span>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'offers:sign_pdf' offer.sign_token %}">
+          <i class="bi bi-download me-1" aria-hidden="true"></i>Download PDF
+        </a>
+      </div>
+    </div>
+
+    {% if offer.status == "ACCEPTED" %}
+      <div class="alert alert-success">
+        Signed by <strong>{{ offer.signed_name }}</strong> on
+        {{ offer.signed_at|date:"d M Y, H:i" }}.
+      </div>
+    {% elif not blocked %}
+    <div class="row g-4">
+      <div class="col-md-7">
+        <div class="card h-100">
+          <div class="card-header py-2"><strong>Accept this offer</strong></div>
+          <div class="card-body">
+            <form method="post" action="{% url 'offers:sign_accept' offer.sign_token %}">
+              {% csrf_token %}
+              {% for field in sign_form %}
+                <div class="mb-3 {% if field.name == 'consent' %}form-check{% endif %}">
+                  {% if field.name == 'consent' %}
+                    {{ field }}
+                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {% else %}
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                  {% endif %}
+                  {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+              {% endfor %}
+              <button class="btn btn-success">
+                <i class="bi bi-pen me-1" aria-hidden="true"></i>Sign &amp; accept
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="card h-100">
+          <div class="card-header py-2"><strong>Decline</strong></div>
+          <div class="card-body">
+            <form method="post" action="{% url 'offers:sign_decline' offer.sign_token %}">
+              {% csrf_token %}
+              {% for field in decline_form %}
+                <div class="mb-3">
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                </div>
+              {% endfor %}
+              <button class="btn btn-outline-danger">Decline offer</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

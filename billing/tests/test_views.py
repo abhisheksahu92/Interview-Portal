@@ -16,7 +16,7 @@ def test_overview_shows_plan_and_usage(client, owner, company):
     assert response.context["open_jobs"] == 1
     assert response.context["max_open_jobs"] == 1
     assert response.context["plan"].code == Plan.FREE
-    assert b"Upgrade to Pro" in response.content
+    assert b"Plans" in response.content
 
 
 def test_overview_creates_free_subscription(client, owner, company):

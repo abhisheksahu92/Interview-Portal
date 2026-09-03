@@ -4,6 +4,7 @@ import logging
 from datetime import UTC, datetime
 
 from django.conf import settings
+from django.utils import timezone
 
 from billing.models import Plan, Subscription
 from billing.services import free_plan, get_subscription, pro_plan
@@ -115,8 +116,18 @@ def handle_event(event):
         subscription.stripe_subscription_id = (
             obj.get("subscription") or subscription.stripe_subscription_id
         )
+        subscription.provider = Subscription.STRIPE
         subscription.status = Subscription.ACTIVE
+        subscription.past_due_since = None
+        subscription.trial_ends_at = None
         subscription.save()
+        from billing.invoicing import invoice_for_payment
+
+        invoice_for_payment(
+            subscription,
+            provider_ref=obj.get("subscription") or obj.get("id") or "",
+            provider=Subscription.STRIPE,
+        )
 
     elif event_type == "customer.subscription.updated":
         stripe_status = obj.get("status")
@@ -142,6 +153,126 @@ def handle_event(event):
 
     elif event_type == "invoice.payment_failed":
         subscription.status = Subscription.PAST_DUE
+        subscription.past_due_since = subscription.past_due_since or timezone.now()
+        subscription.save()
+
+    return subscription
+
+
+# --- Razorpay ------------------------------------------------------------
+
+RAZORPAY_EVENTS = {
+    "subscription.activated",
+    "subscription.charged",
+    "subscription.halted",
+    "subscription.cancelled",
+    "subscription.completed",
+    "payment.captured",
+    "payment.failed",
+    "order.paid",
+}
+
+
+def _entity(event, name):
+    return _as_dict(_as_dict(_as_dict(event.get("payload")).get(name)).get("entity"))
+
+
+def _razorpay_subscription_for(event):
+    """Find the local Subscription referenced by a Razorpay event payload."""
+    from billing.services import get_subscription
+
+    sub_entity = _entity(event, "subscription")
+    pay_entity = _entity(event, "payment")
+    order_entity = _entity(event, "order")
+
+    for entity in (sub_entity, pay_entity, order_entity):
+        company_id = _as_dict(entity.get("notes")).get("company_id")
+        if company_id:
+            company = Company.objects.filter(pk=company_id).first()
+            if company is not None:
+                return get_subscription(company)
+
+    remote_id = sub_entity.get("id") or pay_entity.get("subscription_id")
+    if remote_id:
+        found = (
+            Subscription.objects.filter(razorpay_subscription_id=remote_id)
+            .select_related("plan", "company")
+            .first()
+        )
+        if found is not None:
+            return found
+    return None
+
+
+def _razorpay_plan(event, fallback):
+    """Plan named by the event's notes, else the subscription's current plan."""
+    for name in ("subscription", "payment", "order"):
+        code = _as_dict(_entity(event, name).get("notes")).get("plan_code")
+        if code:
+            plan = Plan.objects.filter(code=code).first()
+            if plan is not None:
+                return plan
+    return fallback
+
+
+def _razorpay_interval(event, fallback):
+    for name in ("subscription", "payment", "order"):
+        interval = _as_dict(_entity(event, name).get("notes")).get("interval")
+        if interval in {Subscription.MONTHLY, Subscription.YEARLY}:
+            return interval
+    return fallback
+
+
+def handle_razorpay_event(event):
+    """Apply one verified Razorpay event. Returns the touched Subscription."""
+    from billing.invoicing import invoice_for_payment
+
+    event = _as_dict(event)
+    name = event.get("event")
+    if name not in RAZORPAY_EVENTS:
+        logger.info("billing: ignoring razorpay event %s", name)
+        return None
+
+    subscription = _razorpay_subscription_for(event)
+    if subscription is None:
+        logger.warning("billing: no subscription matched razorpay event %s", name)
+        return None
+
+    sub_entity = _entity(event, "subscription")
+    pay_entity = _entity(event, "payment")
+    subscription.provider = Subscription.RAZORPAY
+
+    if name in {"subscription.activated", "subscription.charged", "payment.captured", "order.paid"}:
+        subscription.plan = _razorpay_plan(event, subscription.plan)
+        subscription.interval = _razorpay_interval(event, subscription.interval)
+        subscription.status = Subscription.ACTIVE
+        subscription.past_due_since = None
+        subscription.trial_ends_at = None
+        if sub_entity.get("id"):
+            subscription.razorpay_subscription_id = sub_entity["id"]
+        if pay_entity.get("customer_id"):
+            subscription.razorpay_customer_id = pay_entity["customer_id"]
+        subscription.current_period_end = (
+            _period_end(sub_entity.get("current_end")) or subscription.current_period_end
+        )
+        subscription.save()
+        if name in {"subscription.charged", "payment.captured", "order.paid"}:
+            invoice_for_payment(
+                subscription,
+                provider_ref=pay_entity.get("id") or sub_entity.get("id") or "",
+                provider=Subscription.RAZORPAY,
+            )
+
+    elif name in {"subscription.halted", "payment.failed"}:
+        subscription.status = Subscription.PAST_DUE
+        subscription.past_due_since = subscription.past_due_since or timezone.now()
+        subscription.save()
+
+    elif name in {"subscription.cancelled", "subscription.completed"}:
+        subscription.plan = free_plan()
+        subscription.status = Subscription.CANCELED
+        subscription.razorpay_subscription_id = ""
+        subscription.current_period_end = None
         subscription.save()
 
     return subscription

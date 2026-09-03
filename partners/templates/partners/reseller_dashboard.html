@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ reseller.name }} · Partner dashboard{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>{{ reseller.name }}</h1>
+    <p>Partner code <code>{{ reseller.code }}</code> · {{ reseller.commission_pct }}% commission</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="card p-3"><div class="text-muted small">Referrals</div>
+    <div class="h4 mb-0">{{ referrals.count }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3"><div class="text-muted small">Invoiced</div>
+    <div class="h4 mb-0">₹{{ totals.invoiced }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3"><div class="text-muted small">Earned</div>
+    <div class="h4 mb-0">₹{{ totals.earned }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3"><div class="text-muted small">Pending payout</div>
+    <div class="h4 mb-0">₹{{ totals.pending }}</div></div></div>
+</div>
+
+<div class="card p-3 mb-4">
+  <div class="text-muted small">Your referral link</div>
+  <code>{{ referral_url }}</code>
+</div>
+
+<h2 class="h6">Referred companies</h2>
+<div class="table-responsive mb-4">
+  <table class="table align-middle">
+    <thead><tr><th>Company</th><th>Signed up</th><th>First payment</th></tr></thead>
+    <tbody>
+      {% for referral in referrals %}
+        <tr><td>{{ referral.company.name }}</td>
+          <td>{{ referral.signed_up_at|date:"Y-m-d" }}</td>
+          <td>{{ referral.first_payment_at|date:"Y-m-d"|default:"—" }}</td></tr>
+      {% empty %}
+        <tr><td colspan="3" class="text-muted">No referrals yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 class="h6">Commissions</h2>
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead><tr><th>Invoice</th><th>Company</th><th>Invoice amount</th><th>Commission</th><th>Paid out</th></tr></thead>
+    <tbody>
+      {% for entry in commissions %}
+        <tr><td><code>{{ entry.invoice_ref }}</code></td>
+          <td>{{ entry.company.name }}</td>
+          <td>₹{{ entry.amount_inr }}</td>
+          <td>₹{{ entry.commission_inr }}</td>
+          <td>{{ entry.paid_out_at|date:"Y-m-d"|default:"pending" }}</td></tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-muted">No commissions recorded yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

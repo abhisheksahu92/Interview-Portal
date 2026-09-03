@@ -1,0 +1,11 @@
+Hi {{ recipient_name }},
+
+Thanks for applying to {{ job.title }} at {{ company.name }}.
+
+Your application is now in our pipeline{% if stage %} at the "{{ stage.name }}" stage{% endif %}.
+We will email you whenever it moves forward.
+
+You can track it any time from your candidate portal.
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

@@ -1,0 +1,23 @@
+{% comment %}
+Include-able "Submit to client" action for an application.
+
+Usage (from any template that has an `application` in context — e.g. web/'s
+pipeline kanban card or application detail):
+
+    {% include "clients/partials/submit_button.html" with application=application %}
+
+Optional context:
+    css_class   button classes (default "btn btn-sm btn-outline-primary")
+    label       button text (default "Submit to client")
+
+Renders nothing when there is no application. The target view itself re-checks the
+tenant, the recruiter role and the `client_portal` entitlement, so including this
+partial can never leak access.
+{% endcomment %}
+{% if application %}
+  <a class="{{ css_class|default:'btn btn-sm btn-outline-primary' }}"
+     href="{% url 'clients:submit_application' application.pk %}"
+     title="Submit this candidate to a client">
+    <i class="bi bi-send me-1" aria-hidden="true"></i>{{ label|default:"Submit to client" }}
+  </a>
+{% endif %}

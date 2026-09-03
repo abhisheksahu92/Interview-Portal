@@ -21,16 +21,22 @@ def test_free_subscription_is_created_lazily(company):
     subscription = get_subscription(company)
     assert subscription.plan.code == Plan.FREE
     assert subscription.plan.max_open_jobs == 1
-    assert subscription.status == Subscription.ACTIVE
+    assert subscription.status == Subscription.TRIALING
     # idempotent
     assert get_subscription(company).pk == subscription.pk
 
 
-def test_seed_migration_created_both_plans(db):
+def test_seed_migration_created_every_tier(db):
     assert Plan.objects.get(code=Plan.FREE).max_open_jobs == 1
     pro = Plan.objects.get(code=Plan.PRO)
     assert pro.max_open_jobs == 25
     assert pro.price_monthly == 49
+    assert Plan.objects.get(code=Plan.STARTER).price_monthly_inr == 1499
+    assert Plan.objects.get(code=Plan.GROWTH).price_monthly_inr == 4999
+    agency = Plan.objects.get(code=Plan.AGENCY)
+    assert agency.price_monthly_inr == 12999
+    assert agency.price_yearly_inr == 129990
+    assert agency.per_hire_fee_inr is None
 
 
 def test_first_open_job_allowed_second_blocked(company):

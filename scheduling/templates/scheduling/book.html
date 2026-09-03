@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Book your interview · {{ interview.application.job.title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="ip-card p-4">
+      <h1 class="h4">Book your interview</h1>
+      <p class="text-body-secondary">
+        {{ interview.application.job.title }} at {{ interview.company.name }}
+        {% if interview.stage %}· {{ interview.stage.name }}{% endif %}
+        · {{ interview.duration_minutes }} minutes
+      </p>
+
+      {% if local_start %}
+        <div class="alert alert-success">
+          <strong>Currently booked:</strong>
+          {{ local_start|date:"D d M Y, H:i" }}–{{ local_end|date:"H:i" }} ({{ tz }})
+          <a class="ms-2" href="{% url 'scheduling:book_ics' interview.booking_token %}">Add to calendar</a>
+        </div>
+      {% endif %}
+
+      <form method="get" class="mb-3 d-flex align-items-end gap-2">
+        <div>
+          <label class="form-label small mb-1" for="tz">Times shown in</label>
+          <input class="form-control form-control-sm" id="tz" name="tz" value="{{ tz }}"
+                 list="tz-options" aria-describedby="tz-help">
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="submit">Update</button>
+        <datalist id="tz-options">
+          <option value="UTC"></option><option value="Asia/Kolkata"></option>
+          <option value="Europe/London"></option><option value="America/New_York"></option>
+        </datalist>
+      </form>
+      <p id="tz-help" class="form-text mt-0">Enter an IANA timezone name, e.g. <code>Asia/Kolkata</code>.</p>
+
+      <h2 class="h6">{% if local_start %}Pick a different time{% else %}Pick a time{% endif %}
+        <span class="text-body-secondary fw-normal">(next 14 days)</span></h2>
+      {% include "scheduling/partials/slot_picker.html" %}
+
+      {% if interview.is_open %}
+        <hr>
+        <form method="post" action="{% url 'scheduling:book_cancel' interview.booking_token %}">
+          {% csrf_token %}
+          <label class="form-label small" for="{{ cancel_form.reason.id_for_label }}">
+            Need to cancel? Tell us why (optional)</label>
+          {{ cancel_form.reason }}
+          <button class="btn btn-sm btn-outline-danger mt-2" type="submit">Cancel interview</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

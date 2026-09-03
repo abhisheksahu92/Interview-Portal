@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Checkout · {{ pack.title }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head"><div><h1>Checkout</h1><p>{{ pack.title }} · ₹{{ pack.price_inr }}</p></div></div>
+{% endblock %}
+{% block content %}
+<div class="alert alert-info">
+  Your order has been created. Complete the payment to install this pack.
+</div>
+<pre class="small bg-body-secondary p-3 rounded">{{ order }}</pre>
+{% endblock %}

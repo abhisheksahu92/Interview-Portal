@@ -1,0 +1,1 @@
+Hi {{ recipient_name }}, we received your application for {{ job.title }} at {{ company.name }}. We'll message you as it progresses. Reply STOP to opt out.

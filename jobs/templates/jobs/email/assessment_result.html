@@ -1,6 +1,0 @@
-<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
-  <p>Hi {{ candidate.user.email }},</p>
-  <p>Your submission for "{{ assessment.title }}" ({{ job.title }} at {{ company.name }}) has been recorded.</p>
-  <p>{% if attempt.needs_review %}Some answers need a manual review by the hiring team, so your final score is not available yet.{% elif attempt.score_percent is not None %}Score: {{ attempt.score_percent }}% (pass mark {{ assessment.pass_mark_percent }}%){% if attempt.passed %} — you passed.{% else %} — unfortunately below the pass mark.{% endif %}{% endif %}</p>
-  <p>— {{ site_name }}</p>
-</div>

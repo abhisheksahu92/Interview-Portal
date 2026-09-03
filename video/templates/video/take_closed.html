@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Video screen closed{% endblock %}
+{% block content %}
+<div class="card mx-auto" style="max-width:34rem">
+  <div class="card-body text-center">
+    <h1 class="h4">This video screen is closed</h1>
+    <p class="text-body-secondary mb-0">
+      The link for “{{ invite.screen.title }}” ({{ invite.application.job.title }}) expired on
+      {{ invite.expires_at|date:"d M Y" }}. Please contact the recruiter if you need another chance.
+    </p>
+  </div>
+</div>
+{% endblock %}

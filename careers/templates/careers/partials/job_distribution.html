@@ -1,0 +1,58 @@
+{% comment %}
+Per-job distribution panel.
+Include path: careers/partials/job_distribution.html
+  {% templatetag openblock %} include "careers/partials/job_distribution.html" {% templatetag closeblock %}
+Context: job, site, rows, posting_text, indeed_feed_url.
+Also served standalone by careers:job_distribution for HTMX swaps.
+{% endcomment %}
+<div class="cx-dist" id="cx-dist-{{ job.pk }}">
+  <h3 class="h6">{{ job.title }} — job boards</h3>
+  <table class="table table-sm align-middle mb-3">
+    <thead><tr><th scope="col">Board</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        <td>{{ row.label }}<div class="small text-body-secondary">{{ row.connection }}</div></td>
+        <td>
+          {% if row.distribution %}
+            <span class="badge text-bg-{% if row.distribution.status == 'POSTED' %}success{% elif row.distribution.status == 'FAILED' %}danger{% else %}secondary{% endif %}">
+              {{ row.distribution.get_status_display }}</span>
+            {% if row.distribution.last_error %}
+              <div class="small text-danger">{{ row.distribution.last_error }}</div>
+            {% endif %}
+          {% else %}
+            <span class="badge text-bg-light">Not tracked</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if row.kind == "push" and row.connection == "not configured" %}
+            <button class="btn btn-sm btn-outline-secondary" type="button" disabled>Connect account</button>
+          {% else %}
+            <form method="post" hx-post="{% url 'careers:distribute_action' job.pk row.board %}"
+                  hx-target="#cx-dist-panel" hx-swap="innerHTML" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="post">
+              <button class="btn btn-sm btn-outline-primary" type="submit">
+                {% if row.kind == "push" %}Post{% else %}Mark listed{% endif %}
+              </button>
+            </form>
+          {% endif %}
+          {% if row.distribution and row.distribution.status == "POSTED" and row.kind == "push" %}
+            <form method="post" hx-post="{% url 'careers:distribute_action' job.pk row.board %}"
+                  hx-target="#cx-dist-panel" hx-swap="innerHTML" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="remove">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="small text-body-secondary">Indeed crawls <code>{{ indeed_feed_url }}</code>; Google for Jobs
+    reads the JSON-LD on the public job page. No credentials needed for either.</p>
+  <label class="form-label small" for="cx-copy-{{ job.pk }}">Copy posting text</label>
+  <textarea class="form-control font-monospace" id="cx-copy-{{ job.pk }}" rows="6"
+            readonly>{{ posting_text }}</textarea>
+</div>

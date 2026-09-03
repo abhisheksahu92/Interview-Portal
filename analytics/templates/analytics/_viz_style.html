@@ -1,0 +1,35 @@
+{# Shared data-viz tokens. Light values on :root; dark re-declared for the theme stamp. #}
+<style>
+  .viz {
+    --viz-surface: var(--bs-body-bg, #fcfcfb);
+    --viz-text: #0b0b0b;
+    --viz-text-2: #52514e;
+    --viz-grid: #e6e5e1;
+    --series-1: #2a78d6;  /* blue   — applications / entered */
+    --series-2: #eb6834;  /* orange — hires / dropped */
+    --series-3: #1baf7a;  /* aqua   — third measure */
+  }
+  [data-bs-theme="dark"] .viz {
+    --viz-text: #ffffff;
+    --viz-text-2: #c3c2b7;
+    --viz-grid: #383835;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+  }
+  .viz-card { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
+              border-radius: .75rem; padding: 1rem 1.15rem; height: 100%; }
+  .viz-card h2 { font-size: 1rem; font-weight: 600; margin: 0; }
+  .viz-card__sub { color: var(--viz-text-2); font-size: .8125rem; margin: .15rem 0 .75rem; }
+  .viz-canvas { position: relative; height: 260px; }
+  .viz-empty { color: var(--viz-text-2); font-size: .875rem; border: 1px dashed var(--bs-border-color);
+               border-radius: .5rem; padding: 1.5rem; text-align: center; }
+  .viz-kpi { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .viz-kpi__value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+  .viz-kpi__label { color: var(--viz-text-2); font-size: .75rem; text-transform: uppercase;
+                    letter-spacing: .04em; }
+  @media print {
+    .viz-noprint { display: none !important; }
+    .viz-card { break-inside: avoid; border-color: #999; }
+  }
+</style>

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Video screens · {{ job.title }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Video screens</h1>
+    <p>{{ job.title }}</p>
+  </div>
+  {% if can_manage %}<a class="btn btn-primary" href="{% url 'video:screen_create' job.pk %}">New screen</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead><tr><th>Title</th><th>Stage</th><th>Questions</th><th>Deadline</th><th>Active</th><th></th></tr></thead>
+      <tbody>
+      {% for screen in screens %}
+        <tr>
+          <td>{{ screen.title }}</td>
+          <td>{{ screen.stage.name|default:"Any stage" }}</td>
+          <td>{{ screen.questions.count }}</td>
+          <td>{{ screen.deadline_days }} day{{ screen.deadline_days|pluralize }}</td>
+          <td>{% if screen.is_active %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-secondary">No</span>{% endif %}</td>
+          <td class="text-end text-nowrap">
+            {% if can_manage %}
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'video:screen_edit' screen.pk %}">Edit</a>
+              <form method="post" action="{% url 'video:screen_delete' screen.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-body-secondary">No screens on this job yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

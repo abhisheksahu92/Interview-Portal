@@ -67,6 +67,14 @@ class Job(models.Model):
     company = models.ForeignKey(
         "core.Company", on_delete=models.CASCADE, related_name="jobs"
     )
+    # Optional end client this role is being filled for (clients app / client portal).
+    client = models.ForeignKey(
+        "clients.Client",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="jobs",
+    )
     title = models.CharField(max_length=200)
     location = models.CharField(max_length=150, blank=True)
     description = models.TextField(blank=True)
@@ -194,6 +202,7 @@ class CandidateProfile(models.Model):
     resume_parsed_at = models.DateTimeField(null=True, blank=True)
     headline = models.CharField(max_length=200, blank=True)
     skills = models.ManyToManyField(Skill, blank=True, related_name="candidates")
+    share_in_pool = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["user__email"]

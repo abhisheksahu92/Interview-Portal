@@ -9,16 +9,18 @@ from core.models import Company
 from jobs.models import Job
 
 
-def test_company_creation_provisions_a_free_subscription(db):
+def test_company_creation_provisions_a_trial_subscription(db):
     company = Company.objects.create(name="Brand New Ltd")
     subscription = Subscription.objects.get(company=company)
     assert subscription.plan.code == Plan.FREE
-    assert subscription.status == Subscription.ACTIVE
+    assert subscription.status == Subscription.TRIALING
+    assert subscription.in_trial is True
+    assert 13 <= subscription.trial_days_left <= 14
 
 
 def test_limits_apply_from_the_first_day(db):
     """No manual provisioning step: the plan limit bites immediately."""
-    company = Company.objects.create(name="Day One Ltd")
+    company = Company.objects.create(name="Day One Ltd")  # billed on FREE
     Job.objects.create(company=company, title="Dev 1", status=Job.OPEN)
     with pytest.raises(ValidationError):
         Job.objects.create(company=company, title="Dev 2", status=Job.OPEN)

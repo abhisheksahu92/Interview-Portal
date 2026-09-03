@@ -1,8 +1,0 @@
-Hi {{ candidate.user.email }},
-
-Good news: your application for {{ job.title }} at {{ company.name }} has moved
-to "{{ stage_name }}".
-
-Check your candidate portal for anything you need to do next.
-
-— {{ site_name }}

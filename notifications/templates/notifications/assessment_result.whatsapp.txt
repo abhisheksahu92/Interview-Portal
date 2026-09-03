@@ -1,0 +1,1 @@
+{{ recipient_name }}: your {{ assessment.title }} result is in — {{ attempt.score_percent|default:"see portal" }}%. Reply STOP to opt out.

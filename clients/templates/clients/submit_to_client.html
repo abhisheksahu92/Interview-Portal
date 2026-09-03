@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Submit to client · Clients{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Submit to client</h1>
+    <p>{{ application.candidate }} — {{ application.job.title }}</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row"><div class="col-lg-7">
+  <section class="ip-section">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.client.id_for_label }}">Client</label>
+        {{ form.client }}
+        {% for e in form.client.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.note.id_for_label }}">Note for the client</label>
+        {{ form.note }}
+      </div>
+      <div class="form-check mb-3">
+        {{ form.notify_client }}
+        <label class="form-check-label" for="{{ form.notify_client.id_for_label }}">Email the client's portal contacts</label>
+      </div>
+      <button class="btn btn-primary" type="submit">Submit candidate</button>
+      <a class="btn btn-outline-secondary" href="{% url 'clients:index' %}">Cancel</a>
+    </form>
+  </section>
+</div></div>
+{% endblock %}

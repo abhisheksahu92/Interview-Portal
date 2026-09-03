@@ -1,0 +1,1 @@
+{{ recipient_name }}: thank you for applying to {{ job.title }} at {{ company.name }}. We won't be moving forward this time. Reply STOP to opt out.

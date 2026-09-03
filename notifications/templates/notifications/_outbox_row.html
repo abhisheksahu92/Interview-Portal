@@ -1,0 +1,21 @@
+<tr id="outbox-row-{{ message.pk }}">
+  <td class="small text-nowrap">{{ message.created_at|date:"d M Y H:i" }}</td>
+  <td>{{ message.event_label }}</td>
+  <td>{{ message.get_channel_display }}</td>
+  <td class="text-break">{{ message.recipient }}</td>
+  <td>
+    <span class="badge {% if message.status == 'SENT' or message.status == 'DELIVERED' or message.status == 'READ' %}text-bg-success{% elif message.status == 'FAILED' %}text-bg-danger{% elif message.status == 'SKIPPED' %}text-bg-secondary{% else %}text-bg-warning{% endif %}">
+      {{ message.get_status_display }}
+    </span>
+    {% if message.error %}<div class="small text-body-secondary">{{ message.error|truncatechars:120 }}</div>{% endif %}
+  </td>
+  <td class="text-center">{{ message.attempts }}</td>
+  <td class="text-end">
+    <form method="post" action="{% url 'notifications:resend' message.pk %}"
+          hx-post="{% url 'notifications:resend' message.pk %}"
+          hx-target="#outbox-row-{{ message.pk }}" hx-swap="outerHTML">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-outline-secondary" type="submit">Resend</button>
+    </form>
+  </td>
+</tr>

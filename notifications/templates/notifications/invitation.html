@@ -1,0 +1,11 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p>Hi {{ recipient_name }},</p>
+  <p>{{ inviter_name|default:"A teammate" }} invited you to join {{ company.name }} on {{ site_name }}<br>as {{ role|default:"a team member" }}.</p>
+  <p>Accept the invitation:<br>{{ accept_url|default:site_url }}</p>
+  <p>{% if expires_in_days %}This link expires in {{ expires_in_days }} days.{% endif %}</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">
+    &mdash; {{ site_name }} &middot;
+    <a href="{{ unsubscribe_url }}" style="color:#6b7280">Manage your notification preferences</a>
+  </p>
+</div>

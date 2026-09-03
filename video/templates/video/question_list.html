@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Video question library · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Video question library</h1>
+    <p>Reusable prompts with their own think and answer timers.</p>
+  </div>
+  {% if can_manage %}<a class="btn btn-primary" href="{% url 'video:question_create' %}">New question</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead><tr><th>#</th><th>Question</th><th>Think</th><th>Answer</th><th></th></tr></thead>
+      <tbody>
+      {% for question in questions %}
+        <tr>
+          <td class="text-body-secondary">{{ question.order }}</td>
+          <td>{{ question.text }}</td>
+          <td>{{ question.think_seconds }}s</td>
+          <td>{{ question.answer_seconds }}s</td>
+          <td class="text-end text-nowrap">
+            {% if can_manage %}
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'video:question_edit' question.pk %}">Edit</a>
+              <form method="post" action="{% url 'video:question_delete' question.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-body-secondary">The library is empty.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Talent pool · {{ company.name }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head d-flex flex-wrap gap-2 justify-content-between align-items-start">
+  <div>
+    <h1>Talent pool</h1>
+    <p>{{ pool_size }} sourced profile{{ pool_size|pluralize }} — search resumes, tag and add people to a job.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'talent:profile_create' %}">
+      <i class="bi bi-person-plus" aria-hidden="true"></i> Add profile
+    </a>
+    <a class="btn btn-primary" href="{% url 'talent:import' %}">
+      <i class="bi bi-upload" aria-hidden="true"></i> Import resumes
+    </a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-3">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Filters</h2></div>
+      <form method="get" action="{% url 'talent:index' %}" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.q.id_for_label }}">{{ form.q.label }}</label>
+          {{ form.q }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.skills.id_for_label }}">Skills</label>
+          {{ form.skills }}
+          <div class="form-check mt-2">
+            {{ form.match_all }}
+            <label class="form-check-label small" for="{{ form.match_all.id_for_label }}">{{ form.match_all.label }}</label>
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label" for="{{ form.min_experience.id_for_label }}">{{ form.min_experience.label }}</label>
+            {{ form.min_experience }}
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="{{ form.max_experience.id_for_label }}">{{ form.max_experience.label }}</label>
+            {{ form.max_experience }}
+            {% for e in form.max_experience.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.tags.id_for_label }}">{{ form.tags.label }}</label>
+          {{ form.tags }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.source.id_for_label }}">Source</label>
+          {{ form.source }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.ordering.id_for_label }}">Sort by</label>
+          {{ form.ordering }}
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit">Search</button>
+          <a class="btn btn-outline-secondary" href="{% url 'talent:index' %}">Reset</a>
+        </div>
+      </form>
+    </section>
+    {% if recent_batches %}
+      <section class="ip-section mt-3">
+        <div class="ip-section__head"><h2>Recent imports</h2></div>
+        <ul class="list-unstyled mb-0 small">
+          {% for batch in recent_batches %}
+            <li class="d-flex justify-content-between">
+              <a href="{% url 'talent:batch_report' batch.pk %}">Batch #{{ batch.pk }}</a>
+              <span class="ip-muted">{{ batch.created }} new · {{ batch.updated }} updated</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  </div>
+  <div class="col-lg-9">
+    {% include "talent/partials/results.html" %}
+  </div>
+</div>
+{% endblock %}

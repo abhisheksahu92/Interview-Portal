@@ -1,0 +1,1 @@
+{{ recipient_name }}: your interview for {{ job.title }} is set for {{ interview.scheduled_start|default:"a time in your portal" }}. Reply STOP to opt out.

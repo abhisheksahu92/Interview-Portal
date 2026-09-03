@@ -1,14 +1,13 @@
-"""Candidate-facing transactional email for the hiring pipeline.
+"""Candidate-facing transactional notifications for the hiring pipeline.
 
-Every function here is best-effort: a broken mail backend must never break an
-application being created or a stage transition.
+This module is now a thin compatibility shim: every function delegates to
+``notifications.send`` with the matching event, so channel selection,
+templating and the outbound log all live in the notifications app. The
+function names, signatures and best-effort behaviour are unchanged — a broken
+mail backend must never break an application being created or a stage moving.
 """
 
 import logging
-
-from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
 
 logger = logging.getLogger(__name__)
 
@@ -18,83 +17,66 @@ def _candidate_email(application):
     return (getattr(user, "email", "") or "").strip()
 
 
-def _send(template, subject, application, extra=None):
-    """Render ``jobs/email/<template>.{txt,html}`` and mail the candidate."""
-    recipient = _candidate_email(application)
-    if not recipient:
-        return 0
+def _context(application, extra=None):
     context = {
         "application": application,
         "job": application.job,
         "company": application.job.company,
         "candidate": application.candidate,
         "stage": application.current_stage,
-        "site_name": "Interview Portal",
     }
     context.update(extra or {})
+    return context
+
+
+def _send(event, application, extra=None):
+    """Delegate to ``notifications.send`` and return the number of emails sent."""
+    if not _candidate_email(application):
+        return 0
     try:
-        text_body = render_to_string(f"jobs/email/{template}.txt", context)
-        message = EmailMultiAlternatives(
-            subject=subject,
-            body=text_body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[recipient],
+        from notifications import api as notifications_api
+
+        messages = notifications_api.send(
+            event,
+            application.candidate,
+            _context(application, extra),
+            company=application.job.company,
         )
-        try:
-            message.attach_alternative(
-                render_to_string(f"jobs/email/{template}.html", context), "text/html"
-            )
-        except Exception:  # pragma: no cover - html part is optional
-            logger.debug("No HTML part for %s", template)
-        return message.send()
     except Exception:
         logger.warning(
-            "Could not send %s email for application %s", template, application.pk,
+            "Could not send %s notification for application %s", event, application.pk,
             exc_info=True,
         )
         return 0
+    return sum(
+        1
+        for message in messages
+        if message.channel == "email" and message.status == message.SENT
+    )
 
 
 def send_application_received(application):
-    return _send(
-        "application_received",
-        f"We received your application for {application.job.title}",
-        application,
-    )
+    return _send("application_received", application)
 
 
 def send_stage_advanced(application):
     stage = application.current_stage
     stage_name = stage.name if stage else "the next step"
-    return _send(
-        "stage_advanced",
-        f"You have moved to {stage_name} for {application.job.title}",
-        application,
-        {"stage_name": stage_name},
-    )
+    return _send("stage_advanced", application, {"stage_name": stage_name})
 
 
 def send_application_rejected(application):
-    return _send(
-        "application_rejected",
-        f"Update on your application for {application.job.title}",
-        application,
-    )
+    return _send("application_rejected", application)
 
 
 def send_application_hired(application):
-    return _send(
-        "application_hired",
-        f"Great news about {application.job.title}",
-        application,
-    )
+    return _send("application_hired", application)
 
 
 def send_assessment_result(attempt):
     """Assessment outcome mail. Called from ``assessments`` (which may import jobs)."""
     return _send(
         "assessment_result",
-        f"Your {attempt.assessment.title} result",
         attempt.application,
         {"attempt": attempt, "assessment": attempt.assessment},
     )

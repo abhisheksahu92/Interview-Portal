@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Offer templates · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head d-flex flex-wrap gap-3 align-items-end">
+  <div>
+    <p class="mb-1"><a href="{% url 'offers:index' %}">← All offers</a></p>
+    <h1>Offer templates</h1>
+    <p class="mb-0 text-muted">Reusable letter bodies with safe placeholders.</p>
+  </div>
+  <a class="btn btn-primary ms-auto" href="{% url 'offers:template_create' %}">New template</a>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="list-group">
+      {% for template in templates %}
+        <div class="list-group-item d-flex align-items-center gap-3">
+          <div class="flex-grow-1">
+            <a class="fw-semibold" href="{% url 'offers:template_edit' template.pk %}">{{ template.name }}</a>
+            {% if template.is_default %}<span class="badge text-bg-success ms-1">Default</span>{% endif %}
+            <div class="small text-muted">{{ template.subject }}</div>
+          </div>
+          <form method="post" action="{% url 'offers:template_delete' template.pk %}"
+                onsubmit="return confirm('Delete this template?')">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </div>
+      {% empty %}
+        <div class="list-group-item text-muted">No templates yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-4">{% include "offers/_placeholders.html" %}</div>
+</div>
+{% endblock %}

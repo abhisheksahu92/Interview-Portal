@@ -1,0 +1,14 @@
+Hi {{ recipient_name }},
+
+Your {{ assessment.title }} for {{ job.title }} at {{ company.name }} has been graded.
+
+Score: {{ attempt.score_percent|default:"—" }}%
+Outcome: {% if attempt.passed %}Passed{% else %}Not passed{% endif %}
+{% if attempt.ai_feedback %}
+Feedback:
+{{ attempt.ai_feedback }}
+{% endif %}
+You can see the full breakdown in your candidate portal.
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

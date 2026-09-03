@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Hiring report · {{ company.name }}{% endblock %}
+
+{% block extra_head %}
+  {% include "analytics/_viz_style.html" %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+{% endblock %}
+
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Hiring report</h1>
+    <p>{{ company.name }} · {{ date_from }} → {{ date_to }}{% if selected_job %} · {{ selected_job.title }}{% endif %}</p>
+  </div>
+  <div class="ms-auto d-flex gap-2 viz-noprint">
+    <button class="btn btn-primary" type="button" onclick="window.print()">
+      <i class="bi bi-printer me-1" aria-hidden="true"></i>Print
+    </button>
+    <a class="btn btn-outline-secondary" href="{% url 'analytics:index' %}?{{ query_string }}">Back to dashboard</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% include "analytics/_charts.html" %}
+{% endblock %}
