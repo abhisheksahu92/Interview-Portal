@@ -1,9 +1,11 @@
 """Forms for the web UI. All model access goes through jobs/assessments models."""
 
 from django import forms
+from django.db import models
 
 from core.models import Invitation, Membership
 from jobs.models import CandidateProfile, Job, PipelineStage, Skill, StageReview
+from jobs.validators import validate_resume_file
 
 
 class BootstrapMixin:
@@ -60,9 +62,38 @@ class JobForm(BootstrapMixin, forms.ModelForm):
 
 
 class StageForm(BootstrapMixin, forms.ModelForm):
+    """Add or edit one pipeline stage. Bound to a job so order stays unique."""
+
     class Meta:
         model = PipelineStage
         fields = ["name", "order", "kind", "requires_assessment"]
+
+    def __init__(self, *args, job=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.job = job or getattr(self.instance, "job", None)
+        if self.job is not None and not self.instance.pk and not self.is_bound:
+            existing = self.job.stages.aggregate(m=models.Max("order"))["m"] or 0
+            self.fields["order"].initial = existing + 1
+
+    def clean_order(self):
+        order = self.cleaned_data["order"]
+        if self.job is not None:
+            clash = self.job.stages.filter(order=order)
+            if self.instance.pk:
+                clash = clash.exclude(pk=self.instance.pk)
+            if clash.exists():
+                raise forms.ValidationError(
+                    "Another stage on this job already uses that order number."
+                )
+        return order
+
+    def save(self, commit=True):
+        stage = super().save(commit=False)
+        if self.job is not None:
+            stage.job = self.job
+        if commit:
+            stage.save()
+        return stage
 
 
 class ReviewForm(BootstrapMixin, forms.Form):
@@ -89,7 +120,19 @@ class SkillForm(BootstrapMixin, forms.ModelForm):
 
     def __init__(self, *args, company=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if company is None and self.instance.pk:
+            company = self.instance.company
         self.company = company
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if self.company is not None:
+            clash = Skill.objects.filter(company=self.company, name__iexact=name)
+            if self.instance.pk:
+                clash = clash.exclude(pk=self.instance.pk)
+            if clash.exists():
+                raise forms.ValidationError("That skill already exists.")
+        return name
 
     def save(self, commit=True):
         skill = super().save(commit=False)
@@ -102,8 +145,16 @@ class SkillForm(BootstrapMixin, forms.ModelForm):
 class InviteForm(BootstrapMixin, forms.Form):
     """Create a pending core.Invitation for an email address."""
 
-    email = forms.EmailField()
-    role = forms.ChoiceField(choices=Membership.ROLE_CHOICES)
+    email = forms.EmailField(help_text="They will get a link that expires in 7 days.")
+    role = forms.ChoiceField(
+        choices=Membership.ROLE_CHOICES,
+        initial=Membership.RECRUITER,
+        help_text=(
+            "Owner: full access including billing and members. "
+            "Recruiter: jobs, pipelines and candidates. "
+            "Interviewer: review queue only."
+        ),
+    )
 
     def __init__(self, *args, company=None, invited_by=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -150,6 +201,13 @@ class InviteForm(BootstrapMixin, forms.Form):
 
 
 class CandidateProfileForm(BootstrapMixin, forms.ModelForm):
+    """Candidate self-service profile.
+
+    Skills are shown de-duplicated by name (they are per-company rows, so the
+    same name exists once per tenant) and résumés are validated for extension,
+    size and magic bytes by ``jobs.validators.validate_resume_file``.
+    """
+
     class Meta:
         model = CandidateProfile
         fields = [
@@ -161,12 +219,36 @@ class CandidateProfileForm(BootstrapMixin, forms.ModelForm):
             "resume",
             "skills",
         ]
-        widgets = {"date_of_birth": forms.DateInput(attrs={"type": "date"})}
+        widgets = {
+            "date_of_birth": forms.DateInput(attrs={"type": "date"}),
+            "skills": forms.CheckboxSelectMultiple,
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["skills"].required = False
-        self.fields["resume"].widget.attrs["class"] = "form-control"
+        self.fields["skills"].queryset = Skill.objects.distinct_by_name()
+        # BootstrapMixin cannot tell checkbox groups apart from text inputs.
+        self.fields["skills"].widget.attrs["class"] = "form-check-input"
+        self.fields["resume"].required = False
+        self.fields["resume"].help_text = (
+            "PDF, DOC, DOCX or TXT, up to 5 MB."
+        )
+        self.fields["resume"].widget.attrs.update(
+            {
+                "class": "form-control",
+                "accept": ".pdf,.doc,.docx,.txt,application/pdf,application/msword,"
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document,"
+                "text/plain",
+            }
+        )
+
+    def clean_resume(self):
+        """Run the shared validator eagerly so the error lands on this field."""
+        resume = self.cleaned_data.get("resume")
+        if resume and hasattr(resume, "file"):  # a freshly uploaded file
+            validate_resume_file(resume)
+        return resume
 
 
 class ApplyForm(BootstrapMixin, forms.Form):

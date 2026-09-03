@@ -21,6 +21,7 @@ env = environ.Env(
     EMAIL_HOST_USER=(str, ""),
     EMAIL_HOST_PASSWORD=(str, ""),
     EMAIL_USE_TLS=(bool, False),
+    EMAIL_FILE_PATH=(str, ""),
     DEFAULT_FROM_EMAIL=(str, "no-reply@interview-portal.local"),
     ANTHROPIC_API_KEY=(str, ""),
     STRIPE_SECRET_KEY=(str, ""),
@@ -87,6 +88,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "core.middleware.TenantMiddleware",
+    "core.middleware.HtmxRedirectMiddleware",
 ]
 
 ROOT_URLCONF = "interview_portal.urls"
@@ -132,6 +134,10 @@ if DATABASES["default"].get("ENGINE", "").endswith("postgresql"):
 # --- Auth -----------------------------------------------------------------
 AUTH_USER_MODEL = "core.User"
 
+# Single backend (a ModelBackend subclass) so email logins ignore case and
+# ``auth_login`` after signup does not need an explicit backend argument.
+AUTHENTICATION_BACKENDS = ["core.backends.CaseInsensitiveEmailBackend"]
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -155,7 +161,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [d for d in [BASE_DIR / "static"] if d.is_dir()]
 
 MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(env.str("MEDIA_ROOT", default=str(BASE_DIR / "media")))
 
 # Manifest hashing is only useful for a real collectstatic run; in DEBUG (and
 # under pytest) templates must render without a staticfiles.json manifest.
@@ -209,6 +215,8 @@ EMAIL_PORT = env("EMAIL_PORT")
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+# Only used by django.core.mail.backends.filebased.EmailBackend.
+EMAIL_FILE_PATH = env("EMAIL_FILE_PATH") or str(BASE_DIR / "sent_emails")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
 
 # --- Third party ----------------------------------------------------------
@@ -217,8 +225,10 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
+        # Token first: it returns 401 (with WWW-Authenticate) for anonymous
+        # calls, where SessionAuthentication would answer 403.
         "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",

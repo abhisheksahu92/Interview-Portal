@@ -10,7 +10,7 @@
 
 <form class="ip-section ip-section--tight mb-4" role="search"
       hx-get="{% url 'web:job_browse' %}" hx-target="#job-results" hx-swap="outerHTML"
-      hx-indicator="#search-indicator"
+      hx-push-url="true" hx-indicator="#search-indicator"
       hx-trigger="submit, keyup changed delay:400ms from:#q">
   <label class="form-label" for="q">Search by title, location or skill</label>
   <div class="d-flex gap-2">

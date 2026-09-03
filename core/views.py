@@ -13,7 +13,7 @@ from core.forms import (
     EmailLoginForm,
     InvitedSignupForm,
 )
-from core.middleware import TenantMiddleware
+from core.middleware import set_active_company
 from core.models import Company, Invitation
 
 
@@ -25,6 +25,11 @@ class EmailLoginView(LoginView):
 
 @require_http_methods(["GET", "POST"])
 def logout_view(request):
+    """Sign out. Only POST mutates; GET renders a confirmation page."""
+    if request.method != "POST":
+        if not request.user.is_authenticated:
+            return redirect("core:login")
+        return render(request, "core/logout_confirm.html", {})
     auth_logout(request)
     messages.info(request, "You have been signed out.")
     return redirect("core:login")
@@ -49,7 +54,7 @@ def company_signup(request):
     if request.method == "POST" and form.is_valid():
         user = form.save()
         auth_login(request, user)
-        request.session[TenantMiddleware.session_key] = form.company.id
+        set_active_company(request, form.company)
         messages.success(request, f"Company '{form.company.name}' created.")
         return redirect("/")
     return render(
@@ -69,7 +74,7 @@ def switch_company(request):
     if company is None:
         messages.error(request, "You are not a member of that company.")
     else:
-        request.session[TenantMiddleware.session_key] = company.id
+        set_active_company(request, company)
         messages.success(request, f"Switched to {company.name}.")
     return redirect(request.POST.get("next") or "/")
 
@@ -117,8 +122,15 @@ def invite_accept(request, token):
                 f"This invitation was sent to {invitation.email}, but you are "
                 f"signed in as {request.user.email}. Sign out and try again.",
             )
+        if request.method != "POST":
+            # Never mutate on GET: show a confirmation with an Accept button.
+            return render(
+                request,
+                "core/invite_confirm.html",
+                {"invitation": invitation},
+            )
         invitation.accept(request.user)
-        request.session[TenantMiddleware.session_key] = invitation.company_id
+        set_active_company(request, invitation.company)
         messages.success(request, f"Welcome to {invitation.company.name}!")
         return redirect("/")
 
@@ -127,7 +139,7 @@ def invite_accept(request, token):
         user = form.save()
         auth_login(request, user)
         invitation.accept(user)
-        request.session[TenantMiddleware.session_key] = invitation.company_id
+        set_active_company(request, invitation.company)
         messages.success(request, f"Welcome to {invitation.company.name}!")
         return redirect("/")
 

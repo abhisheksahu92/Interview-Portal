@@ -635,7 +635,7 @@ form ul.errorlist {
   display: flex;
   gap: var(--ip-3);
   overflow-x: auto;
-  align-items: stretch;
+  align-items: flex-start;
   padding-bottom: var(--ip-3);
   scroll-snap-type: x proximity;
 }
@@ -648,6 +648,7 @@ form ul.errorlist {
   display: flex;
   flex-direction: column;
   max-height: 72vh;
+  min-height: 0;
   scroll-snap-align: start;
 }
 .ip-board__head {
@@ -673,7 +674,17 @@ form ul.errorlist {
   font-weight: 600;
   color: var(--ip-muted);
 }
-.ip-board__body { overflow-y: auto; padding: var(--ip-3); display: grid; gap: var(--ip-2); }
+.ip-board__body {
+  /* the column scrolls; cards (and an expanded review form) grow freely */
+  overflow-y: auto;
+  min-height: 0;
+  padding: var(--ip-3);
+  display: grid;
+  gap: var(--ip-2);
+  align-content: start;
+}
+.ip-stage-picker { display: flex; gap: var(--ip-1); align-items: center; }
+.ip-stage-picker select { min-width: 0; }
 .ip-board__hint {
   font-size: 0.6875rem;
   color: var(--ip-muted);
@@ -698,6 +709,31 @@ form ul.errorlist {
   margin-top: var(--ip-3);
   padding-top: var(--ip-3);
   border-top: 1px solid var(--ip-line);
+}
+/* an expanded review form must never be clipped by the card or the column */
+.ip-card { overflow: visible; }
+.ip-review { max-width: 100%; }
+.ip-review textarea, .ip-review select { max-width: 100%; }
+
+/* on desktop the columns line up to a common height; on narrow screens each
+   column is only as tall as its own content (empty ones stay short) */
+@media (min-width: 768px) {
+  .ip-board { align-items: stretch; }
+  .ip-board__col { min-height: 12rem; }
+}
+
+/* filter bars (question bank etc.): keep the native dropdown affordance */
+.ip-filters { display: flex; flex-wrap: wrap; gap: var(--ip-2); align-items: end; }
+.ip-filters select,
+select.form-select,
+select.form-select-sm {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236b7280'%3E%3Cpath d='M4.5 6.5 8 10l3.5-3.5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1rem 1rem;
+  padding-right: 2rem;
 }
 
 /* --- 10. Stepper --------------------------------------------------------- */
@@ -757,9 +793,10 @@ form ul.errorlist {
 
 .ip-toasts {
   position: fixed;
-  top: var(--ip-4);
+  /* Sits below the sticky top bar so it never covers the theme toggle. */
+  top: calc(var(--ip-topbar-h) + var(--ip-2));
   right: var(--ip-4);
-  z-index: 1090;
+  z-index: 1019;
   display: grid;
   gap: var(--ip-2);
   width: min(22rem, calc(100vw - 2rem));
@@ -785,7 +822,7 @@ form ul.errorlist {
 .ip-toast--warning { border-left-color: var(--ip-warning); }
 .ip-toast--warning i { color: var(--ip-warning); }
 .ip-toast--info i, .ip-toast--debug i { color: var(--ip-accent-600); }
-.ip-toast__body { flex: 1 1 auto; min-width: 0; }
+.ip-toast__body { flex: 1 1 auto; min-width: 0; color: var(--ip-ink); }
 .ip-toast .btn-close { --bs-btn-close-focus-shadow: none; font-size: 0.6875rem; }
 [data-bs-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 @keyframes ip-toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
@@ -862,10 +899,30 @@ form ul.errorlist {
   position: sticky;
   top: 60px;
   z-index: 1025;
-  background: color-mix(in srgb, var(--ip-surface) 92%, transparent);
-  backdrop-filter: saturate(140%) blur(8px);
+  /* Opaque: answers must never show through the timer bar. */
+  background: var(--ip-surface);
   border-bottom: 1px solid var(--ip-line);
   padding: var(--ip-3) 0 0;
+}
+.ip-exam-bar__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ip-2);
+  padding-bottom: var(--ip-3);
+}
+.ip-exam-bar__title h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Anchors / autoscroll must clear the app header + sticky exam bar. */
+html { scroll-padding-top: 8rem; }
+
+@media (max-width: 575.98px) {
+  /* One compact row at 390px: title shrinks, timer pill + progress stay. */
+  .ip-exam-bar { padding-top: var(--ip-2); }
+  .ip-exam-bar__row { padding-bottom: var(--ip-2); }
+  .ip-exam-bar__title h1 { font-size: 0.9375rem; margin-bottom: 0 !important; max-width: 42vw; }
+  .ip-exam-bar__meta { display: none; }
+  .ip-timer { padding: 0.15rem 0.5rem; font-size: 0.875rem; }
+  html { scroll-padding-top: 6.5rem; }
 }
 .ip-timer {
   display: inline-flex;
@@ -1068,6 +1125,7 @@ pre { font-size: 0.8125rem; white-space: pre-wrap; word-break: break-word; color
   .ip-page-head__actions { width: 100%; }
   .ip-board__col { flex-basis: 84vw; max-width: 84vw; }
   .ip-toasts { top: auto; bottom: var(--ip-3); right: var(--ip-3); left: var(--ip-3); width: auto; }
+  .ip-topbar__title { font-size: 0.9375rem; }
   .ip-hero { padding: var(--ip-6) 0 var(--ip-5); }
   .ip-band { padding: var(--ip-6) 0; }
   .ip-ring { width: 7rem; height: 7rem; }
@@ -1081,3 +1139,50 @@ pre { font-size: 0.8125rem; white-space: pre-wrap; word-break: break-word; color
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
+
+/* Candidate portal: collapsible nav on small screens. */
+.ip-navbar__collapse {
+  display: grid;
+  gap: var(--ip-1);
+  padding: var(--ip-2) 0 var(--ip-3);
+  border-top: 1px solid var(--ip-line);
+}
+.ip-navbar__collapse .ip-navbar__link { padding: var(--ip-2) var(--ip-3); }
+
+/* --- 15. Candidate profile: file row + skill pills ----------------------- */
+
+.ip-file-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ip-2);
+  padding: 0.5rem 0.75rem;
+  background: var(--ip-surface-2);
+  border: 1px solid var(--ip-line);
+  border-radius: var(--ip-radius-sm, 8px);
+  font-size: 0.875rem;
+  min-width: 0;
+}
+.ip-file-row__icon { color: var(--ip-muted); flex: 0 0 auto; }
+.ip-file-row__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ip-pill-choices { display: flex; flex-wrap: wrap; gap: var(--ip-2); }
+.ip-pill-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--ip-line-strong);
+  border-radius: 999px;
+  background: var(--ip-surface);
+  color: var(--ip-ink);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.ip-pill-check:hover { border-color: var(--ip-accent); }
+.ip-pill-check:has(input:checked) {
+  background: var(--ip-accent-soft);
+  border-color: var(--ip-accent);
+  color: var(--ip-accent-700);
+  font-weight: 600;
+}
+.ip-pill-check:has(input:focus-visible) { outline: 2px solid var(--ip-accent); outline-offset: 2px; }

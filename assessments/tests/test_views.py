@@ -143,7 +143,7 @@ def test_candidate_take_and_submit_flow(client, candidate, application, assessme
         reverse("assessments:take_assessment", args=[application.pk, assessment.pk])
     )
     assert response.status_code == 200
-    assert b"Time left" in response.content
+    assert b'id="timer"' in response.content
 
     attempt = application.attempts.get()
     response = client.post(

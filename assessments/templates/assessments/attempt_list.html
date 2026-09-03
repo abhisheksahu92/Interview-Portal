@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load assessment_extras %}
 {% block title %}Attempts · {{ assessment.title }}{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -17,18 +18,52 @@
         <thead><tr><th scope="col">Candidate</th><th scope="col">Started</th>
           <th scope="col">Submitted</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead>
         <tbody>
-          {% for at in attempts %}
+          {% for row in rows %}
             <tr>
-              <td>{{ at.application.candidate.user.email }}</td>
-              <td class="ip-muted">{{ at.started_at }}</td>
-              <td class="ip-muted">{{ at.submitted_at|default:"—" }}</td>
-              <td>{{ at.score_percent|default:"—" }}</td>
+              <td>{{ row.attempt.application.candidate.user.email }}</td>
+              <td class="ip-muted">{{ row.attempt.started_at }}</td>
+              <td class="ip-muted">{{ row.attempt.submitted_at|default:"—" }}</td>
+              <td>{{ row.attempt.score_percent|default_if_none:"—" }}</td>
               <td>
-                {% if at.passed is None %}<span class="ip-badge ip-badge--neutral">pending</span>
-                {% elif at.passed %}<span class="ip-badge ip-badge--success">passed</span>
+                {% if row.attempt.passed is None %}<span class="ip-badge ip-badge--neutral">pending</span>
+                {% elif row.attempt.passed %}<span class="ip-badge ip-badge--success">passed</span>
                 {% else %}<span class="ip-badge ip-badge--danger">failed</span>{% endif %}
+                {% if row.attempt.needs_review %}
+                  <span class="ip-badge ip-badge--warning">needs review</span>
+                {% endif %}
               </td>
             </tr>
+            {% if row.pending %}
+              <tr>
+                <td colspan="5">
+                  <p class="ip-muted small mb-2">
+                    {{ row.pending|length }} free-text answer{{ row.pending|pluralize }} awaiting a manual score.
+                  </p>
+                  {% for question in row.pending %}
+                    <form class="d-flex flex-wrap align-items-end gap-2 mb-3" method="post"
+                          action="{% url 'assessments:attempt_manual_score' row.attempt.pk %}">
+                      {% csrf_token %}
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold small mb-1">{{ question.text }}</div>
+                        <div class="ip-muted small">
+                          Answer:
+                          {% with answer=row.attempt.answers|get_item:question.pk %}
+                            {{ answer|default:"— no answer given —" }}
+                          {% endwith %}
+                        </div>
+                      </div>
+                      <input type="hidden" name="question" value="{{ question.pk }}">
+                      <div>
+                        <label class="form-label small mb-1" for="score-{{ row.attempt.pk }}-{{ question.pk }}">Score (0-100)</label>
+                        <input class="form-control" style="max-width:7rem" type="number" min="0" max="100"
+                               id="score-{{ row.attempt.pk }}-{{ question.pk }}" name="score" required>
+                      </div>
+                      <button class="btn btn-sm btn-primary" type="submit">Save score</button>
+                    </form>
+                  {% endfor %}
+                </td>
+              </tr>
+            {% endif %}
           {% endfor %}
         </tbody>
       </table>

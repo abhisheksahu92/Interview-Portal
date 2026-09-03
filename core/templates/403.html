@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}403 Access denied · Interview Portal{% endblock %}
+{% block main_class %}container py-5{% endblock %}
+{% block page_header %}
+<div class="ip-page-head"><div><h1>You do not have access to that</h1><p>Your role in this workspace does not allow this page. Ask an owner for access.</p></div></div>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-sm-10 col-md-8 col-lg-6">
+    <div class="ip-section">
+      <div class="ip-empty">
+        <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
+        <div class="ip-empty__title">403 — Access denied</div>
+        <p>Your role in this workspace does not allow this page. Ask an owner for access.</p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+          <a class="btn btn-primary" href="/">Go to my home</a>
+          {% if not user.is_authenticated %}<a class="btn btn-outline-secondary" href="{% url 'core:login' %}">Sign in</a>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

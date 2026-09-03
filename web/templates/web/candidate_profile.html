@@ -15,14 +15,45 @@
         {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
         <div class="row">
           {% for field in form %}
-            <div class="col-md-6 mb-3">
-              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-              {{ field }}
-              {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-              {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-            </div>
+            {% if field.name != "skills" and field.name != "resume" %}
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+              </div>
+            {% endif %}
           {% endfor %}
         </div>
+
+        <div class="mb-4">
+          <label class="form-label" for="{{ form.resume.id_for_label }}">{{ form.resume.label }}</label>
+          {% if profile.resume %}
+            <div class="ip-file-row mb-2">
+              <span class="ip-file-row__icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+              <a class="ip-file-row__name" href="{{ profile.resume.url }}">{{ profile.resume.name }}</a>
+              <span class="ip-badge ip-badge--neutral">on record</span>
+            </div>
+          {% endif %}
+          {{ form.resume }}
+          {% if form.resume.help_text %}<div class="form-text">{{ form.resume.help_text }}</div>{% endif %}
+          {% for e in form.resume.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <fieldset class="mb-4">
+          <legend class="form-label">{{ form.skills.label }}</legend>
+          <div class="ip-pill-choices">
+            {% for choice in form.skills %}
+              <label class="ip-pill-check" for="{{ choice.id_for_label }}">
+                {{ choice.tag }}<span>{{ choice.choice_label }}</span>
+              </label>
+            {% empty %}
+              <p class="ip-muted small mb-0">No skills published yet.</p>
+            {% endfor %}
+          </div>
+          {% for e in form.skills.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </fieldset>
+
         <button class="btn btn-primary" type="submit">Save profile</button>
       </form>
     </div>
@@ -34,6 +65,9 @@
         <p class="ip-muted small">Current file on record:</p>
         <a class="btn btn-sm btn-outline-secondary" href="{{ profile.resume.url }}">
           <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>{{ profile.resume.name }}</a>
+        <p class="ip-muted small mt-3 mb-0">
+          Uploading a new file replaces this one; clearing it removes it for good.
+        </p>
       {% else %}
         <p class="ip-muted small mb-0">
           No résumé uploaded yet. Adding one lets AI screening summarise your experience

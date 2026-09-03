@@ -24,7 +24,7 @@
 <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
 {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 {% with vn=request.resolver_match.view_name %}
 {% if user.is_authenticated and current_company %}
   {# ---------------- Company workspace: sidebar shell ---------------- #}
@@ -46,7 +46,7 @@
         <a class="ip-brand d-lg-none" href="/" aria-label="Interview Portal home">
           <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
         </a>
-        <p class="ip-topbar__title d-none d-lg-block">{{ current_company.name }}</p>
+        <p class="ip-topbar__title text-truncate">{{ current_company.name }}</p>
         <div class="ms-auto d-flex align-items-center gap-2">
           {% include "core/_theme_toggle.html" %}
         </div>
@@ -71,6 +71,11 @@
                href="{% url 'web:candidate_profile' %}">My profile</a>
           </div>
           <div class="ms-auto d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary ip-icon-btn d-md-none" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#ipPortalNav"
+                    aria-controls="ipPortalNav" aria-expanded="false" aria-label="Toggle navigation">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
             {% include "core/_theme_toggle.html" %}
             <div class="dropdown">
               <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
@@ -80,8 +85,6 @@
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><h6 class="dropdown-header">{{ user.email }}</h6></li>
-                <li><a class="dropdown-item d-md-none" href="{% url 'web:candidate_home' %}">My applications</a></li>
-                <li><a class="dropdown-item d-md-none" href="{% url 'web:job_browse' %}">Browse openings</a></li>
                 <li><a class="dropdown-item" href="{% url 'web:candidate_profile' %}">My profile</a></li>
                 <li><a class="dropdown-item" href="{% url 'core:account_home' %}">Account</a></li>
                 <li><hr class="dropdown-divider"></li>
@@ -106,6 +109,19 @@
           </div>
         {% endif %}
       </div>
+      {% if user.is_authenticated %}
+        <div class="collapse d-md-none" id="ipPortalNav">
+          <div class="ip-navbar__collapse">
+            <a class="ip-navbar__link {% if vn == 'web:candidate_home' %}is-active{% endif %}"
+               href="{% url 'web:candidate_home' %}">My applications</a>
+            <a class="ip-navbar__link {% if vn == 'web:job_browse' or vn == 'web:job_public_detail' %}is-active{% endif %}"
+               href="{% url 'web:job_browse' %}">Browse openings</a>
+            <a class="ip-navbar__link {% if vn == 'web:candidate_profile' %}is-active{% endif %}"
+               href="{% url 'web:candidate_profile' %}">My profile</a>
+            <a class="ip-navbar__link" href="{% url 'core:account_home' %}">Account</a>
+          </div>
+        </div>
+      {% endif %}
     </div>
   </nav>
   <main class="{% block main_class %}container py-4 py-lg-5{% endblock %}" id="main">

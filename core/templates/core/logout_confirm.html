@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Sign out · Interview Portal{% endblock %}
+{% block main_class %}container py-5{% endblock %}
+{% block page_header %}
+<div class="ip-page-head"><div><h1>Sign out</h1>
+  <p>End this session on {{ current_company.name|default:"Interview Portal" }}.</p></div></div>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-sm-10 col-md-7 col-lg-5">
+    <div class="ip-section text-center">
+      <p class="mb-4">Sign out of <strong>{{ user.email }}</strong>?</p>
+      <form method="post" action="{% url 'core:logout' %}" class="d-grid gap-2">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">Yes, sign me out</button>
+        <a class="btn btn-outline-secondary" href="/">Stay signed in</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

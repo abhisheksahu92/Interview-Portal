@@ -57,11 +57,37 @@ def test_send_invitation_emails_the_link(company, owner, rf):
 
 
 @pytest.mark.django_db
-def test_logged_in_matching_user_accepts(client, company, owner):
+def test_logged_in_get_shows_a_confirm_page_and_does_not_mutate(client, company, owner):
     invite = make_invite(company, owner, role=Membership.INTERVIEWER)
     user = User.objects.create_user(email="new@acme.test", password="pw12345678")
     client.force_login(user)
     response = client.get(reverse("core:invite_accept", args=[invite.token]))
+    assert response.status_code == 200
+    body = response.content.decode()
+    assert "Accept invitation" in body
+    assert "Interviewer" in body
+    invite.refresh_from_db()
+    assert invite.accepted_at is None
+    assert not Membership.objects.filter(user=user, company=company).exists()
+
+
+@pytest.mark.django_db
+def test_used_invite_page_renders_inside_the_shell(client, company, owner):
+    """An owner of another workspace still gets the app shell + page header."""
+    invite = make_invite(company, owner, accepted_at=timezone.now())
+    response = client.get(reverse("core:invite_accept", args=[invite.token]))
+    body = response.content.decode()
+    assert response.status_code == 400
+    assert "Invitation unavailable" in body  # page header
+    assert "ip-page-head" in body
+
+
+@pytest.mark.django_db
+def test_logged_in_matching_user_accepts(client, company, owner):
+    invite = make_invite(company, owner, role=Membership.INTERVIEWER)
+    user = User.objects.create_user(email="new@acme.test", password="pw12345678")
+    client.force_login(user)
+    response = client.post(reverse("core:invite_accept", args=[invite.token]))
     assert response.status_code == 302
     assert response["Location"] == "/"
     membership = Membership.objects.get(user=user, company=company)
@@ -69,6 +95,8 @@ def test_logged_in_matching_user_accepts(client, company, owner):
     invite.refresh_from_db()
     assert invite.accepted_at is not None
     assert client.session["company_id"] == company.id
+    user.refresh_from_db()
+    assert user.last_company_id == company.id
 
 
 @pytest.mark.django_db
@@ -115,6 +143,16 @@ def test_used_token_shows_error(client, company, owner):
     response = client.get(reverse("core:invite_accept", args=[invite.token]))
     assert response.status_code == 400
     assert b"already been used" in response.content
+
+
+@pytest.mark.django_db
+def test_mixed_case_invite_email_still_matches(client, company, owner):
+    invite = make_invite(company, owner, email="New.Hire@Acme.test")
+    user = User.objects.create_user(email="NEW.hire@acme.TEST", password="pw12345678")
+    client.force_login(user)
+    response = client.post(reverse("core:invite_accept", args=[invite.token]))
+    assert response.status_code == 302
+    assert Membership.objects.filter(user=user, company=company).exists()
 
 
 @pytest.mark.django_db

@@ -1,4 +1,10 @@
-<div id="kanban" class="ip-board ip-busy" role="list" aria-label="Pipeline board">
+<div id="kanban">
+{% if board_notice %}
+  <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2" role="status">
+    <i class="bi bi-info-circle" aria-hidden="true"></i>{{ board_notice }}
+  </div>
+{% endif %}
+<div class="ip-board ip-busy" role="list" aria-label="Pipeline board">
   {% for column in columns %}
     <div class="ip-board__col" role="listitem">
       <div class="ip-board__head">
@@ -30,8 +36,28 @@
         <span class="ip-board__title">Unassigned</span>
         <span class="ip-board__count">{{ unassigned|length }}</span>
       </div>
+      <div class="ip-board__hint">
+        <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>Not on a stage yet — pick one to put them on the board.
+      </div>
       <div class="ip-board__body">
-        {% for application in unassigned %}{% include "web/partials/application_card.html" %}{% endfor %}
+        {% for application in unassigned %}
+          {% include "web/partials/application_card.html" %}
+          {% if stages %}
+            <form class="ip-stage-picker"
+                  hx-post="{% url 'web:application_set_stage' application.pk %}"
+                  hx-target="#kanban" hx-swap="outerHTML"
+                  hx-indicator="#board-indicator" hx-disabled-elt="find button">
+              {% csrf_token %}
+              <label class="visually-hidden" for="move-stage-{{ application.pk }}">
+                Move {{ application.candidate.user.email }} to a stage</label>
+              <select class="form-select form-select-sm" name="stage" id="move-stage-{{ application.pk }}" required>
+                <option value="">Move to stage…</option>
+                {% for stage in stages %}<option value="{{ stage.pk }}">{{ stage.name }}</option>{% endfor %}
+              </select>
+              <button class="btn btn-sm btn-outline-secondary" type="submit">Move</button>
+            </form>
+          {% endif %}
+        {% endfor %}
       </div>
     </div>
   {% endif %}
@@ -46,4 +72,5 @@
       </div>
     </div>
   {% endif %}
+</div>
 </div>

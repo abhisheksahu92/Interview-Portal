@@ -3,6 +3,25 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from jobs.validators import validate_resume_file
+
+
+class SkillQuerySet(models.QuerySet):
+    def distinct_by_name(self):
+        """One Skill per distinct (case-insensitive) name — the lowest pk wins.
+
+        Skills are per-company rows, so a candidate-facing picker would otherwise
+        repeat "Python" once per tenant.
+        """
+        seen, keep = set(), []
+        for pk, name in self.order_by("name", "pk").values_list("pk", "name"):
+            key = (name or "").strip().casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            keep.append(pk)
+        return self.model.objects.filter(pk__in=keep).order_by("name")
+
 
 class Skill(models.Model):
     """A per-company skill tag (never a hardcoded choice list)."""
@@ -11,6 +30,8 @@ class Skill(models.Model):
         "core.Company", on_delete=models.CASCADE, related_name="skills"
     )
     name = models.CharField(max_length=80)
+
+    objects = SkillQuerySet.as_manager()
 
     class Meta:
         ordering = ["name"]
@@ -165,7 +186,9 @@ class CandidateProfile(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     experience_years = models.DecimalField(max_digits=4, decimal_places=1, default=0)
     notice_period_days = models.PositiveIntegerField(default=0)
-    resume = models.FileField(upload_to="resumes/", blank=True)
+    resume = models.FileField(
+        upload_to="resumes/", blank=True, validators=[validate_resume_file]
+    )
     resume_text = models.TextField(blank=True)
     resume_hash = models.CharField(max_length=64, blank=True)
     resume_parsed_at = models.DateTimeField(null=True, blank=True)
@@ -177,6 +200,24 @@ class CandidateProfile(models.Model):
 
     def __str__(self):
         return self.user.email
+
+    def save(self, *args, **kwargs):
+        """Delete the previously stored résumé when it is replaced or cleared."""
+        old_file = None
+        if self.pk:
+            old_file = (
+                type(self)
+                .objects.filter(pk=self.pk)
+                .values_list("resume", flat=True)
+                .first()
+            )
+        super().save(*args, **kwargs)
+        new_name = self.resume.name or ""
+        if old_file and old_file != new_name:
+            try:
+                self.resume.storage.delete(old_file)
+            except Exception:  # pragma: no cover - storage cleanup is best-effort
+                pass
 
 
 class Application(models.Model):

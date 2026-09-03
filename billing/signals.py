@@ -1,11 +1,12 @@
 """Enforce plan limits on jobs without touching the jobs app."""
 
 from django.core.exceptions import ValidationError
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from billing.limits import can_open_job
 from billing.models import Subscription
+from billing.services import free_plan
 
 
 @receiver(pre_save, sender="jobs.Job", dispatch_uid="billing_job_open_limit")
@@ -34,3 +35,19 @@ def enforce_open_job_limit(sender, instance, raw=False, **kwargs):
     allowed, reason = can_open_job(instance.company, exclude_pk=instance.pk)
     if not allowed:
         raise ValidationError({"status": reason})
+
+
+@receiver(post_save, sender="core.Company", dispatch_uid="billing_company_subscription")
+def provision_company_subscription(sender, instance, created, raw=False, **kwargs):
+    """Give every new company a FREE subscription so plan limits apply from day one.
+
+    ``manage.py provision_subscriptions`` remains the backfill path for companies
+    created before billing existed (or by ``loaddata``, which sets ``raw``).
+    """
+    if raw or not created:
+        return
+    if Subscription.objects.filter(company_id=instance.pk).exists():
+        return
+    Subscription.objects.create(
+        company_id=instance.pk, plan=free_plan(), status=Subscription.ACTIVE
+    )

@@ -8,7 +8,12 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from assessments import ai, services
-from assessments.forms import AssessmentForm, GenerateQuestionsForm, QuestionForm
+from assessments.forms import (
+    AssessmentForm,
+    GenerateQuestionsForm,
+    ManualScoreForm,
+    QuestionForm,
+)
 from assessments.models import Assessment, Attempt, Question
 from core.models import Membership
 from core.permissions import for_company, role_required
@@ -180,16 +185,49 @@ def assessment_edit(request, pk):
 @role_required(*STAFF_ROLES)
 def assessment_attempts(request, pk):
     assessment = _get_assessment(request, pk)
+    attempts = assessment.attempts.select_related(
+        "application", "application__candidate", "application__candidate__user"
+    )
+    rows = [
+        {
+            "attempt": attempt,
+            "pending": attempt.pending_questions(),
+            "form": ManualScoreForm(attempt=attempt),
+        }
+        for attempt in attempts
+    ]
     return render(
         request,
         "assessments/attempt_list.html",
-        {
-            "assessment": assessment,
-            "attempts": assessment.attempts.select_related(
-                "application", "application__candidate", "application__candidate__user"
-            ),
-        },
+        {"assessment": assessment, "attempts": attempts, "rows": rows},
     )
+
+
+@login_required
+@role_required(*STAFF_ROLES)
+@require_POST
+def attempt_manual_score(request, pk):
+    """Recruiter enters a score for one free-text answer; the attempt is regraded."""
+    company = _company(request)
+    attempt = get_object_or_404(
+        Attempt.objects.select_related("assessment", "application").filter(
+            assessment__job__company=company
+        ),
+        pk=pk,
+    )
+    form = ManualScoreForm(request.POST, attempt=attempt)
+    if form.is_valid():
+        try:
+            services.score_text_answer(
+                attempt, form.cleaned_data["question"], form.cleaned_data["score"]
+            )
+        except ValidationError as exc:
+            messages.error(request, "; ".join(exc.messages))
+        else:
+            messages.success(request, "Score saved and the attempt was regraded.")
+    else:
+        messages.error(request, "Enter a whole number between 0 and 100.")
+    return redirect("assessments:assessment_attempts", pk=attempt.assessment_id)
 
 
 # --- Candidate views ------------------------------------------------------

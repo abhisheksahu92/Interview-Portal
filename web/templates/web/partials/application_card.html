@@ -31,6 +31,8 @@
       <button class="btn btn-sm btn-outline-success ip-icon-btn"
               hx-post="{% url 'web:application_advance' application.pk %}"
               hx-target="#kanban" hx-swap="outerHTML" hx-indicator="#board-indicator"
+              hx-vals='{"expected_stage": "{{ application.current_stage_id|default:"none" }}"}'
+              hx-disabled-elt="this"
               hx-confirm="Advance this application to the next stage?"
               aria-label="Advance {{ application.candidate.user.email }} to the next stage"
               title="Advance">
@@ -39,6 +41,8 @@
       <button class="btn btn-sm btn-outline-danger ip-icon-btn"
               hx-post="{% url 'web:application_reject' application.pk %}"
               hx-target="#kanban" hx-swap="outerHTML" hx-indicator="#board-indicator"
+              hx-vals='{"expected_stage": "{{ application.current_stage_id|default:"none" }}"}'
+              hx-disabled-elt="this"
               hx-confirm="Reject this application?"
               aria-label="Reject {{ application.candidate.user.email }}"
               title="Reject">

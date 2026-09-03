@@ -46,6 +46,18 @@ urlpatterns = [
     ),
     path("settings/skills/", views.settings_skills, name="settings_skills"),
     path("settings/skills/<int:pk>/delete/", views.skill_delete, name="skill_delete"),
+    path("workspace/stages/<int:pk>/edit/", views.stage_edit, name="stage_edit"),
+    path(
+        "workspace/stages/<int:pk>/move/<str:direction>/",
+        views.stage_move,
+        name="stage_move",
+    ),
+    path(
+        "workspace/applications/<int:pk>/stage/",
+        views.application_set_stage,
+        name="application_set_stage",
+    ),
+    path("settings/skills/<int:pk>/edit/", views.skill_edit, name="skill_edit"),
     # candidate portal
     path("portal/", views.candidate_home, name="candidate_home"),
     path("portal/profile/", views.candidate_profile, name="candidate_profile"),

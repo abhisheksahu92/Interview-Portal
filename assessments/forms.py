@@ -125,3 +125,29 @@ class GenerateQuestionsForm(forms.Form):
         for field in self.fields.values():
             css = "form-select" if isinstance(field.widget, forms.Select) else "form-control"
             field.widget.attrs.setdefault("class", css)
+
+
+class ManualScoreForm(forms.Form):
+    """Recruiter-entered score for one free-text answer of an attempt."""
+
+    question = forms.IntegerField(widget=forms.HiddenInput)
+    score = forms.IntegerField(
+        min_value=0, max_value=100, label="Score (0-100)"
+    )
+
+    def __init__(self, *args, attempt=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.attempt = attempt
+        self.fields["score"].widget.attrs.setdefault("class", "form-control")
+        self.fields["score"].widget.attrs.setdefault("style", "max-width:7rem")
+
+    def clean_question(self):
+        pk = self.cleaned_data["question"]
+        if self.attempt is None:
+            raise forms.ValidationError("No attempt selected.")
+        question = self.attempt.assessment.questions.filter(pk=pk).first()
+        if question is None:
+            raise forms.ValidationError("That question is not part of this assessment.")
+        if question.is_mcq:
+            raise forms.ValidationError("Only free-text answers are scored manually.")
+        return question

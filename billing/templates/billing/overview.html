@@ -72,7 +72,7 @@
         </ul>
         <div class="ip-plan__cta">
           {% if p.pk == plan.pk %}
-            <button class="btn btn-outline-secondary w-100" type="button" disabled>Your plan</button>
+            <button class="btn btn-outline-secondary w-100" type="button" disabled>Current plan</button>
           {% elif is_owner and p.code == "PRO" %}
             <form method="post" action="{% url 'billing:checkout' %}" class="m-0">
               {% csrf_token %}
@@ -80,8 +80,14 @@
                 Upgrade to {{ pro_plan.name }} — ${{ pro_plan.price_monthly }}/mo
               </button>
             </form>
+          {% elif p.code == "FREE" %}
+            <p class="ip-muted small mb-0">
+              {% if is_owner %}To move back to {{ p.name }}, cancel your paid plan in
+                <em>Manage subscription</em> below — you keep {{ plan.name }} until the
+                period ends.{% else %}Only the company owner can change the plan.{% endif %}
+            </p>
           {% else %}
-            <button class="btn btn-outline-secondary w-100" type="button" disabled>Not available</button>
+            <p class="ip-muted small mb-0">Only the company owner can change the plan.</p>
           {% endif %}
         </div>
       </div>

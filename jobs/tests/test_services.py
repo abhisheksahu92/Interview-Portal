@@ -90,7 +90,9 @@ def test_review_at_non_current_stage_does_not_advance(job, candidate, interviewe
 
 @pytest.mark.django_db
 def test_review_for_foreign_stage_raises(job, candidate, interviewer, company):
-    other_job = Job.objects.create(company=company, title="Other", status=Job.OPEN)
+    # DRAFT: companies are metered from creation now, and the FREE plan allows
+    # only one OPEN job. The stage pipeline is seeded either way.
+    other_job = Job.objects.create(company=company, title="Other", status=Job.DRAFT)
     app = apply_to_job(job, candidate)
     with pytest.raises(ValidationError):
         record_review(app, other_job.first_stage, interviewer, StageReview.PASS)

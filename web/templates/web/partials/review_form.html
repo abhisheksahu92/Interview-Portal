@@ -1,7 +1,20 @@
+{% if saved %}
+  <div class="alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mb-2" role="status">
+    <i class="bi bi-check-circle" aria-hidden="true"></i>
+    Saved. {{ application.candidate.user.email }} is now
+    {% if application.status == "ACTIVE" %}at {{ application.current_stage.name|default:"no stage" }}{% else %}{{ application.get_status_display|lower }}{% endif %}.
+  </div>
+{% endif %}
 <form class="ip-review" id="review-form-{{ application.pk }}"
       hx-post="{% url 'web:application_review' application.pk %}"
-      hx-target="#app-card-{{ application.pk }}" hx-swap="outerHTML">
+      {% if queue_mode %}
+        hx-target="#review-slot-{{ application.pk }}" hx-swap="innerHTML"
+      {% else %}
+        hx-target="#kanban" hx-swap="outerHTML" hx-indicator="#board-indicator"
+      {% endif %}
+      hx-disabled-elt="find button">
   {% csrf_token %}
+  {% if queue_mode %}<input type="hidden" name="ui" value="queue">{% endif %}
   {% if form.non_field_errors %}
     <div class="alert alert-danger py-1 px-2 small">{{ form.non_field_errors }}</div>
   {% endif %}
@@ -13,10 +26,12 @@
   <div class="mb-2">
     <label class="form-label small mb-1" for="{{ form.rating.id_for_label }}">Rating</label>
     {{ form.rating }}
+    {% for e in form.rating.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
   </div>
   <div class="mb-2">
     <label class="form-label small mb-1" for="{{ form.feedback.id_for_label }}">Feedback</label>
     {{ form.feedback }}
+    {% for e in form.feedback.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
   </div>
   <p class="ip-muted small mb-2">
     A pass advances this application to the next stage; a fail rejects it.

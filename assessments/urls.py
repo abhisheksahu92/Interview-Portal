@@ -16,6 +16,11 @@ urlpatterns = [
     path("jobs/<int:job_id>/assessments/new/", views.assessment_create, name="assessment_create"),
     path("<int:pk>/edit/", views.assessment_edit, name="assessment_edit"),
     path("<int:pk>/attempts/", views.assessment_attempts, name="assessment_attempts"),
+    path(
+        "attempts/<int:pk>/manual-score/",
+        views.attempt_manual_score,
+        name="attempt_manual_score",
+    ),
     # Candidate
     path(
         "applications/<int:application_id>/take/<int:assessment_id>/",

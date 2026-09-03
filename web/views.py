@@ -3,7 +3,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Avg, Count, Q
+from django.db import transaction
+from django.db.models import Avg, Count, Max, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -187,7 +188,7 @@ def job_edit(request, pk):
     )
 
 
-def _kanban_context(request, job):
+def _kanban_context(request, job, notice=None):
     stages = list(job.stages.all())
     applications = (
         Application.objects.filter(job=job)
@@ -210,6 +211,8 @@ def _kanban_context(request, job):
         "columns": columns,
         "unassigned": unassigned,
         "closed": closed,
+        "stages": stages,
+        "board_notice": notice,
     }
 
 
@@ -218,7 +221,7 @@ def _kanban_context(request, job):
 def job_detail(request, pk):
     job = get_object_or_404(_company_jobs(request), pk=pk)
     context = _kanban_context(request, job)
-    context["stage_form"] = StageForm()
+    context["stage_form"] = StageForm(job=job)
     return render(request, "web/job_detail.html", context)
 
 
@@ -227,44 +230,101 @@ def job_detail(request, pk):
 def job_kanban(request, pk):
     """HTMX partial: just the board (used to refresh after an action)."""
     job = get_object_or_404(_company_jobs(request), pk=pk)
+    if not request.headers.get("HX-Request"):
+        # Opened directly in a browser: the bare partial is useless, send them
+        # to the full job page instead.
+        return redirect("web:job_detail", pk=job.pk)
     return render(request, "web/partials/kanban.html", _kanban_context(request, job))
 
 
-def _application_card_response(request, application):
-    application.latest_review = application.reviews.all().first()
-    return render(
-        request,
-        "web/partials/application_card.html",
-        {"application": application, "job": application.job},
+def _board_response(request, application, notice=None, success=""):
+    """Refresh the whole board (HTMX) or fall back to a redirect + message."""
+    if request.headers.get("HX-Request"):
+        return render(
+            request,
+            "web/partials/kanban.html",
+            _kanban_context(request, application.job, notice=notice),
+        )
+    if notice:
+        messages.warning(request, notice)
+    elif success:
+        messages.success(request, success)
+    return redirect("web:job_detail", pk=application.job_id)
+
+
+STALE_STAGE_NOTICE = (
+    "That application already moved on — the board below is up to date."
+)
+
+
+def _locked_application(request, pk):
+    """Re-read the application inside the transaction, locked for update."""
+    return get_object_or_404(
+        _company_applications(request).select_for_update(), pk=pk
     )
+
+
+def _expected_stage_matches(request, application):
+    """True when the client's expected stage id still matches the server state.
+
+    Guards against a double-clicked Advance/Reject: the second POST carries the
+    stage the card was rendered at, which no longer matches after the first one
+    landed, so it becomes a no-op.
+    """
+    expected = request.POST.get("expected_stage")
+    if not expected:
+        return True
+    if expected == "":
+        return True
+    current = application.current_stage_id
+    if expected in {"none", "None", "0"}:
+        return current is None
+    try:
+        return current == int(expected)
+    except (TypeError, ValueError):
+        return False
 
 
 @login_required
 @role_required(*STAFF_ROLES)
 @require_POST
 def application_advance(request, pk):
-    application = get_object_or_404(_company_applications(request), pk=pk)
-    advance_application(application)
-    if request.headers.get("HX-Request"):
-        return render(
-            request, "web/partials/kanban.html", _kanban_context(request, application.job)
-        )
-    messages.success(request, "Application advanced.")
-    return redirect("web:job_detail", pk=application.job_id)
+    with transaction.atomic():
+        application = _locked_application(request, pk)
+        if application.status != Application.ACTIVE or not _expected_stage_matches(
+            request, application
+        ):
+            return _board_response(request, application, notice=STALE_STAGE_NOTICE)
+        advance_application(application)
+    return _board_response(request, application, success="Application advanced.")
 
 
 @login_required
 @role_required(*STAFF_ROLES)
 @require_POST
 def application_reject(request, pk):
+    with transaction.atomic():
+        application = _locked_application(request, pk)
+        if application.status != Application.ACTIVE or not _expected_stage_matches(
+            request, application
+        ):
+            return _board_response(request, application, notice=STALE_STAGE_NOTICE)
+        reject_application(application)
+    return _board_response(request, application, success="Application rejected.")
+
+
+@login_required
+@role_required(*STAFF_ROLES)
+@require_POST
+def application_set_stage(request, pk):
+    """Put an application (typically an unassigned one) onto a chosen stage."""
     application = get_object_or_404(_company_applications(request), pk=pk)
-    reject_application(application)
-    if request.headers.get("HX-Request"):
-        return render(
-            request, "web/partials/kanban.html", _kanban_context(request, application.job)
-        )
-    messages.success(request, "Application rejected.")
-    return redirect("web:job_detail", pk=application.job_id)
+    stage = get_object_or_404(
+        PipelineStage.objects.filter(job=application.job), pk=request.POST.get("stage")
+    )
+    application.current_stage = stage
+    application.save(update_fields=["current_stage", "updated_at"])
+    return _board_response(request, application, success=f"Moved to {stage.name}.")
 
 
 @login_required
@@ -277,6 +337,7 @@ def application_review(request, pk):
         ),
         pk=pk,
     )
+    queue_mode = request.POST.get("ui", request.GET.get("ui")) == "queue"
     form = ReviewForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         stage = application.current_stage or application.job.first_stage
@@ -295,13 +356,33 @@ def application_review(request, pk):
         )
         application.refresh_from_db()
         if request.headers.get("HX-Request"):
-            return _application_card_response(request, application)
+            if queue_mode:
+                # Interviewer queue: hand back this row's own form with a
+                # confirmation. Never the recruiter card (it carries
+                # advance/reject buttons interviewers must not see).
+                return render(
+                    request,
+                    "web/partials/review_form.html",
+                    {
+                        "form": ReviewForm(),
+                        "application": application,
+                        "queue_mode": True,
+                        "saved": True,
+                    },
+                )
+            # Recruiter board: the card may have changed column, so swap the
+            # whole board exactly like advance/reject does.
+            return render(
+                request,
+                "web/partials/kanban.html",
+                _kanban_context(request, application.job),
+            )
         messages.success(request, "Review saved.")
         return redirect("web:job_detail", pk=application.job_id)
     return render(
         request,
         "web/partials/review_form.html",
-        {"form": form, "application": application},
+        {"form": form, "application": application, "queue_mode": queue_mode},
     )
 
 
@@ -334,7 +415,13 @@ def interviewer_queue(request):
     return render(
         request,
         "web/interviewer_queue.html",
-        {"rows": rows, "company": company},
+        {
+            "rows": rows,
+            "company": company,
+            # Interviewers have no access to the recruiter board, so the link
+            # to it is only rendered for staff roles.
+            "can_open_board": request.user.role_in(company) in STAFF_ROLES,
+        },
     )
 
 
@@ -430,20 +517,41 @@ def settings_skills(request):
     company = request.company
     form = SkillForm(request.POST or None, company=company)
     if request.method == "POST" and form.is_valid():
-        if Skill.objects.filter(company=company, name__iexact=form.cleaned_data["name"]).exists():
-            messages.info(request, "That skill already exists.")
-        else:
-            form.save()
-            messages.success(request, "Skill added.")
+        form.save()
+        messages.success(request, "Skill added.")
+        return redirect("web:settings_skills")
+    return render(
+        request,
+        "web/settings_skills.html",
+        {"form": form, "skills": _skill_rows(company), "company": company},
+    )
+
+
+def _skill_rows(company):
+    return for_company(Skill.objects.all(), company).annotate(
+        job_count=Count("jobs", distinct=True)
+    )
+
+
+@login_required
+@role_required(*STAFF_ROLES)
+def skill_edit(request, pk):
+    """Rename a skill; invalid input comes back with the typed value kept."""
+    company = request.company
+    skill = get_object_or_404(for_company(Skill.objects.all(), company), pk=pk)
+    form = SkillForm(request.POST or None, instance=skill, company=company)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Skill renamed.")
         return redirect("web:settings_skills")
     return render(
         request,
         "web/settings_skills.html",
         {
-            "form": form,
-            "skills": for_company(Skill.objects.all(), company).annotate(
-                job_count=Count("jobs", distinct=True)
-            ),
+            "form": SkillForm(company=company),
+            "edit_form": form,
+            "edit_skill": skill,
+            "skills": _skill_rows(company),
             "company": company,
         },
     )
@@ -454,8 +562,9 @@ def settings_skills(request):
 @require_POST
 def skill_delete(request, pk):
     skill = get_object_or_404(for_company(Skill.objects.all(), request.company), pk=pk)
+    name = skill.name
     skill.delete()
-    messages.success(request, "Skill removed.")
+    messages.success(request, f"Skill “{name}” removed.")
     return redirect("web:settings_skills")
 
 
@@ -464,15 +573,10 @@ def skill_delete(request, pk):
 def settings_stages(request, pk):
     """Edit the pipeline stage template for one job."""
     job = get_object_or_404(_company_jobs(request), pk=pk)
-    form = StageForm(request.POST or None)
+    form = StageForm(request.POST or None, job=job)
     if request.method == "POST" and form.is_valid():
-        stage = form.save(commit=False)
-        stage.job = job
-        if job.stages.filter(order=stage.order).exists():
-            messages.error(request, "Another stage already uses that order number.")
-        else:
-            stage.save()
-            messages.success(request, "Stage added.")
+        form.save()
+        messages.success(request, "Stage added.")
         return redirect("web:settings_stages", pk=job.pk)
     return render(
         request,
@@ -481,16 +585,125 @@ def settings_stages(request, pk):
     )
 
 
+def _company_stages(request):
+    return PipelineStage.objects.filter(job__company=request.company)
+
+
+@login_required
+@role_required(*STAFF_ROLES)
+def stage_edit(request, pk):
+    """Rename a stage or change its kind / assessment requirement."""
+    stage = get_object_or_404(_company_stages(request), pk=pk)
+    job = stage.job
+    form = StageForm(request.POST or None, instance=stage, job=job)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Stage updated.")
+        return redirect("web:settings_stages", pk=job.pk)
+    return render(
+        request,
+        "web/settings_stages.html",
+        {
+            "job": job,
+            "form": StageForm(job=job),
+            "edit_form": form,
+            "edit_stage": stage,
+            "stages": job.stages.all(),
+        },
+    )
+
+
+@login_required
+@role_required(*STAFF_ROLES)
+@require_POST
+def stage_move(request, pk, direction):
+    """Swap a stage's order with its neighbour (simple up/down reordering)."""
+    stage = get_object_or_404(_company_stages(request), pk=pk)
+    siblings = stage.job.stages.all()
+    if direction == "up":
+        neighbour = siblings.filter(order__lt=stage.order).order_by("-order").first()
+    else:
+        neighbour = siblings.filter(order__gt=stage.order).order_by("order").first()
+    if neighbour is None:
+        messages.info(request, f"“{stage.name}” is already at the end of the pipeline.")
+    else:
+        with transaction.atomic():
+            stage_order, neighbour_order = stage.order, neighbour.order
+            # unique (job, order): park one stage out of the way first.
+            parked = (
+                siblings.aggregate(m=Max("order"))["m"] or stage_order
+            ) + 1
+            stage.order = parked
+            stage.save(update_fields=["order"])
+            neighbour.order = stage_order
+            neighbour.save(update_fields=["order"])
+            stage.order = neighbour_order
+            stage.save(update_fields=["order"])
+        messages.success(request, f"“{stage.name}” moved {direction}.")
+    return redirect("web:settings_stages", pk=stage.job_id)
+
+
+def stage_blockers(stage):
+    """Counts of the things that would break if ``stage`` were deleted."""
+    from assessments.models import Assessment
+
+    return {
+        "applications": Application.objects.filter(current_stage=stage).count(),
+        "assessments": Assessment.objects.filter(stage=stage).count(),
+    }
+
+
 @login_required
 @role_required(*STAFF_ROLES)
 @require_POST
 def stage_delete(request, pk):
-    stage = get_object_or_404(
-        PipelineStage.objects.filter(job__company=request.company), pk=pk
-    )
+    """Delete a stage, refusing while anything still points at it.
+
+    Passing ``move_applications=1`` first parks the stage's applications on the
+    previous stage (or the next one, for the first stage) so the delete can go
+    ahead without silently orphaning candidates.
+    """
+    stage = get_object_or_404(_company_stages(request), pk=pk)
     job_id = stage.job_id
+    blockers = stage_blockers(stage)
+
+    if blockers["applications"] and request.POST.get("move_applications"):
+        siblings = stage.job.stages.exclude(pk=stage.pk)
+        target = siblings.filter(order__lt=stage.order).order_by("-order").first() or (
+            siblings.filter(order__gt=stage.order).order_by("order").first()
+        )
+        if target is None:
+            messages.error(
+                request,
+                "This is the only stage on the pipeline, so its "
+                f"{blockers['applications']} application(s) have nowhere to go. "
+                "Add another stage first.",
+            )
+            return redirect("web:settings_stages", pk=job_id)
+        Application.objects.filter(current_stage=stage).update(current_stage=target)
+        messages.info(
+            request,
+            f"{blockers['applications']} application(s) moved to “{target.name}”.",
+        )
+        blockers = stage_blockers(stage)
+
+    if blockers["applications"] or blockers["assessments"]:
+        parts = []
+        if blockers["applications"]:
+            parts.append(f"{blockers['applications']} application(s) sit on it")
+        if blockers["assessments"]:
+            parts.append(f"{blockers['assessments']} assessment(s) use it")
+        messages.error(
+            request,
+            f"“{stage.name}” cannot be deleted because " + " and ".join(parts) + ". "
+            "Move the applications to another stage (or repoint the assessments) "
+            "and try again.",
+        )
+        return redirect("web:settings_stages", pk=job_id)
+
+    name = stage.name
     stage.delete()
-    messages.success(request, "Stage removed.")
+    messages.success(request, f"Stage “{name}” removed.")
     return redirect("web:settings_stages", pk=job_id)
 
 
@@ -589,23 +802,24 @@ def job_public_detail(request, pk):
 
 @login_required
 def job_apply(request, pk):
+    """Handle the apply POST. Always ends on a redirect so the job URL stays shareable."""
     profile = _candidate_profile(request)
     job = get_object_or_404(Job, pk=pk, status=Job.OPEN)
-    form = ApplyForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        application, created = Application.objects.get_or_create(
-            job=job,
-            candidate=profile,
-            defaults={"current_stage": job.first_stage},
-        )
-        if created:
-            # AI fit scoring runs off a post_save signal in assessments/.
-            messages.success(request, f"Applied to {job.title}.")
-        else:
-            messages.info(request, "You have already applied to this job.")
-        return redirect("web:candidate_home")
-    return render(
-        request,
-        "web/job_public_detail.html",
-        {"job": job, "form": form, "already_applied": False},
+    if request.method != "POST":
+        return redirect("web:job_public_detail", pk=job.pk)
+    form = ApplyForm(request.POST)
+    if not form.is_valid():
+        errors = [e for field in form for e in field.errors] or ["Please try again."]
+        messages.error(request, errors[0])
+        return redirect("web:job_public_detail", pk=job.pk)
+    application, created = Application.objects.get_or_create(
+        job=job,
+        candidate=profile,
+        defaults={"current_stage": job.first_stage},
     )
+    if created:
+        # AI fit scoring runs off a post_save signal in assessments/.
+        messages.success(request, f"Applied to {job.title}.")
+    else:
+        messages.info(request, "You have already applied to this job.")
+    return redirect("web:candidate_home")

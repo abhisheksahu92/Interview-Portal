@@ -3,15 +3,15 @@
 {% block main_class %}container py-0 pb-5{% endblock %}
 {% block content %}
 <div class="ip-exam-bar mb-4">
-  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3">
-    <div>
+  <div class="ip-exam-bar__row">
+    <div class="ip-exam-bar__title">
       <h1 class="h5 mb-1">{{ assessment.title }}</h1>
-      <p class="ip-muted small mb-0">
-        {{ assessment.time_limit_minutes }} minute limit<span class="ip-meta-dot"></span>pass mark {{ assessment.pass_mark_percent }}%<span class="ip-meta-dot"></span><span id="answered-count">0</span> of {{ questions|length }} answered
+      <p class="ip-muted small mb-0 ip-exam-bar__meta">
+        {{ assessment.time_limit_minutes }} minute limit<span class="ip-meta-dot"></span>pass mark {{ assessment.pass_mark_percent }}%
       </p>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <span class="ip-muted small">Time left</span>
+      <span class="ip-muted small"><span id="answered-count">0</span>/{{ questions|length }}</span>
       <span class="ip-timer" id="timer-pill">
         <i class="bi bi-stopwatch" aria-hidden="true"></i>
         <strong id="timer" data-seconds="{{ attempt.seconds_remaining }}">--:--</strong>

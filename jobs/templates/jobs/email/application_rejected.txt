@@ -1,0 +1,9 @@
+Hi {{ candidate.user.email }},
+
+Thank you for your interest in {{ job.title }} at {{ company.name }}.
+After careful review we will not be moving forward with your application this time.
+
+We genuinely appreciate the time you invested, and we would welcome another
+application for a future opening.
+
+— {{ site_name }}

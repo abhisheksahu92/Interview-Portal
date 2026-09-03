@@ -26,7 +26,8 @@ Django 5 + DRF + HTMX/Bootstrap 5. See `ARCHITECTURE.md` for the full design.
   token link (7-day expiry) creates the membership on accept.
 - **Billing** — FREE/PRO plans metered on open jobs, Stripe Checkout + customer
   portal + webhooks; with no Stripe keys the plan/usage page still works.
-- **REST API** — DRF viewsets for everything, token auth, OpenAPI schema + Swagger UI.
+- **REST API** — DRF viewsets for everything, token auth (checked before session
+  auth, so anonymous calls get `401`), OpenAPI schema + Swagger UI.
 
 ## Apps
 | App | Responsibility |
@@ -62,13 +63,16 @@ job 1's Assessment stage, 3 applicants spread across stages and one review.
 | `asha@demo.test`, `ben@demo.test`, `chen@demo.test` | Candidates with live applications |
 
 Create your own tenant instead at `/accounts/signup/company/`, or a candidate account
-at `/accounts/signup/candidate/`.
+at `/accounts/signup/`.
 
 ## Key URLs
 | Path | What |
 | --- | --- |
 | `/` | Landing page (redirects logged-in users to their home) |
-| `/accounts/login/` | Email + password login |
+| `/accounts/login/` | Email + password login (emails are case-insensitive) |
+| `/accounts/signup/` | Candidate signup |
+| `/accounts/signup/company/` | Company (tenant) signup |
+| `/accounts/logout/` | GET shows a confirm page; POST signs out |
 | `/dashboard/` | Recruiter/owner dashboard |
 | `/workspace/jobs/<id>/` | Job pipeline kanban |
 | `/queue/` | Interviewer review queue |
@@ -97,6 +101,8 @@ Copy `.env.example` to `.env`; everything is read from the environment.
 | `DATABASE_URL` | `sqlite:///db_v2.sqlite3` | e.g. `postgres://user:pass@db:5432/interview_portal` |
 | `ANTHROPIC_API_KEY` | empty | enables the Claude features; unset = AI disabled |
 | `EMAIL_BACKEND` / `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_TLS` / `DEFAULT_FROM_EMAIL` | console backend | outbound mail |
+| `EMAIL_FILE_PATH` | `BASE_DIR/sent_emails` | directory for `django.core.mail.backends.filebased.EmailBackend` |
+| `MEDIA_ROOT` | `BASE_DIR/media` | on-disk root for uploads when no S3/R2 bucket is set |
 | `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_ID_PRO` | empty | enable Stripe billing; unset = plan/usage shown, upgrade disabled |
 | `CSRF_TRUSTED_ORIGINS` | empty | **required in production**, comma-separated, scheme included (`https://app.example.com`) |
 | `SECURE_SSL_REDIRECT` | on when `DEBUG=False` | turn off behind a plain-HTTP host |
@@ -111,7 +117,7 @@ Copy `.env.example` to `.env`; everything is read from the environment.
 .venv/bin/ruff check .
 .venv/bin/python manage.py check
 .venv/bin/python manage.py makemigrations --check --dry-run
-.venv/bin/pytest                                  # 220 tests
+.venv/bin/pytest                                  # full suite
 .venv/bin/python manage.py spectacular --file /dev/null   # schema must be warning-free
 ```
 Tests run on SQLite and never need `collectstatic`; static files are served by
@@ -307,3 +313,23 @@ fly tokens create deploy -x 999999h     # paste into Settings > Secrets > FLY_AP
 ```
 
 Legacy v1 code lives in `legacy/` and is excluded from lint/tests. Do not import from it.
+
+## Accounts, sessions and errors
+
+- **Emails are the username and are case-insensitive.** They are stored lower-cased
+  (`UserManager.create_user`, `User.save`, the signup forms and `Invitation`), a
+  data migration lowers pre-existing rows (collisions are skipped and logged), and
+  `core.backends.CaseInsensitiveEmailBackend` matches legacy mixed-case rows.
+- **Logout is POST-only.** `GET /accounts/logout/` renders a confirmation page;
+  every "Sign out" control in the UI posts a form.
+- **The active workspace sticks.** `User.last_company` records the last tenant a
+  user had active; `TenantMiddleware` falls back to it before the first membership,
+  so a re-login lands back in the same workspace. Switching companies and accepting
+  an invitation update it.
+- **HTMX**: `base.html` puts `hx-headers='{"X-CSRFToken": ...}'` on `<body>`, so bare
+  `hx-post` buttons need no per-element token. `core.middleware.HtmxRedirectMiddleware`
+  turns a login redirect on an `HX-Request` into `204` + `HX-Redirect`, so an expired
+  session sends the browser to the login page instead of swapping a login form into a
+  fragment.
+- **Error pages**: branded `400/403/404` templates extend `base.html`;
+  `500.html` is deliberately standalone (no context processors, no DB, no manifest).

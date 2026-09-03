@@ -7,8 +7,17 @@ from billing.services import get_subscription, pro_plan
 from jobs.models import Job
 
 
+def test_new_company_is_provisioned_on_a_free_plan(company):
+    """A post_save signal meters every company from the moment it is created."""
+    subscription = Subscription.objects.get(company=company)
+    assert subscription.plan.code == Plan.FREE
+    assert subscription.status == Subscription.ACTIVE
+    # get_subscription is idempotent and returns that same row
+    assert get_subscription(company).pk == subscription.pk
+
+
 def test_free_subscription_is_created_lazily(company):
-    assert not Subscription.objects.filter(company=company).exists()
+    Subscription.objects.filter(company=company).delete()
     subscription = get_subscription(company)
     assert subscription.plan.code == Plan.FREE
     assert subscription.plan.max_open_jobs == 1
@@ -78,14 +87,17 @@ def test_pro_plan_allows_more_open_jobs(company):
 
 def test_unmetered_company_is_not_blocked(company):
     """A company with no billing record predates billing and is left alone."""
+    Subscription.objects.filter(company=company).delete()
     Job.objects.create(company=company, title="Dev 1", status=Job.OPEN)
     job = Job.objects.create(company=company, title="Dev 2", status=Job.OPEN)
     assert job.pk
 
 
 def test_provision_subscriptions_command_meters_existing_companies(company):
+    """Backfill path: still provisions companies whose row was never created."""
     from django.core.management import call_command
 
+    Subscription.objects.filter(company=company).delete()
     call_command("provision_subscriptions", verbosity=0)
     subscription = Subscription.objects.get(company=company)
     assert subscription.plan.code == Plan.FREE
@@ -103,6 +115,7 @@ def test_canceled_pro_subscription_falls_back_to_free_limits(company):
 
 
 def test_closing_a_job_frees_a_slot(company):
+    get_subscription(company)
     job = Job.objects.create(company=company, title="Dev 1", status=Job.OPEN)
     job.status = Job.CLOSED
     job.save()

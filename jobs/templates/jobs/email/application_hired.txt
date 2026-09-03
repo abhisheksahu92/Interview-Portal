@@ -1,0 +1,6 @@
+Hi {{ candidate.user.email }},
+
+Congratulations! {{ company.name }} would like to move ahead with you for
+{{ job.title }}. Someone from the hiring team will be in touch with the details.
+
+— {{ site_name }}

@@ -66,13 +66,12 @@ def test_fail_does_not_advance(assessment, application):
 
 @pytest.mark.django_db
 def test_pass_on_other_stage_does_not_advance(assessment, application, job):
+    """An assessment bound to another stage is not even startable."""
     assessment.stage = job.stages.order_by("order")[3]
     assessment.save()
     before = application.current_stage_id
-    attempt = services.start_attempt(assessment, application)
-    services.submit_attempt(
-        attempt, {str(q.pk): "1" for q in assessment.questions.all()}
-    )
+    with pytest.raises(ValidationError):
+        services.start_attempt(assessment, application)
     application.refresh_from_db()
     assert application.current_stage_id == before
 
@@ -118,15 +117,18 @@ def test_start_attempt_rejects_mismatched_job(assessment, application, company, 
 
 @pytest.mark.django_db
 def test_expired_empty_submission_scores_zero(assessment, application):
+    from django.utils import timezone
+
     attempt = services.start_attempt(assessment, application)
-    assessment.time_limit_minutes = 0
-    assessment.save()
-    attempt.refresh_from_db()
+    attempt.started_at = timezone.now() - timezone.timedelta(
+        minutes=assessment.time_limit_minutes + 1
+    )
+    attempt.save(update_fields=["started_at"])
     services.submit_attempt(attempt, {})
     attempt.refresh_from_db()
     assert attempt.score_percent == 0
     assert attempt.passed is False
-    assert "time limit" in attempt.ai_feedback
+    assert attempt.ai_feedback == "Time limit exceeded"
 
 
 @pytest.mark.django_db
@@ -166,7 +168,10 @@ def test_text_question_pending_when_ai_unavailable(
     attempt = services.start_attempt(assessment, application)
     services.submit_attempt(attempt, {str(question.pk): "something"})
     attempt.refresh_from_db()
-    assert attempt.score_percent == Decimal("0.00")
+    # Nothing gradable: the attempt stays open for manual review instead of 0.
+    assert attempt.score_percent is None
+    assert attempt.passed is None
+    assert attempt.needs_review is True
     assert "manual review" in attempt.ai_feedback
 
 

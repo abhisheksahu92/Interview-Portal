@@ -20,13 +20,22 @@
                 <span class="fw-semibold">{{ skill.name }}</span>
                 <span class="ip-muted small"><span class="ip-meta-dot"></span>used by {{ skill.job_count }} job{{ skill.job_count|pluralize }}</span>
               </span>
-              <form method="post" action="{% url 'web:skill_delete' skill.pk %}">
-                {% csrf_token %}
-                <button class="btn btn-sm btn-outline-danger ip-icon-btn" type="submit"
-                        aria-label="Delete skill {{ skill.name }}">
-                  <i class="bi bi-trash" aria-hidden="true"></i>
-                </button>
-              </form>
+              <span class="d-flex gap-1">
+                <a class="btn btn-sm btn-outline-secondary ip-icon-btn"
+                   href="{% url 'web:skill_edit' skill.pk %}"
+                   aria-label="Rename skill {{ skill.name }}" title="Rename">
+                  <i class="bi bi-pencil" aria-hidden="true"></i>
+                </a>
+                <form method="post" action="{% url 'web:skill_delete' skill.pk %}">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger ip-icon-btn" type="submit"
+                          hx-confirm="Delete the “{{ skill.name }}” skill?"
+                          onclick="return confirm('Delete the “{{ skill.name }}” skill? It will be removed from {{ skill.job_count }} job(s).')"
+                          aria-label="Delete skill {{ skill.name }}">
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                  </button>
+                </form>
+              </span>
             </li>
           {% endfor %}
         </ul>
@@ -40,9 +49,24 @@
     </section>
   </div>
   <div class="col-lg-5">
+    {% if edit_form %}
+      <section class="ip-section mb-3">
+        <div class="ip-section__head"><h2>Rename “{{ edit_skill.name }}”</h2></div>
+        <form method="post" action="{% url 'web:skill_edit' edit_skill.pk %}" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ edit_form.name.id_for_label }}">{{ edit_form.name.label }}</label>
+            {{ edit_form.name }}
+            {% for e in edit_form.name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <button class="btn btn-primary" type="submit">Save skill</button>
+          <a class="btn btn-outline-secondary" href="{% url 'web:settings_skills' %}">Cancel</a>
+        </form>
+      </section>
+    {% endif %}
     <section class="ip-section">
       <div class="ip-section__head"><h2>Add a skill</h2></div>
-      <form method="post" novalidate>
+      <form method="post" action="{% url 'web:settings_skills' %}" novalidate>
         {% csrf_token %}
         <div class="mb-3">
           <label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>

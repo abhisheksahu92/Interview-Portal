@@ -45,7 +45,7 @@ class UserManager(BaseUserManager):
     def _create_user(self, email, password, **extra):
         if not email:
             raise ValueError("An email address is required.")
-        email = self.normalize_email(email)
+        email = self.normalize_email(email).strip().lower()
         user = self.model(email=email, **extra)
         user.set_password(password)
         user.save(using=self._db)
@@ -73,6 +73,14 @@ class User(AbstractUser):
         default=False,
         help_text="True for external job applicants (no company membership).",
     )
+    last_company = models.ForeignKey(
+        "core.Company",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Last workspace this user had active; restored on the next login.",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list = []
@@ -85,6 +93,12 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+    def save(self, *args, **kwargs):
+        """Emails are stored lower-cased so logins are case-insensitive."""
+        if self.email:
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
 
     @property
     def companies(self):

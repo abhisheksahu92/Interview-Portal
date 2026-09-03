@@ -30,7 +30,10 @@ def test_token_obtain_rejects_bad_password(api, owner_a):
 
 @pytest.mark.django_db
 def test_anonymous_access_is_denied(api):
-    assert api.get("/api/v1/jobs/").status_code in (401, 403)
+    resp = api.get("/api/v1/jobs/")
+    # TokenAuthentication is first, so anonymous calls get a proper 401.
+    assert resp.status_code == 401
+    assert resp["WWW-Authenticate"].startswith("Token")
 
 
 @pytest.mark.django_db

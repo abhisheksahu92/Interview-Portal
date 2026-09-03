@@ -37,8 +37,10 @@
             <a class="btn btn-sm btn-outline-secondary" href="{{ row.application.candidate.resume.url }}">
               <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>Résumé</a>
           {% endif %}
-          <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_detail' row.application.job_id %}">
-            <i class="bi bi-kanban me-1" aria-hidden="true"></i>Board</a>
+          {% if can_open_board %}
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_detail' row.application.job_id %}">
+              <i class="bi bi-kanban me-1" aria-hidden="true"></i>Board</a>
+          {% endif %}
         </div>
         {% if row.my_review %}
           <div class="alert alert-info mt-3 mb-0">
@@ -47,11 +49,13 @@
           </div>
         {% endif %}
       </div>
-      <div class="col-lg-6" id="app-card-{{ row.application.pk }}">
+      <div class="col-lg-6">
         <h3 class="ip-eyebrow mb-2">Your review</h3>
-        {% with form=row.form application=row.application %}
-          {% include "web/partials/review_form.html" %}
-        {% endwith %}
+        <div id="review-slot-{{ row.application.pk }}">
+          {% with form=row.form application=row.application queue_mode=True %}
+            {% include "web/partials/review_form.html" %}
+          {% endwith %}
+        </div>
       </div>
     </div>
   </section>

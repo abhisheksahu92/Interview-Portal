@@ -9,12 +9,12 @@
 
       <div class="d-flex justify-content-center mb-3">
         <div class="ip-ring"
-             style="--ip-ring-value: {{ attempt.score_percent|default:0|floatformat:0 }};
+             style="--ip-ring-value: {{ attempt.score_percent|default_if_none:0|floatformat:0 }};
                     --ip-ring-color: {% if attempt.passed %}var(--ip-success){% elif attempt.passed is None %}var(--ip-slate-400){% else %}var(--ip-danger){% endif %};"
              role="img"
-             aria-label="Score {{ attempt.score_percent|default:'not graded' }} out of 100">
+             aria-label="Score {{ attempt.score_percent|default_if_none:'not graded' }} out of 100">
           <div class="ip-ring__inner">
-            <div class="ip-ring__value">{{ attempt.score_percent|default:"—" }}</div>
+            <div class="ip-ring__value">{{ attempt.score_percent|default_if_none:"—" }}</div>
             <div class="ip-ring__unit">of 100</div>
           </div>
         </div>
@@ -26,6 +26,11 @@
         {% else %}<span class="ip-badge ip-badge--danger">Not passed</span>{% endif %}
       </p>
       <p class="ip-muted small mb-0">Pass mark {{ attempt.assessment.pass_mark_percent }}%</p>
+      {% if attempt.needs_review %}
+        <p class="ip-muted small mt-2 mb-0" data-testid="pending-review">
+          {{ attempt.pending_review_count }} answer{{ attempt.pending_review_count|pluralize }} pending manual review.
+        </p>
+      {% endif %}
 
       {% if attempt.ai_feedback %}
         <hr class="my-4">
