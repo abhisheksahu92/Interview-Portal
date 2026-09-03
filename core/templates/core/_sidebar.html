@@ -13,6 +13,7 @@
   <nav class="ip-sidebar__nav" aria-label="Workspace">
     <ul class="ip-nav">
       {% if current_role != "INTERVIEWER" %}
+        <li class="ip-nav__label" aria-hidden="true">Hiring</li>
         <li>
           <a class="ip-nav__link {% if vn == 'web:dashboard' %}is-active{% endif %}" href="{% url 'web:dashboard' %}">
             <i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard
@@ -30,10 +31,47 @@
           <i class="bi bi-inbox" aria-hidden="true"></i> Queue
         </a>
       </li>
+      <li>
+        <a class="ip-nav__link {% if vn|slice:":11" == "scheduling:" %}is-active{% endif %}" href="{% url 'scheduling:index' %}">
+          <i class="bi bi-calendar-week" aria-hidden="true"></i> Schedule
+        </a>
+      </li>
       {% if current_role != "INTERVIEWER" %}
         <li>
-          <a class="ip-nav__link {% if vn|slice:":12" == "assessments:" %}is-active{% endif %}" href="{% url 'assessments:question_list' %}">
-            <i class="bi bi-patch-question" aria-hidden="true"></i> Question bank
+          <a class="ip-nav__link {% if vn|slice:":7" == "talent:" %}is-active{% endif %}" href="{% url 'talent:index' %}">
+            <i class="bi bi-person-lines-fill" aria-hidden="true"></i> Talent
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":6" == "video:" %}is-active{% endif %}" href="{% url 'video:index' %}">
+            <i class="bi bi-camera-video" aria-hidden="true"></i> Video
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":7" == "offers:" %}is-active{% endif %}" href="{% url 'offers:index' %}">
+            <i class="bi bi-file-earmark-check" aria-hidden="true"></i> Offers
+          </a>
+        </li>
+
+        <li class="ip-nav__label" aria-hidden="true">Grow</li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":8" == "careers:" %}is-active{% endif %}" href="{% url 'careers:index' %}">
+            <i class="bi bi-globe2" aria-hidden="true"></i> Careers
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":10" == "analytics:" %}is-active{% endif %}" href="{% url 'analytics:index' %}">
+            <i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Analytics
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":12" == "marketplace:" %}is-active{% endif %}" href="{% url 'marketplace:index' %}">
+            <i class="bi bi-bag" aria-hidden="true"></i> Marketplace
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":8" == "clients:" %}is-active{% endif %}" href="{% url 'clients:index' %}">
+            <i class="bi bi-buildings" aria-hidden="true"></i> Clients
           </a>
         </li>
 
@@ -46,6 +84,21 @@
         <li>
           <a class="ip-nav__link {% if vn == 'web:settings_skills' %}is-active{% endif %}" href="{% url 'web:settings_skills' %}">
             <i class="bi bi-tags" aria-hidden="true"></i> Skills
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":12" == "assessments:" %}is-active{% endif %}" href="{% url 'assessments:question_list' %}">
+            <i class="bi bi-patch-question" aria-hidden="true"></i> Question bank
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":14" == "notifications:" %}is-active{% endif %}" href="{% url 'notifications:settings' %}">
+            <i class="bi bi-bell" aria-hidden="true"></i> Notifications
+          </a>
+        </li>
+        <li>
+          <a class="ip-nav__link {% if vn|slice:":9" == "partners:" %}is-active{% endif %}" href="{% url 'partners:settings' %}">
+            <i class="bi bi-palette" aria-hidden="true"></i> Branding
           </a>
         </li>
         <li>

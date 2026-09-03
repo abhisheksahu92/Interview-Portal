@@ -18,6 +18,16 @@ urlpatterns = [
     path("assessments/", include("assessments.urls")),
     path("api/", include("api.urls")),
     path("billing/", include("billing.urls")),
+    path("scheduling/", include("scheduling.urls")),
+    path("clients/", include("clients.urls")),
+    path("notifications/", include("notifications.urls")),
+    path("talent/", include("talent.urls")),
+    path("video/", include("video.urls")),
+    path("careers/", include("careers.urls")),
+    path("analytics/", include("analytics.urls")),
+    path("offers/", include("offers.urls")),
+    path("partners/", include("partners.urls")),
+    path("marketplace/", include("marketplace.urls")),
     path("", include("web.urls")),
 ]
 

@@ -36,6 +36,19 @@ env = environ.Env(
     AWS_S3_ENDPOINT_URL=(str, ""),
     AWS_ACCESS_KEY_ID=(str, ""),
     AWS_SECRET_ACCESS_KEY=(str, ""),
+    # --- Phase 3 (monetization) integrations; blank = feature not configured.
+    RAZORPAY_KEY_ID=(str, ""),
+    RAZORPAY_KEY_SECRET=(str, ""),
+    RAZORPAY_WEBHOOK_SECRET=(str, ""),
+    WHATSAPP_TOKEN=(str, ""),
+    WHATSAPP_PHONE_ID=(str, ""),
+    GOOGLE_OAUTH_CLIENT_ID=(str, ""),
+    GOOGLE_OAUTH_CLIENT_SECRET=(str, ""),
+    MS_OAUTH_CLIENT_ID=(str, ""),
+    MS_OAUTH_CLIENT_SECRET=(str, ""),
+    COMPANY_GSTIN=(str, ""),
+    COMPANY_STATE_CODE=(str, ""),
+    SITE_URL=(str, "http://127.0.0.1:8000"),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -73,6 +86,16 @@ LOCAL_APPS = [
     "api",
     "web",
     "billing",
+    "scheduling",
+    "clients",
+    "notifications",
+    "talent",
+    "video",
+    "careers",
+    "analytics",
+    "offers",
+    "partners",
+    "marketplace",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -259,6 +282,28 @@ STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = env("STRIPE_PUBLISHABLE_KEY")
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
 STRIPE_PRICE_ID_PRO = env("STRIPE_PRICE_ID_PRO")
+
+# --- Billing (Razorpay, India) -------------------------------------------
+RAZORPAY_KEY_ID = env("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = env("RAZORPAY_KEY_SECRET")
+RAZORPAY_WEBHOOK_SECRET = env("RAZORPAY_WEBHOOK_SECRET")
+
+# GST details printed on invoices.
+COMPANY_GSTIN = env("COMPANY_GSTIN")
+COMPANY_STATE_CODE = env("COMPANY_STATE_CODE")
+
+# --- Notifications (WhatsApp Business Cloud API) --------------------------
+WHATSAPP_TOKEN = env("WHATSAPP_TOKEN")
+WHATSAPP_PHONE_ID = env("WHATSAPP_PHONE_ID")
+
+# --- Calendar OAuth (scheduling) -----------------------------------------
+GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID")
+GOOGLE_OAUTH_CLIENT_SECRET = env("GOOGLE_OAUTH_CLIENT_SECRET")
+MS_OAUTH_CLIENT_ID = env("MS_OAUTH_CLIENT_ID")
+MS_OAUTH_CLIENT_SECRET = env("MS_OAUTH_CLIENT_SECRET")
+
+# Absolute base URL used in emails, .ics files, careers pages and share links.
+SITE_URL = env("SITE_URL").rstrip("/")
 
 
 # --- Security / proxy -----------------------------------------------------

@@ -1,7 +1,24 @@
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "interview_portal.settings"
 python_files = ["test_*.py", "tests.py"]
-testpaths = ["core", "jobs", "assessments", "api", "web", "billing"]
+testpaths = [
+    "core",
+    "jobs",
+    "assessments",
+    "api",
+    "web",
+    "billing",
+    "scheduling",
+    "clients",
+    "notifications",
+    "talent",
+    "video",
+    "careers",
+    "analytics",
+    "offers",
+    "partners",
+    "marketplace",
+]
 addopts = "-q"
 
 [tool.ruff]

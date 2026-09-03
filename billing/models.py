@@ -18,6 +18,8 @@ class Plan(models.Model):
     max_open_jobs = models.PositiveIntegerField(default=1)
     stripe_price_id = models.CharField(max_length=120, blank=True)
     price_monthly = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    # Entitlement flags read via billing.entitlements.has_feature().
+    features = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ["price_monthly"]
