@@ -42,8 +42,9 @@ def provision_company_subscription(sender, instance, created, raw=False, **kwarg
     """Give every new company a 14-day full-featured trial subscription.
 
     The row is billed on FREE, but ``billing.entitlements.plan_for`` returns the
-    trial tier (AGENCY) until ``trial_ends_at`` passes, so the plan limits apply
-    from day one while every paid feature is unlocked during the trial.
+    trial tier (AGENCY) until ``trial_ends_at`` passes, so both the paid features
+    *and* the trial tier's limits apply until the trial expires, at which point
+    the company falls back to FREE.
 
     ``manage.py provision_subscriptions`` remains the backfill path for companies
     created before billing existed (or by ``loaddata``, which sets ``raw``).

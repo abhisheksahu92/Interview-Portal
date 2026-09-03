@@ -1,10 +1,15 @@
-{% load features %}
+{% load features %}{% load whitelabel %}
 {% with vn=request.resolver_match.view_name %}
 <aside class="{% if offcanvas %}d-flex flex-column h-100{% else %}ip-sidebar d-none d-lg-flex{% endif %}">
   <div class="ip-sidebar__brand">
     <a class="ip-brand" href="{% if current_role == 'INTERVIEWER' %}{% url 'web:interviewer_queue' %}{% else %}{% url 'web:dashboard' %}{% endif %}">
-      <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
-      <span>Interview&nbsp;Portal</span>
+      {% brand_logo_url as ip_brand_logo %}
+      {% if ip_brand_logo %}
+        <img src="{{ ip_brand_logo }}" alt="{% brand_name %}" height="28">
+      {% else %}
+        <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+      {% endif %}
+      <span>{% brand_name %}</span>
     </a>
     {% if offcanvas %}
       <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close navigation"></button>
@@ -93,8 +98,15 @@
         <li>
           <a class="ip-nav__link {% if vn == 'billing:overview' %}is-active{% endif %}" href="{% url 'billing:overview' %}">
             <i class="bi bi-credit-card" aria-hidden="true"></i> Billing
-            {% if billing_plan %}<span class="ip-nav__count">{{ billing_plan.name }}</span>{% endif %}
+            {% if billing_effective_plan %}
+              <span class="ip-nav__count">{{ billing_effective_plan.name }}</span>
+            {% endif %}
           </a>
+          {% if billing_in_trial %}
+            <span class="ip-nav__note small ip-muted d-block px-3 pb-2">
+              {{ billing_effective_plan.name }} trial · {{ billing_trial_days_left }} day{{ billing_trial_days_left|pluralize }} left
+            </span>
+          {% endif %}
         </li>
       {% endif %}
     </ul>

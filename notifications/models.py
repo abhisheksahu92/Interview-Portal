@@ -55,7 +55,8 @@ class CandidateChannelOptOut(models.Model):
         "jobs.CandidateProfile", on_delete=models.CASCADE, related_name="channel_opt_outs"
     )
     channel = models.CharField(
-        max_length=16, choices=[(c, registry.CHANNEL_LABELS[c]) for c in registry.CHANNELS]
+        max_length=20,
+        choices=[(c, registry.CHANNEL_LABELS[c]) for c in registry.OPT_OUT_CHANNELS],
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -12,7 +12,40 @@ WHATSAPP = "whatsapp"
 SMS = "sms"
 
 CHANNELS = (EMAIL, WHATSAPP, SMS)
-CHANNEL_LABELS = {EMAIL: "Email", WHATSAPP: "WhatsApp", SMS: "SMS"}
+
+#: Pseudo-channel: opting out of it stops the non-essential *email* events
+#: only. Transactional mail a candidate needs (below) is still delivered.
+MARKETING_EMAIL = "email_marketing"
+
+#: Channels a candidate may opt out of (a superset of the sending channels).
+OPT_OUT_CHANNELS = CHANNELS + (MARKETING_EMAIL,)
+
+CHANNEL_LABELS = {
+    EMAIL: "Email",
+    WHATSAPP: "WhatsApp",
+    SMS: "SMS",
+    MARKETING_EMAIL: "Non-essential email",
+}
+
+#: Events that are always delivered by email, whatever the opt-out state.
+ESSENTIAL_EVENTS = frozenset(
+    {
+        "application_received",
+        "assessment_result",
+        "offer_sent",
+        "interview_scheduled",
+        "interview_reminder",
+        "interview_cancelled",
+        "invitation",
+        "payment_failed",
+        "usage_warning",
+    }
+)
+
+
+def is_essential(event_name) -> bool:
+    """True when ``event_name`` must be sent even to an opted-out candidate."""
+    return event_name in ESSENTIAL_EVENTS
 
 
 @dataclass(frozen=True)

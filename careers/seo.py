@@ -14,12 +14,28 @@ EMPLOYMENT_TYPE_MAP = {
 }
 
 
+def _is_country(value):
+    """True for a bare ISO-3166 alpha-2 code such as ``IN`` or ``US``."""
+    return len(value) == 2 and value.isalpha()
+
+
 def split_location(location):
-    """Best-effort ``"Pune, Maharashtra, IN"`` -> (city, region, country)."""
+    """Best-effort ``"Pune, Maharashtra, IN"`` -> (city, region, country).
+
+    A trailing two-letter country code is never mistaken for a region: with
+    ``"Pune, IN"`` the region stays blank rather than repeating the country,
+    which Google for Jobs and Indeed both reject as a bogus addressRegion.
+    """
     parts = [p.strip() for p in (location or "").split(",") if p.strip()]
     city = parts[0] if parts else ""
-    region = parts[1] if len(parts) > 1 else ""
-    country = parts[2] if len(parts) > 2 else "IN"
+    rest = parts[1:]
+    country = "IN"
+    if rest and _is_country(rest[-1].upper()):
+        country = rest[-1].upper()
+        rest = rest[:-1]
+    region = rest[0] if rest else ""
+    if _is_country(region.upper()):
+        region = ""
     return city, region, country
 
 

@@ -113,6 +113,20 @@ def opted_out(recipient: Recipient, channel: str) -> bool:
     ).exists()
 
 
+def opted_out_of_event(recipient: Recipient, channel: str, event_name: str) -> bool:
+    """True when this candidate should not get ``event_name`` on ``channel``.
+
+    Beyond a whole-channel opt-out, a candidate can silence *non-essential*
+    email (marketing/status chatter) while still receiving the transactional
+    mail listed in ``registry.ESSENTIAL_EVENTS``.
+    """
+    if opted_out(recipient, channel):
+        return True
+    if channel != registry.EMAIL or registry.is_essential(event_name):
+        return False
+    return opted_out(recipient, registry.MARKETING_EMAIL)
+
+
 def default_channels(event: registry.Event, company, recipient: Recipient) -> "list[str]":
     """Channels used when the company has no stored preference for the event.
 
@@ -194,7 +208,11 @@ def build_context(event: registry.Event, recipient: Recipient, context, company)
     full.setdefault("company", company)
     full["recipient"] = recipient
     full["recipient_name"] = recipient.name
-    full.setdefault("unsubscribe_url", unsubscribe_url(recipient))
+    # The footer link lands on the preference page defaulted to non-essential
+    # email, since that is the choice an email reader is looking for.
+    full.setdefault(
+        "unsubscribe_url", unsubscribe_url(recipient, registry.MARKETING_EMAIL)
+    )
     return full
 
 
@@ -274,7 +292,7 @@ def _consume_usage(company, channel):
     return True, ""
 
 
-def _validate(channel, recipient: Recipient, company):
+def _validate(channel, recipient: Recipient, company, event_name=""):
     """Reason this channel cannot be used, or "" when it can."""
     if channel not in registry.CHANNELS:
         return f"Unknown channel {channel!r}."
@@ -289,6 +307,8 @@ def _validate(channel, recipient: Recipient, company):
             return "WhatsApp is not configured."
     if opted_out(recipient, channel):
         return f"The recipient has opted out of {channel}."
+    if event_name and opted_out_of_event(recipient, channel, event_name):
+        return "The recipient has opted out of non-essential email."
     return ""
 
 
@@ -354,7 +374,7 @@ def send(event: str, recipient, context: dict, company=None, channels=None):
             event=event,
             status=OutboundMessage.QUEUED,
         )
-        reason = _validate(channel, target, company)
+        reason = _validate(channel, target, company, event)
         if reason:
             messages.append(message.mark_skipped(reason))
             continue

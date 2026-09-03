@@ -12,11 +12,12 @@ def can_open_job(company, exclude_pk=None):
     if company is None:
         return False, "No company selected."
     subscription = get_subscription(company)
-    limit = subscription.max_open_jobs
+    plan = subscription.effective_plan
+    limit = plan.max_open_jobs
     used = open_job_count(company, exclude_pk=exclude_pk)
     if used >= limit:
         return False, (
-            f"Your {subscription.plan.name} plan allows {limit} open "
+            f"Your {plan.name} plan allows {limit} open "
             f"job{'' if limit == 1 else 's'} and you already have {used}. "
             "Upgrade your plan or close a job first."
         )
@@ -30,7 +31,7 @@ def usage(company):
     limit = subscription.max_open_jobs
     return {
         "subscription": subscription,
-        "plan": subscription.plan,
+        "plan": subscription.effective_plan,
         "open_jobs": used,
         "max_open_jobs": limit,
         "remaining": max(limit - used, 0),

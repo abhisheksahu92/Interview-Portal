@@ -122,8 +122,14 @@ def index(request):
 
 @analytics_view
 def charts(request):
-    """HTMX partial: just the charts/tables, re-rendered for new filters."""
-    return render(request, "analytics/_charts.html", _context(request))
+    """HTMX partial: just the charts/tables, re-rendered for new filters.
+
+    Also re-sends the page header's date-range subtitle as an out-of-band swap,
+    so the header follows the filter instead of freezing at the page-load range.
+    """
+    context = _context(request)
+    context["oob"] = True
+    return render(request, "analytics/_charts.html", context)
 
 
 @analytics_view

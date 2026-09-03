@@ -7,6 +7,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
 from billing.entitlements import require_feature
@@ -16,7 +17,11 @@ from careers.forms import CareersSiteForm
 from careers.models import CareersSite, JobDistribution
 from careers.seo import job_posting_json
 from careers.text import render_about
+from core.models import Membership
+from core.permissions import role_required
 from jobs.models import Job
+
+MANAGE_ROLES = (Membership.OWNER, Membership.RECRUITER)
 
 BOARD_ORDER = [
     JobDistribution.INDEED,
@@ -142,6 +147,7 @@ def index(request):
 
 
 @login_required
+@role_required(*MANAGE_ROLES)
 @require_feature("careers_page")
 def settings_view(request):
     company = getattr(request, "company", None)
@@ -179,7 +185,9 @@ def settings_view(request):
 
 
 @login_required
+@role_required(*MANAGE_ROLES)
 @require_feature("careers_page")
+@xframe_options_sameorigin
 def preview(request):
     """Unpublished live preview of the active company's site, for the editor iframe."""
     company = getattr(request, "company", None)
@@ -209,6 +217,7 @@ def _distribution_rows(job):
 
 
 @login_required
+@role_required(*MANAGE_ROLES)
 @require_feature("careers_page")
 def job_distribution(request, pk):
     """The per-job distribution panel (HTMX partial and full-page fallback)."""
@@ -230,6 +239,7 @@ def job_distribution(request, pk):
 
 @require_POST
 @login_required
+@role_required(*MANAGE_ROLES)
 @require_feature("careers_page")
 def distribute_action(request, pk, board):
     """Post or remove a job on one board, then re-render the panel."""

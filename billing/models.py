@@ -142,18 +142,29 @@ class Subscription(models.Model):
         return Membership.objects.filter(company_id=self.company_id).count()
 
     @property
-    def max_seats(self):
+    def effective_plan(self):
+        """The plan whose limits actually apply right now.
+
+        ``self.plan`` is the *billed* tier; during the 14-day trial a company on
+        FREE is entitled to the trial (AGENCY) tier, and a cancelled paid
+        subscription drops back to FREE. ``entitlements.plan_for`` is the single
+        source of truth for that, so every limit/quota helper reads it.
+        """
         from billing.entitlements import plan_for
 
-        return plan_for(self.company).max_seats
+        return plan_for(self.company)
+
+    @property
+    def max_seats(self):
+        return self.effective_plan.max_seats
 
     @property
     def max_open_jobs(self):
-        if not self.is_usable:
-            from billing.services import free_plan
+        return self.effective_plan.max_open_jobs
 
-            return free_plan().max_open_jobs
-        return self.plan.max_open_jobs
+    @property
+    def ai_credits_monthly(self):
+        return self.effective_plan.ai_credits_monthly
 
     @property
     def billing_state_code(self):

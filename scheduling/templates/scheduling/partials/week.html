@@ -1,4 +1,4 @@
-{% comment %}Calendar-week grid. Expects `week` from _week_context.{% endcomment %}
+{% load tz %}{% comment %}Calendar-week grid. Expects `week` from _week_context.{% endcomment %}
 <div id="scheduling-week">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h2 class="h6 mb-0">{{ week.monday|date:"d M" }} – {{ week.sunday|date:"d M Y" }}</h2>
@@ -20,7 +20,7 @@
           </div>
           {% for interview in day.interviews %}
             <div class="small border-start border-3 ps-2 mb-2">
-              <div class="fw-semibold">{{ interview.local_start|date:"H:i" }} {{ interview.application.job.title }}</div>
+              <div class="fw-semibold">{% timezone interview.timezone %}{{ interview.scheduled_start|date:"H:i" }}{% endtimezone %} {{ interview.application.job.title }}</div>
               <div class="text-body-secondary">{{ interview.application.candidate.user.email }}</div>
             </div>
           {% empty %}

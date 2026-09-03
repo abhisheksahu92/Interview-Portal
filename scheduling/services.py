@@ -315,6 +315,22 @@ def default_interviewers(application):
     return list(eligible_interviewers(application.job.company)[:1])
 
 
+def _availability_timezone(company, interviewers):
+    """The timezone the interviewers publish availability in, else the default.
+
+    Keeps the candidate booking page in the timezone the slots were authored in
+    rather than silently falling back to UTC.
+    """
+    window = (
+        InterviewerAvailability.objects.filter(company=company, user__in=interviewers)
+        .order_by("weekday", "start")
+        .first()
+        if interviewers
+        else None
+    )
+    return window.timezone if window else DEFAULT_TIMEZONE
+
+
 @transaction.atomic
 def propose_interview(
     application,
@@ -335,6 +351,7 @@ def propose_interview(
     :class:`~scheduling.models.InterviewSlotProposal` rows for auditing.
     """
     interviewers = [u for u in (interviewers or []) if u is not None]
+    tz = tz or _availability_timezone(application.job.company, interviewers)
     interview = Interview.objects.create(
         company=application.job.company,
         application=application,
@@ -473,14 +490,20 @@ def complete(interview):
     return interview
 
 
-def upcoming_for_company(company, limit=None):
-    """Open, future interviews for ``company``, soonest first."""
+def upcoming_for_company(company, limit=None, user=None):
+    """Open, future interviews for ``company``, soonest first.
+
+    Pass ``user`` to restrict the result to the interviews that user is on
+    (used for the INTERVIEWER role, who should not see the whole workspace).
+    """
     qs = (
         Interview.objects.for_company(company)
         .filter(status__in=Interview.OPEN_STATUSES, scheduled_end__gte=dj_timezone.now())
         .select_related("application__job", "application__candidate__user", "stage")
         .prefetch_related("interviewers")
     )
+    if user is not None:
+        qs = qs.filter(interviewers=user)
     return qs[:limit] if limit else qs
 
 

@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
 
+from core import views as core_views
+
 
 def healthz(request):
     """Liveness probe: no auth, no tenant, no database."""
@@ -28,8 +30,13 @@ urlpatterns = [
     path("offers/", include("offers.urls")),
     path("partners/", include("partners.urls")),
     path("marketplace/", include("marketplace.urls")),
+    path("robots.txt", core_views.robots_txt, name="robots_txt"),
+    path("sitemap.xml", core_views.sitemap_xml, name="sitemap_xml"),
     path("", include("web.urls")),
 ]
+
+#: 403s render plan-aware copy — see ``core.views.permission_denied``.
+handler403 = "core.views.permission_denied"
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

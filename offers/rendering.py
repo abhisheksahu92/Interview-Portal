@@ -34,16 +34,29 @@ _TOKEN_RE = re.compile(r"\{\{\s*([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z0-9_-]+)*)\s*
 _CUSTOM_PREFIX = "custom."
 
 
+def format_money(value):
+    """Group an amount with thousands separators (blank for None/non-numeric)."""
+    if value is None or value == "":
+        return ""
+    try:
+        amount = Decimal(str(value))
+    except (ArithmeticError, ValueError, TypeError):
+        return str(value)
+    normalized = amount.normalize()
+    if normalized == normalized.to_integral():
+        return f"{int(normalized):,}"
+    return f"{normalized:,f}"
+
+
 def _stringify(value):
     if value is None:
         return ""
     if isinstance(value, bool):
         return "Yes" if value else "No"
-    if isinstance(value, Decimal):
-        normalized = value.normalize()
-        if normalized == normalized.to_integral():
-            return f"{int(normalized):,}"
-        return f"{normalized:,f}"
+    if isinstance(value, Decimal | int | float):
+        # Salaries reach us as int/Decimal depending on whether the row has been
+        # reloaded from the database; both must format identically.
+        return format_money(value)
     return str(value)
 
 

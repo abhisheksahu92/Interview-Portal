@@ -34,6 +34,18 @@ class CareersSiteForm(forms.ModelForm):
             "show_salary": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.is_bound:
+            # Bootstrap needs ``is-invalid`` on the control itself for the
+            # sibling ``.invalid-feedback`` message to be styled as an error.
+            for name in self.errors:
+                field = self.fields.get(name)
+                if field is None:
+                    continue
+                attrs = field.widget.attrs
+                attrs["class"] = f"{attrs.get('class', '')} is-invalid".strip()
+
     def clean_custom_domain(self):
         domain = (self.cleaned_data.get("custom_domain") or "").strip().lower()
         if not domain:

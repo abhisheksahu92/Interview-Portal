@@ -146,6 +146,8 @@ class ImportBatch(models.Model):
     updated = models.PositiveIntegerField(default=0)
     skipped = models.PositiveIntegerField(default=0)
     errors = models.JSONField(default=list, blank=True)
+    #: One row per imported item (resume file / CSV row) for the batch report.
+    items = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CompanyScopedQuerySet.as_manager()
@@ -173,3 +175,13 @@ class ImportBatch(models.Model):
 
     def note_error(self, label, message):
         self.errors = list(self.errors or []) + [{"item": str(label), "error": str(message)}]
+
+    def note_item(self, label, outcome, message=""):
+        """Record one item's result (created/updated/skipped/error) for the report."""
+        self.items = list(self.items or []) + [
+            {"item": str(label), "outcome": outcome, "message": str(message)}
+        ]
+
+    def add_total(self, count=1):
+        """Grow the denominator as items are discovered (zip members, CSV rows)."""
+        self.total = (self.total or 0) + int(count)

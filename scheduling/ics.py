@@ -20,10 +20,7 @@ def interview_ics(interview, method=None) -> bytes:
         return b""
     method = method or _METHODS.get(interview.status, "REQUEST")
     uid = f"interview-{interview.pk}@interview-portal"
-    attendees = [u.email for u in interview.interviewers.all() if u.email]
     candidate = interview.candidate_user
-    if candidate is not None and candidate.email:
-        attendees.append(candidate.email)
 
     try:
         from icalendar import Calendar, Event
@@ -46,10 +43,22 @@ def interview_ics(interview, method=None) -> bytes:
         event.add("location", interview.location_or_link)
     if interview.notes:
         event.add("description", interview.notes)
-    for email in attendees:
-        event.add("attendee", f"MAILTO:{email}")
+    for user in interview.interviewers.all():
+        if user.email:
+            _add_attendee(event, user.email, user.get_full_name() or user.email)
+    if candidate is not None and candidate.email:
+        _add_attendee(event, candidate.email, candidate.get_full_name() or candidate.email)
     cal.add_component(event)
     return cal.to_ical()
+
+
+def _add_attendee(event, email, name):
+    """RFC 5545 ATTENDEE with a CN and a lowercase ``mailto:`` URI."""
+    from icalendar import vCalAddress, vText
+
+    address = vCalAddress(f"mailto:{email}")
+    address.params["CN"] = vText(name)
+    event.add("attendee", address, encode=0)
 
 
 def _fallback(interview, uid, method):  # pragma: no cover - icalendar is pinned

@@ -197,44 +197,28 @@
     <section class="ip-section h-100">
       <div class="ip-section__head"><h2>GST &amp; billing address</h2></div>
       {% if is_owner %}
-        <form method="post" action="{% url 'billing:details' %}" class="row g-2">
+        <form method="post" action="{% url 'billing:details' %}" class="row g-2" novalidate>
           {% csrf_token %}
+          {% if details_form.non_field_errors %}
+            <div class="col-12"><div class="alert alert-danger py-2 mb-0 small">
+              {% for error in details_form.non_field_errors %}{{ error }}{% endfor %}
+            </div></div>
+          {% endif %}
+          {% for field in details_form %}
+            <div class="{% if field.name == 'city' or field.name == 'pincode' %}col-6{% else %}col-12{% endif %}">
+              <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}
+                <div class="invalid-feedback d-block small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
           <div class="col-12">
-            <label class="form-label small" for="gstin">GSTIN</label>
-            <input class="form-control form-control-sm" id="gstin" name="gstin"
-                   value="{{ subscription.gstin }}" maxlength="20">
-          </div>
-          <div class="col-12">
-            <label class="form-label small" for="line1">Address line 1</label>
-            <input class="form-control form-control-sm" id="line1" name="line1"
-                   value="{{ subscription.billing_address.line1|default:'' }}">
-          </div>
-          <div class="col-12">
-            <label class="form-label small" for="line2">Address line 2</label>
-            <input class="form-control form-control-sm" id="line2" name="line2"
-                   value="{{ subscription.billing_address.line2|default:'' }}">
-          </div>
-          <div class="col-6">
-            <label class="form-label small" for="city">City</label>
-            <input class="form-control form-control-sm" id="city" name="city"
-                   value="{{ subscription.billing_address.city|default:'' }}">
-          </div>
-          <div class="col-6">
-            <label class="form-label small" for="postal_code">PIN code</label>
-            <input class="form-control form-control-sm" id="postal_code" name="postal_code"
-                   value="{{ subscription.billing_address.postal_code|default:'' }}">
-          </div>
-          <div class="col-8">
-            <label class="form-label small" for="state">State</label>
-            <input class="form-control form-control-sm" id="state" name="state"
-                   value="{{ subscription.billing_address.state|default:'' }}">
-          </div>
-          <div class="col-4">
-            <label class="form-label small" for="state_code">State code</label>
-            <input class="form-control form-control-sm" id="state_code" name="state_code"
-                   value="{{ subscription.billing_address.state_code|default:'' }}" maxlength="4">
-          </div>
-          <div class="col-12">
+            <p class="ip-muted small mb-2">
+              Place of supply:
+              <strong>{{ subscription.billing_state_code|default:"—" }}</strong>
+              (taken from the first two digits of your GSTIN)
+            </p>
             <button class="btn btn-sm btn-primary" type="submit">Save billing details</button>
           </div>
         </form>

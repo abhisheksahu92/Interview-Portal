@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 
 from billing import gateway, invoicing, razorpay_gateway, webhooks
 from billing import usage as usage_module
+from billing.forms import BillingDetailsForm
 from billing.limits import usage as job_usage
 from billing.models import Invoice, Plan, Subscription
 from billing.services import get_subscription, pro_plan, sellable_plans
@@ -34,14 +35,10 @@ def provider_choice():
     return ""
 
 
-@login_required
-@role_required(Membership.OWNER, Membership.RECRUITER)
-def overview(request):
+def _overview_context(request, details_form=None):
     company = request.company
     subscription = get_subscription(company)
-    from billing.entitlements import plan_for
-
-    effective_plan = plan_for(company)
+    effective_plan = subscription.effective_plan
     context = job_usage(company)
     context.update(
         {
@@ -69,29 +66,30 @@ def overview(request):
             ),
             "intervals": Subscription.INTERVAL_CHOICES,
             "is_owner": request.user.role_in(company) == Membership.OWNER,
+            "details_form": details_form or BillingDetailsForm.from_subscription(subscription),
         }
     )
     context["not_configured"] = not context["provider"]
-    return render(request, "billing/overview.html", context)
+    return context
+
+
+@login_required
+@role_required(Membership.OWNER, Membership.RECRUITER)
+def overview(request):
+    return render(request, "billing/overview.html", _overview_context(request))
 
 
 @login_required
 @role_required(Membership.OWNER)
 @require_POST
 def billing_details(request):
-    """Owner-only GSTIN + billing address form."""
+    """Owner-only GSTIN + billing address form (validated, errors rendered inline)."""
     subscription = get_subscription(request.company)
-    subscription.gstin = (request.POST.get("gstin") or "").strip().upper()
-    subscription.billing_address = {
-        "line1": (request.POST.get("line1") or "").strip(),
-        "line2": (request.POST.get("line2") or "").strip(),
-        "city": (request.POST.get("city") or "").strip(),
-        "state": (request.POST.get("state") or "").strip(),
-        "state_code": (request.POST.get("state_code") or "").strip(),
-        "postal_code": (request.POST.get("postal_code") or "").strip(),
-        "country": (request.POST.get("country") or "India").strip(),
-    }
-    subscription.save(update_fields=["gstin", "billing_address", "updated_at"])
+    form = BillingDetailsForm(request.POST)
+    if not form.is_valid():
+        context = _overview_context(request, details_form=form)
+        return render(request, "billing/overview.html", context, status=400)
+    form.apply_to(subscription)
     messages.success(request, "Billing details saved.")
     return redirect("billing:overview")
 

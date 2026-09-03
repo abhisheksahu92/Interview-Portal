@@ -107,8 +107,7 @@ def test_owner_can_save_gstin_and_billing_address(client, owner, company):
             "line1": "1 Fergusson Road",
             "city": "Pune",
             "state": "Maharashtra",
-            "state_code": "27",
-            "postal_code": "411004",
+            "pincode": "411004",
         },
         follow=True,
     )

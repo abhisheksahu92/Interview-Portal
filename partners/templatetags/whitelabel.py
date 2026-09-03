@@ -46,8 +46,11 @@ def brand_style(context, company=None):
     brand = _brand(context, company)
     if not brand.is_custom:
         return ""
+    color = brand.color
     return mark_safe(  # noqa: S308 - colour comes from a validated model field
-        f"<style>:root{{--ip-brand:{brand.color};}}</style>"
+        "<style>:root,[data-bs-theme=dark]{"
+        f"--ip-brand:{color};--ip-accent:{color};--bs-primary:{color};"
+        "}</style>"
     )
 
 

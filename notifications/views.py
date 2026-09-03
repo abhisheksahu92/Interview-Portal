@@ -208,18 +208,24 @@ def unsubscribe(request, token):
     from jobs.models import CandidateProfile
 
     profile = get_object_or_404(CandidateProfile, pk=profile_pk)
-    opted_out = CandidateChannelOptOut.objects.filter(
-        profile=profile, channel=channel
-    ).exists()
 
     if request.method == "POST":
-        if request.POST.get("resubscribe"):
-            CandidateChannelOptOut.objects.filter(profile=profile, channel=channel).delete()
-            opted_out = False
-        else:
-            CandidateChannelOptOut.objects.get_or_create(profile=profile, channel=channel)
-            opted_out = True
+        target = request.POST.get("channel") or channel
+        if target in registry.OPT_OUT_CHANNELS:
+            if request.POST.get("resubscribe"):
+                CandidateChannelOptOut.objects.filter(
+                    profile=profile, channel=target
+                ).delete()
+            else:
+                CandidateChannelOptOut.objects.get_or_create(
+                    profile=profile, channel=target
+                )
 
+    current = set(
+        CandidateChannelOptOut.objects.filter(profile=profile).values_list(
+            "channel", flat=True
+        )
+    )
     return render(
         request,
         "notifications/unsubscribe.html",
@@ -227,7 +233,16 @@ def unsubscribe(request, token):
             "profile": profile,
             "channel": channel,
             "channel_label": registry.CHANNEL_LABELS.get(channel, channel),
-            "opted_out": opted_out,
+            "opted_out": channel in current,
+            "choices": [
+                {
+                    "channel": c,
+                    "label": registry.CHANNEL_LABELS.get(c, c),
+                    "opted_out": c in current,
+                }
+                for c in (registry.MARKETING_EMAIL, registry.WHATSAPP)
+            ],
+            "essential_events": sorted(registry.ESSENTIAL_EVENTS),
             "token": token,
         },
     )

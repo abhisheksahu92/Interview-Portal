@@ -33,13 +33,23 @@ _SUBJECTS = {
 }
 
 
-def booking_url(interview):
-    """Absolute-ish booking URL for ``interview`` (site base from settings)."""
-    base = (getattr(settings, "SITE_BASE_URL", "") or "").rstrip("/")
-    return f"{base}{interview.booking_path()}"
+def booking_url(interview, request=None):
+    """Absolute booking URL for ``interview``.
+
+    Prefers the live request's host so links work behind any domain, and falls
+    back to ``settings.SITE_URL``.
+    """
+    path = interview.booking_path()
+    if request is not None:
+        try:
+            return request.build_absolute_uri(path)
+        except Exception:  # pragma: no cover - defensive
+            logger.debug("build_absolute_uri failed", exc_info=True)
+    base = (getattr(settings, "SITE_URL", "") or "").rstrip("/")
+    return f"{base}{path}"
 
 
-def interview_context(interview, extra=None):
+def interview_context(interview, extra=None, request=None):
     """Template context shared by every scheduling notification."""
     start = interview.local_start()
     context = {
@@ -52,7 +62,7 @@ def interview_context(interview, extra=None):
         "when": start.strftime("%a %d %b %Y, %H:%M") if start else "",
         "when_iso": interview.scheduled_start.isoformat() if interview.scheduled_start else "",
         "location_or_link": interview.location_or_link,
-        "booking_url": booking_url(interview),
+        "booking_url": booking_url(interview, request),
         "interviewers": [u.get_full_name() or u.email for u in interview.interviewers.all()],
     }
     if extra:
@@ -93,11 +103,11 @@ def _fallback_email(event, recipient, interview, context):
     return True
 
 
-def notify(event, recipient, interview, extra=None):
+def notify(event, recipient, interview, extra=None, request=None):
     """Send one scheduling notification. Returns True when something was sent."""
     if recipient is None:
         return False
-    context = interview_context(interview, extra)
+    context = interview_context(interview, extra, request)
     company = interview.company
     try:
         from notifications import send as notifications_send  # late import by design
@@ -113,13 +123,13 @@ def notify(event, recipient, interview, extra=None):
         return False
 
 
-def notify_candidate(event, interview, extra=None):
-    return notify(event, interview.candidate_user, interview, extra)
+def notify_candidate(event, interview, extra=None, request=None):
+    return notify(event, interview.candidate_user, interview, extra, request)
 
 
-def notify_interviewers(event, interview, extra=None):
+def notify_interviewers(event, interview, extra=None, request=None):
     sent = 0
     for user in interview.interviewers.all():
-        if notify(event, user, interview, extra):
+        if notify(event, user, interview, extra, request):
             sent += 1
     return sent

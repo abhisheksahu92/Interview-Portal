@@ -18,9 +18,25 @@ def test_company_creation_provisions_a_trial_subscription(db):
     assert 13 <= subscription.trial_days_left <= 14
 
 
-def test_limits_apply_from_the_first_day(db):
-    """No manual provisioning step: the plan limit bites immediately."""
-    company = Company.objects.create(name="Day One Ltd")  # billed on FREE
+def test_trial_limits_apply_from_the_first_day(db):
+    """A trialling company is metered against the trial tier, not FREE."""
+    company = Company.objects.create(name="Day One Ltd")  # billed on FREE, trialling
+    for i in range(3):
+        Job.objects.create(company=company, title=f"Dev {i}", status=Job.OPEN)
+    assert Job.objects.filter(company=company, status=Job.OPEN).count() == 3
+
+
+def test_free_limits_bite_once_the_trial_ends(db):
+    """No manual provisioning step: the plan limit bites the moment it applies."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    company = Company.objects.create(name="Day Fifteen Ltd")
+    Subscription.objects.filter(company=company).update(
+        status=Subscription.ACTIVE, trial_ends_at=timezone.now() - timedelta(days=1)
+    )
+    company.refresh_from_db()
     Job.objects.create(company=company, title="Dev 1", status=Job.OPEN)
     with pytest.raises(ValidationError):
         Job.objects.create(company=company, title="Dev 2", status=Job.OPEN)

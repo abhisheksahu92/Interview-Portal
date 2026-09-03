@@ -3,8 +3,10 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
 from core.forms import (
@@ -14,7 +16,7 @@ from core.forms import (
     InvitedSignupForm,
 )
 from core.middleware import set_active_company
-from core.models import Company, Invitation
+from core.models import Company, Invitation, Membership
 
 
 class EmailLoginView(LoginView):
@@ -152,3 +154,77 @@ def invite_accept(request, token):
             "login_url": f"{reverse('core:login')}?next={invitation.accept_url()}",
         },
     )
+
+
+# --------------------------------------------------------------------------
+# Error handlers
+# --------------------------------------------------------------------------
+def permission_denied(request, exception=None, template_name="403.html"):
+    """handler403 that tells a plan problem apart from a role problem.
+
+    ``billing.entitlements.FeatureNotAvailable`` means the workspace's plan is
+    missing a feature, which an owner can fix by upgrading; anything else is a
+    role problem, which only an owner can grant.
+    """
+    from billing.entitlements import FeatureNotAvailable
+
+    company = getattr(request, "company", None)
+    feature = None
+    if isinstance(exception, FeatureNotAvailable):
+        feature = getattr(exception, "feature", "") or ""
+    user = getattr(request, "user", None)
+    is_owner = False
+    if feature and user is not None and getattr(user, "is_authenticated", False):
+        is_owner = user.role_in(company) == Membership.OWNER
+    context = {
+        "feature": feature,
+        "feature_label": feature.replace("_", " ").title() if feature else "",
+        "is_owner": is_owner,
+    }
+    return render(request, template_name, context, status=403)
+
+
+# --------------------------------------------------------------------------
+# Site root: robots.txt + sitemap.xml
+# --------------------------------------------------------------------------
+def _site_base(request):
+    """Absolute site root, preferring the live request over ``SITE_URL``."""
+    return request.build_absolute_uri("/").rstrip("/")
+
+
+def robots_txt(request):
+    """Allow every crawler and point at the sitemap."""
+    body = "\n".join(
+        [
+            "User-agent: *",
+            "Allow: /",
+            f"Sitemap: {_site_base(request)}{reverse('sitemap_xml')}",
+            "",
+        ]
+    )
+    return HttpResponse(body, content_type="text/plain")
+
+
+def sitemap_xml(request):
+    """Root sitemap: the landing page plus every published careers site.
+
+    Each careers site keeps its own per-site sitemap (jobs included); this
+    document points crawlers at all of them from one place.
+    """
+    base = _site_base(request)
+    locs = [base + reverse("web:home")]
+    try:
+        from careers.models import CareersSite
+
+        for site in CareersSite.objects.filter(published=True).order_by("slug"):
+            locs.append(base + reverse("careers:site", args=[site.slug]))
+            locs.append(base + reverse("careers:sitemap", args=[site.slug]))
+    except Exception:  # pragma: no cover - careers is optional
+        pass
+    entries = "".join(f"<url><loc>{escape(loc)}</loc></url>" for loc in locs)
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"{entries}</urlset>"
+    )
+    return HttpResponse(body, content_type="application/xml")

@@ -10,7 +10,7 @@
 <div class="row g-4">
   <div class="col-lg-7">
     <form method="post" hx-post="{% url 'offers:template_preview' %}"
-          hx-trigger="keyup delay:500ms from:#{{ form.body_html.id_for_label }}"
+          hx-trigger="keyup changed delay:500ms, change"
           hx-target="#offer-preview" hx-swap="outerHTML">
       {% csrf_token %}
       {% for field in form %}

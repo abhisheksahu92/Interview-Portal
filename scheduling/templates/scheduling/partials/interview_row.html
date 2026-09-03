@@ -1,4 +1,4 @@
-{% comment %}One interview as a list row. Expects `interview`.{% endcomment %}
+{% load tz %}{% comment %}One interview as a list row. Expects `interview`.{% endcomment %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 py-2 border-bottom">
   <div>
     <div class="fw-semibold">
@@ -8,7 +8,7 @@
     <div class="small text-body-secondary">
       {% if interview.scheduled_start %}
         <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>
-        {{ interview.local_start|date:"D d M Y, H:i" }}–{{ interview.local_end|date:"H:i" }}
+        {% timezone interview.timezone %}{{ interview.scheduled_start|date:"D d M Y, H:i" }}–{{ interview.scheduled_end|date:"H:i" }}{% endtimezone %}
         ({{ interview.timezone }})
       {% else %}
         <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Awaiting the candidate's choice

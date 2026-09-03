@@ -121,8 +121,9 @@ def test_job_create_seeds_pipeline(client, owner, company):
 
 
 @pytest.mark.django_db
-def test_job_create_at_free_plan_limit_shows_form_error(client, owner, company):
+def test_job_create_at_free_plan_limit_shows_form_error(client, owner, free_company):
     """A metered FREE company opening a second job gets a form error, not a 500."""
+    company = free_company
     from billing.services import get_subscription
 
     get_subscription(company)  # companies are metered from creation
@@ -149,7 +150,8 @@ def test_job_create_at_free_plan_limit_shows_form_error(client, owner, company):
 
 
 @pytest.mark.django_db
-def test_job_edit_to_open_at_free_plan_limit_shows_form_error(client, owner, company):
+def test_job_edit_to_open_at_free_plan_limit_shows_form_error(client, owner, free_company):
+    company = free_company
     from billing.services import get_subscription
 
     get_subscription(company)  # companies are metered from creation

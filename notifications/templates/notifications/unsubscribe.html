@@ -8,21 +8,35 @@
     {% else %}
       <div class="card">
         <div class="card-body">
-          <h1 class="h4">{{ channel_label }} messages</h1>
-          {% if opted_out %}
-            <p>You are opted out of {{ channel_label }} messages. We will not contact you there.</p>
-            <form method="post">
-              {% csrf_token %}
-              <input type="hidden" name="resubscribe" value="1">
-              <button class="btn btn-outline-primary" type="submit">Turn {{ channel_label }} back on</button>
-            </form>
-          {% else %}
-            <p>You currently receive {{ channel_label }} messages about your applications.</p>
-            <form method="post">
-              {% csrf_token %}
-              <button class="btn btn-outline-danger" type="submit">Stop {{ channel_label }} messages</button>
-            </form>
-          {% endif %}
+          <h1 class="h4">Your notification preferences</h1>
+          <p class="text-body-secondary small">
+            Choose what we may send you. Essential messages about your own applications —
+            interviews, assessment results and offers — are always sent.
+          </p>
+          {% for choice in choices %}
+            <div class="border-top py-3 d-flex justify-content-between align-items-center gap-3">
+              <div>
+                <div class="fw-semibold">{{ choice.label }}</div>
+                <div class="small text-body-secondary">
+                  {% if choice.opted_out %}
+                    You are opted out — we will not send these.
+                  {% else %}
+                    You currently receive these.
+                  {% endif %}
+                </div>
+              </div>
+              <form method="post" class="m-0">
+                {% csrf_token %}
+                <input type="hidden" name="channel" value="{{ choice.channel }}">
+                {% if choice.opted_out %}
+                  <input type="hidden" name="resubscribe" value="1">
+                  <button class="btn btn-sm btn-outline-primary" type="submit">Turn back on</button>
+                {% else %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Stop these</button>
+                {% endif %}
+              </form>
+            </div>
+          {% endfor %}
           <p class="small text-body-secondary mt-3 mb-0">
             Important emails about your applications are always sent.
           </p>

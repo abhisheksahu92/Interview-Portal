@@ -185,3 +185,21 @@ def test_submission_notifies_client_contacts(client_row, application, access, ma
 
     submit_application(application, client_row, note="see attached")
     assert any(access.email in m.to for m in mailoutbox)
+
+
+def test_portal_says_when_there_is_no_resume_on_file(client, access, submission):
+    """A candidate with no uploaded résumé gets an explicit note, not a blank."""
+    assert submission.application.candidate.resume.name in ("", None)
+    response = client.get(reverse("clients:portal", args=[access.token]))
+    body = response.content.decode()
+    assert "No résumé on file" in body
+    assert "Download resume" not in body
+
+
+def test_portal_offers_the_download_when_a_resume_exists(
+    client, access, client_row, job, make_application
+):
+    application = make_application(job, resume=True)
+    Submission.objects.create(client=client_row, application=application)
+    body = client.get(reverse("clients:portal", args=[access.token])).content.decode()
+    assert "Download resume" in body

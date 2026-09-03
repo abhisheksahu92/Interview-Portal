@@ -14,6 +14,29 @@
 {% endblock %}
 {% block content %}
 <div id="batch-status">{% include "talent/partials/batch_status.html" %}</div>
+{% if batch.items %}
+  <section class="ip-section mt-3">
+    <div class="ip-section__head"><h2>Imported items</h2></div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead><tr><th scope="col">Item</th><th scope="col">Result</th><th scope="col">Details</th></tr></thead>
+        <tbody>
+          {% for row in batch.items %}
+            <tr>
+              <td class="text-break">{{ row.item }}</td>
+              <td>
+                <span class="ip-badge ip-badge--{% if row.outcome == 'created' %}success{% elif row.outcome == 'error' %}danger{% else %}neutral{% endif %}">
+                  {{ row.outcome|title }}
+                </span>
+              </td>
+              <td class="ip-muted small text-break">{{ row.message }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endif %}
 {% if batch.errors %}
   <section class="ip-section mt-3">
     <div class="ip-section__head"><h2>Skipped items</h2></div>

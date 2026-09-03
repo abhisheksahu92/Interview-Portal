@@ -7,6 +7,8 @@
               padding: .5rem 0; border-bottom: 1px solid var(--bs-border-color); }
   .vid-stage { max-width: 44rem; margin: 0 auto; }
   .vid-preview { width: 100%; aspect-ratio: 4 / 3; background: #000; border-radius: .75rem; object-fit: cover; }
+  .vid-placeholder { border: 1px dashed var(--bs-border-color); border-radius: .75rem;
+                     padding: 2rem 1rem; background: var(--bs-tertiary-bg); }
   .vid-timer { font-variant-numeric: tabular-nums; font-size: 2.25rem; font-weight: 700; }
   .vid-big { width: 100%; padding: 1rem; font-size: 1.125rem; border-radius: .75rem; }
   .vid-dot { display:inline-block; width:.6rem; height:.6rem; border-radius:50%; background:#dc3545;
@@ -39,9 +41,17 @@
       Each question shows a short think timer, then recording starts automatically and stops at the time limit.
       You can only record each answer once. Finish by {{ invite.expires_at|date:"d M Y" }}.
     </p>
-    <video id="vidPreview" class="vid-preview" autoplay muted playsinline></video>
-    <p class="small mt-2 mb-3" id="vidDeviceStatus">Checking camera and microphone…</p>
-    <button class="btn btn-primary vid-big" id="vidStart" type="button" disabled>Allow camera to continue</button>
+    <div class="vid-placeholder text-center" id="vidPlaceholder">
+      <p class="display-6 mb-2" aria-hidden="true">📷</p>
+      <p class="mb-3 small text-body-secondary">
+        Your camera stays off until you turn it on. Nothing is recorded or uploaded
+        before you start a question.
+      </p>
+      <button class="btn btn-outline-primary" id="vidEnable" type="button">Enable camera</button>
+    </div>
+    <video id="vidPreview" class="vid-preview d-none" autoplay muted playsinline></video>
+    <p class="small mt-2 mb-3" id="vidDeviceStatus">Turn on your camera and microphone to begin.</p>
+    <button class="btn btn-primary vid-big d-none" id="vidStart" type="button" disabled>Allow camera to continue</button>
     <ol class="mt-4 small text-body-secondary">
       {% for question in questions %}
         <li class="{% if question.pk in answered_ids %}text-decoration-line-through{% endif %}">
@@ -104,6 +114,8 @@
   var preview = document.getElementById("vidPreview");
   var live = document.getElementById("vidLive");
   var startBtn = document.getElementById("vidStart");
+  var enableBtn = document.getElementById("vidEnable");
+  var placeholder = document.getElementById("vidPlaceholder");
   var actionBtn = document.getElementById("vidAction");
   var deviceStatus = document.getElementById("vidDeviceStatus");
   var timerEl = document.getElementById("vidTimer");
@@ -148,16 +160,22 @@
       deviceStatus.className = "small text-danger mt-2 mb-3";
       return;
     }
+    deviceStatus.textContent = "Waiting for camera permission…";
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function (s) {
       stream = s;
       preview.srcObject = s;
+      // Only now is there anything to show, so grow the video box.
+      if (placeholder) { hide(placeholder); }
+      show(preview);
+      show(startBtn);
       deviceStatus.textContent = "Camera and microphone look good.";
       deviceStatus.className = "small text-success mt-2 mb-3";
       startBtn.disabled = false;
       startBtn.textContent = QUESTIONS.length ? "I'm ready — start" : "Continue";
     }).catch(function () {
-      deviceStatus.textContent = "We could not access your camera or microphone. Allow access, then reload this page.";
+      deviceStatus.textContent = "We could not access your camera or microphone. Allow access, then try again.";
       deviceStatus.className = "small text-danger mt-2 mb-3";
+      if (enableBtn) { enableBtn.disabled = false; enableBtn.textContent = "Try again"; }
     });
   }
 
@@ -313,12 +331,18 @@
     }
   });
 
+  if (enableBtn) {
+    enableBtn.addEventListener("click", function () {
+      enableBtn.disabled = true;
+      enableBtn.textContent = "Requesting access…";
+      getMedia();
+    });
+  }
+
   setProgress();
   if (!QUESTIONS.length) {
     hide(intro);
     show(finish);
-  } else {
-    getMedia();
   }
 })();
 </script>

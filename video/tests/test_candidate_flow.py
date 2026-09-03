@@ -156,3 +156,16 @@ def test_over_quota_upload_is_refused(client, invite, question, monkeypatch):
     )
     assert response.status_code == 402
     assert VideoResponse.objects.count() == 0
+
+
+def test_take_page_hides_the_video_box_until_camera_is_enabled(client, invite, question):
+    """No 530px black rectangle before permission: a placeholder card instead."""
+    body = client.get(take_url(invite)).content.decode()
+    assert 'id="vidPlaceholder"' in body
+    assert "Enable camera" in body
+    # The <video> element and the start button only appear after getUserMedia.
+    assert '<video id="vidPreview" class="vid-preview d-none"' in body
+    assert 'id="vidStart" type="button" disabled' in body
+    assert 'class="btn btn-primary vid-big d-none" id="vidStart"' in body
+    # Nothing asks for the camera on load any more.
+    assert "getMedia();\n  }" not in body

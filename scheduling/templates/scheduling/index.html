@@ -4,7 +4,7 @@
 <div class="ip-page-head">
   <div>
     <h1>Schedule</h1>
-    <p>Upcoming interviews across every pipeline, and this week at a glance.</p>
+    <p>{% if scoped_to_me %}Interviews you are on, and this week at a glance.{% else %}Upcoming interviews across every pipeline, and this week at a glance.{% endif %}</p>
   </div>
   <div class="ip-page-head__actions">
     <a class="btn btn-sm btn-outline-secondary" href="{% url 'scheduling:availability' %}">

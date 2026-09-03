@@ -47,5 +47,7 @@ def indeed_feed_xml():
             if job.requirements:
                 description = f"{description}\n\nRequirements:\n{job.requirements}"
             _text(node, "description", description)
+            if job.closes_at:
+                _text(node, "validThrough", job.closes_at.isoformat())
     body = tostring(root, encoding="unicode")
     return f'<?xml version="1.0" encoding="utf-8"?>\n{body}'.encode()

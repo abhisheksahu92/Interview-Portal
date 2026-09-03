@@ -58,6 +58,10 @@
                     <i class="bi bi-file-earmark-arrow-down me-1" aria-hidden="true"></i>Download resume
                   </a>
                 </p>
+              {% else %}
+                <p class="mb-3 small cp-muted">
+                  <i class="bi bi-file-earmark-x me-1" aria-hidden="true"></i>No résumé on file
+                </p>
               {% endif %}
 
               {% if submission.is_decided %}

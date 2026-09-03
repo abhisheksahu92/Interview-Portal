@@ -25,6 +25,11 @@ def settings_view(request):
     tab = request.GET.get("tab") or "branding"
     if tab not in {"branding", "partners"}:
         tab = "branding"
+    if tab == "partners" and not request.user.is_staff:
+        # The partners tab is the internal reseller admin; a tenant owner has no
+        # business there, and rendering it showed a form they could never submit.
+        messages.error(request, "The partner programme is managed by the Interview Portal team.")
+        return redirect(f"{reverse('partners:settings')}?tab=branding")
     can_white_label = has_feature(company, "white_label")
     white_label = WhiteLabel.objects.filter(company=company).first()
     form = None

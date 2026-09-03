@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tz %}
 {% block title %}Book your interview · {{ interview.application.job.title }}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
@@ -14,24 +15,24 @@
       {% if local_start %}
         <div class="alert alert-success">
           <strong>Currently booked:</strong>
-          {{ local_start|date:"D d M Y, H:i" }}–{{ local_end|date:"H:i" }} ({{ tz }})
+          {% timezone tz %}{{ interview.scheduled_start|date:"D d M Y, H:i" }}–{{ interview.scheduled_end|date:"H:i" }}{% endtimezone %} ({{ tz }})
           <a class="ms-2" href="{% url 'scheduling:book_ics' interview.booking_token %}">Add to calendar</a>
         </div>
       {% endif %}
 
-      <form method="get" class="mb-3 d-flex align-items-end gap-2">
+      <form method="get" class="mb-3 d-flex align-items-end gap-2" id="tz-form">
         <div>
-          <label class="form-label small mb-1" for="tz">Times shown in</label>
-          <input class="form-control form-control-sm" id="tz" name="tz" value="{{ tz }}"
-                 list="tz-options" aria-describedby="tz-help">
+          <label class="form-label small mb-1" for="tz">Times shown in {{ tz }}</label>
+          <select class="form-select form-select-sm" id="tz" name="tz"
+                  aria-describedby="tz-help" onchange="this.form.submit()">
+            {% for option in tz_options %}
+              <option value="{{ option }}"{% if option == tz %} selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
         </div>
         <button class="btn btn-sm btn-outline-secondary" type="submit">Update</button>
-        <datalist id="tz-options">
-          <option value="UTC"></option><option value="Asia/Kolkata"></option>
-          <option value="Europe/London"></option><option value="America/New_York"></option>
-        </datalist>
       </form>
-      <p id="tz-help" class="form-text mt-0">Enter an IANA timezone name, e.g. <code>Asia/Kolkata</code>.</p>
+      <p id="tz-help" class="form-text mt-0">Pick the timezone you want the times shown in.</p>
 
       <h2 class="h6">{% if local_start %}Pick a different time{% else %}Pick a time{% endif %}
         <span class="text-body-secondary fw-normal">(next 14 days)</span></h2>

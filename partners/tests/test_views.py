@@ -30,15 +30,28 @@ def test_owner_on_pro_plan_can_save_branding(client, owner, pro):
     assert WhiteLabel.objects.get(company=pro).brand_name == "Acme Hire"
 
 
-def test_partners_tab_only_lists_resellers_for_staff(client, owner, company):
+def test_partners_tab_is_staff_only(client, owner, company):
+    """A tenant owner is bounced back to branding instead of seeing a dead form."""
     Reseller.objects.create(name="Partner One", code="p1")
     client.force_login(owner)
     response = client.get(reverse("partners:settings"), {"tab": "partners"})
-    assert list(response.context["resellers"]) == []
+    assert response.status_code == 302
+    assert response["Location"].endswith("?tab=branding")
 
+    response = client.get(reverse("partners:settings"), {"tab": "partners"}, follow=True)
+    assert response.context["tab"] == "branding"
+    assert "partner programme" in " ".join(
+        str(m) for m in response.context["messages"]
+    ).lower()
+
+
+def test_partners_tab_lists_resellers_for_staff(client, owner, company):
+    Reseller.objects.create(name="Partner One", code="p1")
     owner.is_staff = True
     owner.save()
+    client.force_login(owner)
     response = client.get(reverse("partners:settings"), {"tab": "partners"})
+    assert response.status_code == 200
     assert len(response.context["resellers"]) == 1
 
 

@@ -2,20 +2,37 @@
 {% block title %}403 Access denied · Interview Portal{% endblock %}
 {% block main_class %}container py-5{% endblock %}
 {% block page_header %}
-<div class="ip-page-head"><div><h1>You do not have access to that</h1><p>Your role in this workspace does not allow this page. Ask an owner for access.</p></div></div>
+<div class="ip-page-head"><div>
+  <h1>{% if feature %}Not included in your plan{% else %}You do not have access to that{% endif %}</h1>
+</div></div>
 {% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-sm-10 col-md-8 col-lg-6">
     <div class="ip-section">
       <div class="ip-empty">
-        <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
-        <div class="ip-empty__title">403 — Access denied</div>
-        <p>Your role in this workspace does not allow this page. Ask an owner for access.</p>
-        <div class="d-flex gap-2 justify-content-center flex-wrap">
-          <a class="btn btn-primary" href="/">Go to my home</a>
-          {% if not user.is_authenticated %}<a class="btn btn-outline-secondary" href="{% url 'core:login' %}">Sign in</a>{% endif %}
-        </div>
+        <span class="ip-empty__icon" aria-hidden="true">
+          <i class="bi bi-{% if feature %}gem{% else %}shield-lock{% endif %}"></i>
+        </span>
+        {% if feature %}
+          <div class="ip-empty__title">Your plan doesn't include {{ feature_label }}</div>
+          <p>Upgrade this workspace to unlock {{ feature_label }}.</p>
+          <div class="d-flex gap-2 justify-content-center flex-wrap">
+            {% if is_owner %}
+              <a class="btn btn-primary" href="{% url 'billing:overview' %}">Upgrade</a>
+              <a class="btn btn-outline-secondary" href="/">Go to my home</a>
+            {% else %}
+              <a class="btn btn-primary" href="/">Go to my home</a>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="ip-empty__title">403 — Access denied</div>
+          <p>Your role in this workspace does not allow this page. Ask an owner for access.</p>
+          <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <a class="btn btn-primary" href="/">Go to my home</a>
+            {% if not user.is_authenticated %}<a class="btn btn-outline-secondary" href="{% url 'core:login' %}">Sign in</a>{% endif %}
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>

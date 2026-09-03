@@ -17,6 +17,7 @@ from django.utils import timezone as dj_timezone
 from django.views.decorators.http import require_POST
 
 from billing.entitlements import require_feature
+from core.models import Membership
 from jobs.models import Application
 from scheduling import gateway, services
 from scheduling.forms import (
@@ -52,10 +53,14 @@ def _company(request):
 def index(request):
     """Upcoming interviews plus a calendar-week view for the workspace."""
     company = _company(request)
-    upcoming = list(services.upcoming_for_company(company)[:50])
+    # Interviewers only ever see the interviews they are on; owners and
+    # recruiters see the whole workspace.
+    scope_user = request.user if _is_interviewer_only(request, company) else None
+    upcoming = list(services.upcoming_for_company(company, user=scope_user)[:50])
     context = {
         "upcoming": upcoming,
-        "week": _week_context(company, request.GET.get("week")),
+        "scoped_to_me": scope_user is not None,
+        "week": _week_context(company, request.GET.get("week"), user=scope_user),
         "calendar_configured": gateway.configured(),
         "interviewer_count": services.eligible_interviewers(company).count(),
     }
@@ -64,7 +69,11 @@ def index(request):
     return render(request, "scheduling/index.html", context)
 
 
-def _week_context(company, offset_param=None):
+def _is_interviewer_only(request, company):
+    return request.user.role_in(company) == Membership.INTERVIEWER
+
+
+def _week_context(company, offset_param=None, user=None):
     """Seven-day grid of interviews starting on Monday of the target week."""
     try:
         offset = int(offset_param or 0)
@@ -85,6 +94,8 @@ def _week_context(company, offset_param=None):
         .select_related("application__job", "application__candidate__user", "stage")
         .prefetch_related("interviewers")
     )
+    if user is not None:
+        interviews = interviews.filter(interviewers=user)
     buckets = {monday + timedelta(days=i): [] for i in range(7)}
     for interview in interviews:
         day = interview.scheduled_start.astimezone(UTC).date()
@@ -338,9 +349,25 @@ def _expired(request, interview):
 
 
 def _candidate_tz(request, interview):
-    return valid_timezone(
-        request.GET.get("tz") or request.POST.get("timezone") or interview.timezone
-    )
+    """The timezone the candidate sees times in.
+
+    Defaults to the interview's own timezone (which itself defaults to the
+    interviewers' availability timezone), so the label is never empty and an
+    unknown/blank ``tz`` never silently becomes UTC.
+    """
+    fallback = valid_timezone(interview.timezone)
+    chosen = request.GET.get("tz") or request.POST.get("timezone") or fallback
+    return valid_timezone(chosen, fallback=fallback)
+
+
+def _tz_options(tz):
+    """Timezone choices for the booking page selector, ``tz`` always included."""
+    from scheduling.forms import COMMON_TIMEZONES
+
+    options = list(COMMON_TIMEZONES)
+    if tz not in options:
+        options.insert(0, tz)
+    return options
 
 
 def book(request, token):
@@ -370,6 +397,7 @@ def book(request, token):
         "can_book": interview.status in Interview.OPEN_STATUSES and not interview.is_past,
         "cancel_form": CancelBookingForm(),
         "timezone_hint": tz,
+        "tz_options": _tz_options(tz),
     }
     if request.headers.get("HX-Request"):
         return render(request, "scheduling/partials/slot_picker.html", context)
@@ -430,6 +458,7 @@ def booked(request, token):
             "tz": tz,
             "local_start": interview.local_start(tz),
             "local_end": interview.local_end(tz),
+            "tz_options": _tz_options(tz),
         },
     )
 

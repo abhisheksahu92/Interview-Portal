@@ -41,8 +41,10 @@ from video.models import (
 
 logger = logging.getLogger(__name__)
 
-STAFF_ROLES = (Membership.OWNER, Membership.RECRUITER, Membership.INTERVIEWER)
+#: every recruiter-facing video screen is owner/recruiter only
 MANAGE_ROLES = (Membership.OWNER, Membership.RECRUITER)
+#: roles allowed to *watch* a recording (interviewers review candidates too)
+STAFF_ROLES = MANAGE_ROLES + (Membership.INTERVIEWER,)
 RANGE_RE = re.compile(r"bytes=(\d*)-(\d*)")
 STREAM_CHUNK = 8192
 
@@ -62,7 +64,7 @@ def _company_invites(request):
     ).select_related("application__job", "application__candidate__user", "screen")
 
 
-@role_required(*STAFF_ROLES)
+@role_required(*MANAGE_ROLES)
 @require_feature("video")
 def index(request):
     """Video screening home: screens, recent invites and library size."""
@@ -82,7 +84,7 @@ def index(request):
 # --------------------------------------------------------------------------
 # Recruiter: question library CRUD
 # --------------------------------------------------------------------------
-@role_required(*STAFF_ROLES)
+@role_required(*MANAGE_ROLES)
 @require_feature("video")
 def question_list(request):
     questions = for_company(VideoQuestion.objects.all(), request.company)
@@ -144,7 +146,7 @@ def question_delete(request, pk):
 # --------------------------------------------------------------------------
 # Recruiter: per-job screen builder
 # --------------------------------------------------------------------------
-@role_required(*STAFF_ROLES)
+@role_required(*MANAGE_ROLES)
 @require_feature("video")
 def job_screens(request, job_id):
     job = get_object_or_404(Job.objects.filter(company=request.company), pk=job_id)
@@ -217,7 +219,7 @@ def invite_create(request, screen_id, application_id):
 # --------------------------------------------------------------------------
 # Recruiter: invites + review
 # --------------------------------------------------------------------------
-@role_required(*STAFF_ROLES)
+@role_required(*MANAGE_ROLES)
 @require_feature("video")
 def invite_list(request):
     invites = _company_invites(request)
@@ -235,7 +237,7 @@ def invite_list(request):
     )
 
 
-@role_required(*STAFF_ROLES)
+@role_required(*MANAGE_ROLES)
 @require_feature("video")
 def invite_review(request, pk):
     """Playback + transcript + AI summary, with a quick StageReview form."""

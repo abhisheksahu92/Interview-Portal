@@ -243,11 +243,13 @@ def _import_resume_bytes(batch, filename, raw):
     """Upsert one resume file into the pool. Returns "created"/"updated"/"skipped"."""
     if len(raw) > MAX_FILE_BYTES:
         batch.note_error(filename, "File is larger than 5 MB.")
+        batch.note_item(filename, "error", "File is larger than 5 MB.")
         return "skipped"
     text = extract_text(ContentFile(raw, name=filename))
     fields = _profile_fields_from_resume(batch.company, filename, text)
     if not fields.get("email") and not fields.get("phone"):
         batch.note_error(filename, "No email or phone number found in the resume.")
+        batch.note_item(filename, "error", "No email or phone number found in the resume.")
         return "skipped"
     if not fields.get("name"):
         fields["name"] = name_from_filename(filename)
@@ -266,7 +268,9 @@ def _import_resume_bytes(batch, filename, raw):
         source=TalentProfile.IMPORT,
         created_by=batch.uploaded_by,
     )
-    return "created" if created else "updated"
+    outcome = "created" if created else "updated"
+    batch.note_item(filename, outcome, fields.get("email", ""))
+    return outcome
 
 
 CSV_ALIASES = {
@@ -305,14 +309,18 @@ def _csv_rows(raw):
         yield mapped
 
 
-def _import_csv_bytes(batch, raw):
+def _import_csv_bytes(batch, raw, source=""):
+    """Import every row of one CSV. Each *row* counts towards ``batch.total``."""
     rows = list(_csv_rows(raw))
-    batch.total = len(rows)
-    batch.save(update_fields=["total"])
+    batch.add_total(len(rows))
+    _touch(batch)
     for index, row in enumerate(rows, start=2):
+        label = row.get("email") or row.get("phone") or f"{source}row {index}".strip()
         if not row.get("email") and not row.get("phone"):
             batch.skipped += 1
-            batch.note_error(f"row {index}", "Missing both email and phone.")
+            batch.note_error(f"{source}row {index}", "Missing both email and phone.")
+            batch.note_item(f"{source}row {index}", "error", "Missing both email and phone.")
+            _touch(batch)
             continue
         try:
             _, created = upsert_profile(
@@ -331,15 +339,20 @@ def _import_csv_bytes(batch, raw):
             )
         except ValidationError as exc:
             batch.skipped += 1
-            batch.note_error(f"row {index}", "; ".join(exc.messages))
+            batch.note_error(f"{source}row {index}", "; ".join(exc.messages))
+            batch.note_item(f"{source}row {index}", "error", "; ".join(exc.messages))
+            _touch(batch)
             continue
         batch.created += 1 if created else 0
         batch.updated += 0 if created else 1
+        batch.note_item(label, "created" if created else "updated")
         _touch(batch)
 
 
 def _touch(batch):
-    batch.save(update_fields=["created", "updated", "skipped", "errors", "total", "status"])
+    batch.save(
+        update_fields=["created", "updated", "skipped", "errors", "items", "total", "status"]
+    )
 
 
 def _zip_members(raw, batch):
@@ -359,15 +372,15 @@ def _zip_members(raw, batch):
         raise ImportTooLarge(f"Archives may contain at most {MAX_FILES} files.")
     if sum(info.file_size for info in members) > MAX_ARCHIVE_BYTES:
         raise ImportTooLarge("The archive's uncompressed contents exceed 25 MB.")
-    batch.total = len(members)
-    batch.save(update_fields=["total"])
     for info in members:
         try:
             with archive.open(info) as handle:
                 yield info.filename, handle.read(MAX_FILE_BYTES + 1)
         except Exception as exc:  # pragma: no cover - corrupt member
             batch.note_error(info.filename, str(exc) or "Could not read this file.")
+            batch.note_item(info.filename, "error", str(exc) or "Could not read this file.")
             batch.skipped += 1
+            batch.add_total(1)
             _touch(batch)
 
 
@@ -396,7 +409,9 @@ def run_import(company, uploads, uploaded_by=None):
         uploaded_by=uploaded_by,
         file=first if len(uploads) == 1 else None,
         status=ImportBatch.RUNNING,
-        total=len(uploads),
+        # Grown as work is discovered: a zip contributes one unit per member and
+        # a CSV one per row, so ``total`` counts items, not uploads.
+        total=0,
     )
     try:
         _process(batch, uploads)
@@ -432,17 +447,22 @@ def _process(batch, uploads):
         if _is_zip(name, raw):
             for member, data in _zip_members(raw, batch):
                 if _is_csv(member):
-                    _import_csv_bytes(batch, data)
+                    _import_csv_bytes(batch, data, source=f"{member}: ")
                     continue
+                batch.add_total(1)
                 outcome = _import_resume_bytes(batch, member, data)
                 _bump(batch, outcome)
             continue
         if _is_csv(name):
             _import_csv_bytes(batch, raw)
             continue
+        batch.add_total(1)
         if not _is_resume(name):
             batch.skipped += 1
             batch.note_error(name, "Unsupported file type (use PDF, DOCX, TXT, CSV or ZIP).")
+            batch.note_item(
+                name, "error", "Unsupported file type (use PDF, DOCX, TXT, CSV or ZIP)."
+            )
             _touch(batch)
             continue
         outcome = _import_resume_bytes(batch, name, raw)
