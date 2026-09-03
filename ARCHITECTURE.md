@@ -62,3 +62,66 @@ Old apps `candidate/`, `employee/`, `empadmin/`, `dashboard/`, old `jobs/` and o
 - generate_questions(job, skill, n=5, kind="MCQ") -> list[Question] (saved, source=AI)
 - grade_text_answer(question, answer) -> int 0-100 | None
 - summarize_fit(application) -> sets application.ai_summary / ai_fit_score
+
+## Phase 3 — Monetization (contracts for parallel agents)
+
+New apps, each owned by one agent. All models with a tenant get `company FK` and are scoped with `for_company`.
+Every external service (Razorpay, WhatsApp, video storage, job boards, e-sign) is behind an adapter in `<app>/gateway.py`
+that reads env keys, returns a clear "not configured" state when keys are missing, and is mocked in tests. Never call networks in tests.
+
+### billing/ (overhaul)
+- Plan gains: code STARTER/GROWTH/AGENCY (keep FREE for legacy/trial), price_monthly_inr, price_yearly_inr, max_seats, ai_credits_monthly,
+  features JSON (scheduling, careers_page, client_portal, whatsapp, video, api). Data migration seeds 3 tiers (1499/4999/12999 INR monthly; yearly = 10x).
+- Subscription gains: provider choices STRIPE/RAZORPAY, interval MONTHLY/YEARLY, trial_ends_at (14-day full-featured trial on company creation),
+  seats_used property, gstin CharField blank, billing_address JSON.
+- UsageRecord(company, kind AI_SCREEN/WHATSAPP_MSG/VIDEO_MINUTE, quantity, period_start); helper `billing.usage.consume(company, kind, qty=1)` raises `QuotaExceeded` past plan quota; `usage.warn_threshold=0.8` triggers a notification via notifications app.
+- Invoice(company, number sequential per FY like IP/2026-27/0001, amount, gst_rate 18, cgst/sgst/igst split by state code, gstin, pdf FileField, issued_at, paid_at, provider_ref). PDF via reportlab or weasyprint-free HTML→PDF (xhtml2pdf) — pin whatever you use.
+- Razorpay gateway: create subscription/order, verify webhook signature, handle payment.captured/subscription.charged/failed. Dunning: PAST_DUE → 3 reminder emails over 7 days then downgrade.
+- PlacementFee(company, application, amount, status) auto-created on HIRED when plan has per_hire_fee set.
+- `billing.entitlements.has_feature(company, "client_portal")` used by every gated app; `require_feature(name)` decorator/mixin.
+
+### scheduling/
+- InterviewerAvailability(user, weekday, start, end, timezone), CalendarConnection(user, provider GOOGLE/OUTLOOK, tokens JSON, enabled) — OAuth adapters env-gated.
+- Interview(application, stage, interviewers M2M, scheduled_start, scheduled_end, timezone, location_or_link, status PROPOSED/CONFIRMED/RESCHEDULED/CANCELLED/COMPLETED, booking_token).
+- Candidate self-service booking page at /schedule/<token>/ showing computed free slots; reschedule/cancel links; .ics attachments in emails; auto-create Interview proposal when application enters an INTERVIEW/HR stage.
+
+### clients/ (client portal for staffing firms)
+- Client(company, name, contact_email, logo), ClientAccess(client, email, token, expires_at), Job gets optional `client FK` (add in jobs/ via migration — clients agent may add ONLY this field + migration to jobs/).
+- Submission(application, client, note, status SUBMITTED/SHORTLISTED/REJECTED/INTERVIEW_REQUESTED, client_feedback, decided_at).
+- Portal at /client/<token>/: branded read-only shortlist with resume view, AI summary, feedback form. Gated by feature client_portal.
+
+### notifications/
+- Channel adapters: email (existing), WhatsApp Business Cloud API (env WHATSAPP_TOKEN/PHONE_ID), SMS stub. Template registry keyed by event (application_received, stage_advanced, interview_scheduled, reminder_24h, assessment_result, offer_sent, usage_warning, payment_failed).
+- NotificationPreference(company, event, channels JSON), OutboundMessage(company, recipient, channel, event, payload, status, provider_ref, sent_at) with retry.
+- `notifications.send(event, recipient_user_or_phone, context, company)` — the single entrypoint other apps call (jobs/emails.py should delegate here; notifications agent may edit jobs/emails.py only).
+- Consumes WHATSAPP_MSG usage via billing.usage.consume.
+
+### talent/
+- TalentProfile(company, email, name, phone, resume, resume_text, skills M2M, source, tags JSON, last_contacted, linked_candidate FK CandidateProfile null), unique (company, email).
+- Bulk import: zip/multiple files upload → background-safe sync parse via assessments.resume.extract_text; AI extraction of name/email/skills via assessments.ai when key present; dedupe by email/phone.
+- Full-text search (Postgres search vector when on Postgres, LIKE fallback), filters by skill/experience/tags; "Add to job" creates an Application.
+
+### video/
+- VideoQuestion(company, text, think_seconds, answer_seconds), VideoScreen(job, stage, questions M2M, deadline_days), VideoResponse(application, screen, question, file FileField/S3 key, duration, transcript, ai_summary, status).
+- Candidate recorder page using MediaRecorder API (webm), upload in chunks or single POST, size cap; recruiter review page with playback + AI summary (assessments.ai style; transcript via env-gated adapter, otherwise blank). Consumes VIDEO_MINUTE usage.
+
+### careers/
+- CareersSite(company OneToOne, slug, custom_domain, headline, about, brand_color, logo, published). Public page at /careers/<slug>/ (and by Host header for custom domains) listing OPEN jobs with apply flow reusing web apply.
+- JobDistribution(job, board LINKEDIN/INDEED/NAUKRI, status, external_id, posted_at): adapters env-gated (Indeed XML feed generation is real: /careers/feeds/indeed.xml; others stubbed with clear "connect account" UI). SEO: JobPosting JSON-LD on job pages.
+
+### analytics/
+- Materialized-on-read metrics service: time_to_hire, funnel by stage, source effectiveness, interviewer consistency (rating variance), offer acceptance, assessment pass rates; date range + job filters; CSV export. Dashboard page with charts (Chart.js via cdnjs, load the `dataviz` skill). Owner-only.
+
+### offers/
+- OfferTemplate(company, name, body_html with {{placeholders}}), Offer(application, template, salary, currency INR, joining_date, expires_at, body_rendered, pdf, status DRAFT/SENT/VIEWED/ACCEPTED/DECLINED/EXPIRED, sign_token, signed_name, signed_ip, signed_at). Built-in click-to-sign with audit trail; optional external e-sign adapter env-gated. Accepting marks application HIRED.
+
+### partners/
+- Reseller(name, code, commission_pct, contact), Referral(reseller, company, signed_up_at, first_payment_at), CommissionLedger entries computed from Invoices paid. Signup accepts ?ref=CODE (cookie 30 days). Reseller dashboard at /partners/<code>/ via token login.
+- WhiteLabel(company OneToOne, brand_name, logo, primary_color, custom_domain, hide_powered_by) applied via context processor in base.html when present (partners agent may edit base.html brand block ONLY).
+- License(company, kind SELF_HOSTED, key, seats, expires_at) + `manage.py issue_license` — key verification helper.
+
+### marketplace/
+- QuestionPack(title, skill_name, description, price_inr, questions JSON, published, author), PackPurchase(company, pack, invoice FK null, purchased_at); purchase copies questions into the company's Question bank (source=MARKETPLACE — add choice in assessments/ is allowed for marketplace agent, one line). Verified candidate pool: opt-in flag on CandidateProfile `share_in_pool` (marketplace agent may add this field + migration to jobs/), cross-company search of candidates who passed any assessment, gated by feature `talent_pool_search`.
+
+### Shared wiring (foundation agent only)
+INSTALLED_APPS + root urls for all 10 apps; sidebar links: Schedule, Clients, Talent, Video, Careers, Analytics, Offers, Marketplace, plus Settings ▸ Notifications, Branding, Partners; pyproject testpaths; requirements pins: razorpay, xhtml2pdf, google-api-python-client, google-auth-oauthlib, msal, icalendar, python-dateutil, requests. New feature agents may only APPEND to requirements.txt.
