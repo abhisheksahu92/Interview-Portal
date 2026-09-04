@@ -18,23 +18,23 @@
   {% if form.non_field_errors %}
     <div class="alert alert-danger py-1 px-2 small">{{ form.non_field_errors }}</div>
   {% endif %}
-  <div class="mb-2">
-    <label class="form-label small mb-1" for="{{ form.decision.id_for_label }}">Decision</label>
+  <div class="mb-3">
+    <label class="form-label" for="{{ form.decision.id_for_label }}">Decision</label>
     {{ form.decision }}
     {% for e in form.decision.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
   </div>
-  <div class="mb-2">
-    <label class="form-label small mb-1" for="{{ form.rating.id_for_label }}">Rating</label>
+  <div class="mb-3">
+    <label class="form-label" for="{{ form.rating.id_for_label }}">Rating</label>
     {{ form.rating }}
     {% for e in form.rating.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
   </div>
-  <div class="mb-2">
-    <label class="form-label small mb-1" for="{{ form.feedback.id_for_label }}">Feedback</label>
+  <div class="mb-3">
+    <label class="form-label" for="{{ form.feedback.id_for_label }}">Feedback</label>
     {{ form.feedback }}
     {% for e in form.feedback.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
   </div>
-  <p class="ip-muted small mb-2">
+  <p class="ip-muted small mb-3">
     A pass advances this application to the next stage; a fail rejects it.
   </p>
-  <button class="btn btn-sm btn-primary" type="submit">Save review</button>
+  <button class="btn btn-primary w-100" type="submit">Save review</button>
 </form>

@@ -198,13 +198,15 @@ class Stitch:
         seen, uniq = set(), []
         for s in out:
             if s["id"] not in seen:
-                seen.add(s["id"]); uniq.append(s)
+                seen.add(s["id"])
+                uniq.append(s)
         return uniq
 
     def save_screen_files(self, screen: dict[str, Any],
                           out_dir: str | os.PathLike[str], slug: str) -> dict[str, str]:
         """Write a Screen's HTML and screenshot to <out_dir>/<slug>.{html,png}."""
-        out = pathlib.Path(out_dir); out.mkdir(parents=True, exist_ok=True)
+        out = pathlib.Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
         paths = {}
         url = (screen.get("htmlCode") or {}).get("downloadUrl")
         if url:

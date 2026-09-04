@@ -1,17 +1,16 @@
 {% extends "base.html" %}
 {% block title %}Sign in · Interview Portal{% endblock %}
-{% block main_class %}container py-5{% endblock %}
+{% block main_class %}container{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-sm-10 col-md-7 col-lg-5">
-    <div class="text-center mb-4">
-      <a class="ip-brand justify-content-center" href="/">
+<div class="ip-auth-wrap">
+    <div class="ip-auth-brand">
+      <a class="ip-brand" href="/">
         <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
         <span>Interview&nbsp;Portal</span>
       </a>
     </div>
-    <div class="ip-section">
-      <h1 class="h5 mb-1">Sign in</h1>
+    <div class="ip-auth-card">
+      <h1 class="mb-1">Sign in</h1>
       <p class="ip-muted small mb-4">Welcome back — pick up where your pipeline left off.</p>
       <form method="post">
         {% csrf_token %}
@@ -27,10 +26,9 @@
         <button class="btn btn-primary w-100 mt-4" type="submit">Sign in</button>
       </form>
     </div>
-    <p class="text-center ip-muted small mt-4 mb-0">
+    <p class="ip-auth-foot">
       New candidate? <a href="{% url 'core:candidate_signup' %}">Create an account</a><br>
       Hiring team? <a href="{% url 'core:company_signup' %}">Register your company</a>
     </p>
   </div>
-</div>
 {% endblock %}

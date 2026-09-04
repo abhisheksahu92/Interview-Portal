@@ -43,28 +43,24 @@
 {% endblock %}
 {% block content %}
 
-<div class="d-flex align-items-center gap-2 mb-3">
-  <h2 class="h6 mb-0">Pipeline</h2>
+<div class="ip-section__head">
+  <h2>Pipeline</h2>
   <span class="ip-spinner htmx-indicator" id="board-indicator" role="status" aria-label="Updating board"></span>
 </div>
 {% include "web/partials/kanban.html" %}
 
-<div class="row g-3 mt-1">
+<div class="row g-4 mt-5">
   <div class="col-md-6">
-    <div class="ip-section h-100">
-      <h2 class="h6 mb-3">Description</h2>
-      <p class="mb-0 ip-muted">{{ job.description|linebreaksbr|default:"—" }}</p>
-    </div>
+    <p class="ip-eyebrow">Description</p>
+    <p class="mb-0 ip-muted">{{ job.description|linebreaksbr|default:"—" }}</p>
   </div>
   <div class="col-md-6">
-    <div class="ip-section h-100">
-      <h2 class="h6 mb-3">Requirements</h2>
-      <p class="mb-3 ip-muted">{{ job.requirements|linebreaksbr|default:"—" }}</p>
-      <div class="d-flex flex-wrap gap-1">
-        {% for skill in job.skills.all %}
-          <span class="ip-badge ip-badge--neutral">{{ skill.name }}</span>
-        {% endfor %}
-      </div>
+    <p class="ip-eyebrow">Requirements</p>
+    <p class="mb-3 ip-muted">{{ job.requirements|linebreaksbr|default:"—" }}</p>
+    <div class="d-flex flex-wrap gap-1">
+      {% for skill in job.skills.all %}
+        <span class="ip-badge ip-badge--neutral">{{ skill.name }}</span>
+      {% endfor %}
     </div>
   </div>
 </div>

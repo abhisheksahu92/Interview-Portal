@@ -1,13 +1,16 @@
 <article class="ip-card" id="app-card-{{ application.pk }}">
   <div class="d-flex justify-content-between align-items-start gap-2">
-    <div style="min-width:0">
-      <div class="ip-card__name">
-        <a class="text-reset" href="{% url 'web:candidate_detail' application.candidate_id %}"
-           title="Open {{ application.candidate.user.email }}'s profile">{{ application.candidate.display_name }}</a>
+    <div class="d-flex align-items-start gap-2" style="min-width:0">
+      <span class="ip-avatar" aria-hidden="true">{{ application.candidate.display_name|slice:":1" }}</span>
+      <div style="min-width:0">
+        <div class="ip-card__name">
+          <a href="{% url 'web:candidate_detail' application.candidate_id %}"
+             title="Open {{ application.candidate.user.email }}'s profile">{{ application.candidate.display_name }}</a>
+        </div>
+        {% if application.candidate.headline %}
+          <div class="ip-card__meta">{{ application.candidate.headline }}</div>
+        {% endif %}
       </div>
-      {% if application.candidate.headline %}
-        <div class="ip-card__meta">{{ application.candidate.headline }}</div>
-      {% endif %}
     </div>
     {% if application.ai_fit_score is not None %}
       <span class="ip-fit ip-fit--{% if application.ai_fit_score >= 70 %}high{% elif application.ai_fit_score >= 40 %}mid{% else %}low{% endif %}"
@@ -59,14 +62,56 @@
               title="Reject">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
+      {# The review form loads into the slide-over below — same hx-target id. #}
       <button class="btn btn-sm btn-outline-secondary ms-auto"
               hx-get="{% url 'web:application_review' application.pk %}"
               hx-target="#review-slot-{{ application.pk }}" hx-swap="innerHTML"
+              data-ip-slideover="#review-panel-{{ application.pk }}"
+              aria-haspopup="dialog"
               aria-label="Review {{ application.candidate.user.email }}">
         <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Review
       </button>
       {% include "web/partials/application_actions.html" %}
     </div>
-    <div id="review-slot-{{ application.pk }}"></div>
+
+    <div class="ip-slideover" id="review-panel-{{ application.pk }}" hidden>
+      <div class="ip-slideover__scrim" data-ip-slideover-close></div>
+      <aside class="ip-slideover__panel" role="dialog" aria-modal="true"
+             aria-label="Review {{ application.candidate.display_name }}">
+        <header class="ip-slideover__head">
+          <div style="min-width:0">
+            <h2 class="ip-slideover__title text-truncate">{{ application.candidate.display_name }}</h2>
+            <span class="ip-slideover__sub">
+              {{ job.title }}{% if stage_name %} · {{ stage_name }}{% endif %}
+            </span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary ip-icon-btn ms-auto"
+                  data-ip-slideover-close aria-label="Close review panel">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </header>
+        <div class="ip-slideover__body">
+          <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
+            <div style="min-width:0">
+              <p class="ip-eyebrow">Candidate</p>
+              <p class="mb-1"><a href="{% url 'web:candidate_detail' application.candidate_id %}">{{ application.candidate.user.email }}</a></p>
+              <p class="ip-muted small mb-0">
+                {{ application.candidate.experience_years }} yrs{% if application.candidate.headline %}<span class="ip-meta-dot"></span>{{ application.candidate.headline }}{% endif %}
+              </p>
+            </div>
+            {% if application.ai_fit_score is not None %}
+              <span class="ip-fit ip-fit--{% if application.ai_fit_score >= 70 %}high{% elif application.ai_fit_score >= 40 %}mid{% else %}low{% endif %}"
+                    title="AI fit score {{ application.ai_fit_score }} of 100">{{ application.ai_fit_score }}</span>
+            {% endif %}
+          </div>
+          {% if application.ai_summary %}
+            <p class="ip-eyebrow">AI summary</p>
+            <p class="ip-muted small">{{ application.ai_summary }}</p>
+          {% endif %}
+          <p class="ip-eyebrow">Your review</p>
+          <div id="review-slot-{{ application.pk }}"></div>
+        </div>
+      </aside>
+    </div>
   {% endif %}
 </article>

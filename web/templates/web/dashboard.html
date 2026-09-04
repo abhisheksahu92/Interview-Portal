@@ -16,43 +16,35 @@
 {% endblock %}
 {% block content %}
 
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3">
-    <div class="ip-kpi">
-      <div class="ip-kpi__label">Open jobs</div>
-      <div class="ip-kpi__value">{{ kpis.open_jobs }}</div>
-      <div class="ip-kpi__trend">of {{ jobs|length }} total posting{{ jobs|length|pluralize }}</div>
-    </div>
+<div class="ip-bento ip-bento--5 mb-5">
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Open jobs</div>
+    <div class="ip-kpi__value">{{ kpis.open_jobs }}</div>
+    <div class="ip-kpi__trend">of {{ jobs|length }} total posting{{ jobs|length|pluralize }}</div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="ip-kpi">
-      <div class="ip-kpi__label">Active applications</div>
-      <div class="ip-kpi__value">{{ kpis.active_applications }}</div>
-      <div class="ip-kpi__trend">currently moving through a stage</div>
-    </div>
+  <div class="ip-bento__tile ip-bento__tile--wide ip-kpi">
+    <div class="ip-kpi__label">Active applications</div>
+    <div class="ip-kpi__value">{{ kpis.active_applications }}</div>
+    <div class="ip-kpi__trend">currently moving through a stage</div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="ip-kpi">
-      <div class="ip-kpi__label">Hires this month</div>
-      <div class="ip-kpi__value">{{ kpis.hires_this_month }}</div>
-      <div class="ip-kpi__trend">reached the final stage</div>
-    </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Hires this month</div>
+    <div class="ip-kpi__value">{{ kpis.hires_this_month }}</div>
+    <div class="ip-kpi__trend">reached the final stage</div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="ip-kpi">
-      <div class="ip-kpi__label">Avg fit score</div>
-      <div class="ip-kpi__value">
-        {% if kpis.avg_fit_score %}{{ kpis.avg_fit_score|floatformat:0 }}{% else %}—{% endif %}
-      </div>
-      <div class="ip-kpi__trend">
-        {% if kpis.avg_fit_score %}AI résumé match, 0–100{% else %}no AI scores yet{% endif %}
-      </div>
+  <div class="ip-bento__tile ip-bento__tile--lime ip-kpi">
+    <div class="ip-kpi__label">Avg fit score</div>
+    <div class="ip-kpi__value">
+      {% if kpis.avg_fit_score %}{{ kpis.avg_fit_score|floatformat:0 }}{% else %}—{% endif %}
+    </div>
+    <div class="ip-kpi__trend">
+      {% if kpis.avg_fit_score %}AI résumé match, 0–100{% else %}no AI scores yet{% endif %}
     </div>
   </div>
 </div>
 
 {% if upcoming_interviews is not None or pending_offer_count is not None %}
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-5">
   {% if upcoming_interviews is not None %}
     <div class="col-lg-8">
       <div class="ip-section h-100">
@@ -87,7 +79,7 @@
   {% endif %}
   {% if pending_offer_count is not None %}
     <div class="col-6 col-lg-4">
-      <a class="ip-kpi d-block text-decoration-none h-100" href="{% url 'offers:index' %}">
+      <a class="ip-bento__tile ip-kpi h-100" href="{% url 'offers:index' %}">
         <div class="ip-kpi__label">Pending offers</div>
         <div class="ip-kpi__value">{{ pending_offer_count }}</div>
         <div class="ip-kpi__trend">sent, awaiting a signature</div>
@@ -97,7 +89,7 @@
 </div>
 {% endif %}
 
-<section class="ip-section" id="jobs">
+<section id="jobs">
   <div class="ip-section__head">
     <h2>Jobs</h2>
     <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:job_create' %}">New job</a>

@@ -101,21 +101,27 @@
         <li>
           <a class="ip-nav__link {% if vn == 'billing:overview' %}is-active{% endif %}" href="{% url 'billing:overview' %}">
             <i class="bi bi-credit-card" aria-hidden="true"></i> Billing
-            {% if billing_effective_plan %}
-              <span class="ip-nav__count">{{ billing_effective_plan.name }}</span>
-            {% endif %}
           </a>
-          {% if billing_in_trial %}
-            <span class="ip-nav__note small ip-muted d-block px-3 pb-2">
-              {{ billing_effective_plan.name }} trial · {{ billing_trial_days_left }} day{{ billing_trial_days_left|pluralize }} left
-            </span>
-          {% endif %}
         </li>
       {% endif %}
     </ul>
   </nav>
 
   <div class="ip-sidebar__foot">
+    {% if current_role != "INTERVIEWER" and billing_effective_plan %}
+      <div class="ip-rail-plan">
+        <span class="ip-rail-plan__label">Plan</span>
+        <div class="ip-rail-plan__row">
+          <span class="ip-rail-plan__name">{{ billing_effective_plan.name }}</span>
+          <a class="ip-rail-plan__cta" href="{% url 'billing:overview' %}">Manage</a>
+        </div>
+        {% if billing_in_trial %}
+          <span class="ip-rail-plan__days ip-nav__note">
+            {{ billing_effective_plan.name }} trial · {{ billing_trial_days_left }} day{{ billing_trial_days_left|pluralize }} left
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
     {% if user_companies|length > 1 %}
       <form method="post" action="{% url 'core:switch_company' %}" class="mb-2">
         {% csrf_token %}

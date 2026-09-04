@@ -1,15 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Join {{ invitation.company.name }} · Interview Portal{% endblock %}
-{% block main_class %}container py-5{% endblock %}
+{% block main_class %}container{% endblock %}
 {% block page_header %}
 <div class="ip-page-head"><div><h1>Accept invitation</h1>
   <p>{{ invitation.company.name }} invited you as {{ invitation.get_role_display }}.</p></div></div>
 {% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-sm-10 col-md-7 col-lg-5">
-    <div class="ip-section">
-      <h2 class="h5 mb-1">Join {{ invitation.company.name }}</h2>
+<div class="ip-auth-wrap">
+    <div class="ip-auth-card">
+      <h2 class="mb-1">Join {{ invitation.company.name }}</h2>
       <p class="ip-muted small mb-4">
         Signed in as <strong>{{ user.email }}</strong>. Accepting adds you to
         <strong>{{ invitation.company.name }}</strong> as
@@ -22,5 +21,4 @@
       </form>
     </div>
   </div>
-</div>
 {% endblock %}

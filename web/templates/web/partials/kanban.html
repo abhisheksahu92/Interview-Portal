@@ -1,6 +1,6 @@
 <div id="kanban">
 {% if board_notice %}
-  <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2" role="status">
+  <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2 mb-3" role="status">
     <i class="bi bi-info-circle" aria-hidden="true"></i>{{ board_notice }}
   </div>
 {% endif %}
@@ -16,9 +16,9 @@
       {% endif %}
       <div class="ip-board__body">
         {% for application in column.applications %}
-          {% include "web/partials/application_card.html" %}
+          {% include "web/partials/application_card.html" with stage_name=column.stage.name %}
         {% empty %}
-          <p class="ip-muted small mb-0 py-2 text-center">No candidates here</p>
+          <p class="ip-card__meta mb-0 py-3 text-center">No candidates here</p>
         {% endfor %}
       </div>
     </div>

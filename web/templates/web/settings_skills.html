@@ -11,7 +11,9 @@
 {% block content %}
 <div class="row g-3">
   <div class="col-lg-7">
-    <section class="ip-section">
+    <section>
+      <div class="ip-section__head"><h2>Skills</h2>
+        <span class="ip-badge ip-badge--neutral">{{ skills|length }}</span></div>
       {% if skills %}
         <ul class="list-group list-group-flush mb-0">
           {% for skill in skills %}

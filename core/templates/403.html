@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 {% block title %}403 Access denied · Interview Portal{% endblock %}
-{% block main_class %}container py-5{% endblock %}
+{% block main_class %}container{% endblock %}
 {% block page_header %}
 <div class="ip-page-head"><div>
   <h1>{% if feature %}Not included in your plan{% else %}You do not have access to that{% endif %}</h1>
 </div></div>
 {% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-sm-10 col-md-8 col-lg-6">
-    <div class="ip-section">
-      <div class="ip-empty">
+<div class="ip-auth-wrap">
+    <div class="ip-auth-card">
+      <div class="ip-empty ip-empty--sm">
         <span class="ip-empty__icon" aria-hidden="true">
           <i class="bi bi-{% if feature %}gem{% else %}shield-lock{% endif %}"></i>
         </span>
@@ -36,5 +35,4 @@
       </div>
     </div>
   </div>
-</div>
 {% endblock %}

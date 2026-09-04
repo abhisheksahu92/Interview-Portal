@@ -1,14 +1,13 @@
 {% extends "base.html" %}
 {% block title %}404 Page not found · Interview Portal{% endblock %}
-{% block main_class %}container py-5{% endblock %}
+{% block main_class %}container{% endblock %}
 {% block page_header %}
 <div class="ip-page-head"><div><h1>We could not find that page</h1><p>The link may be broken, or the item may have been moved or deleted.</p></div></div>
 {% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-sm-10 col-md-8 col-lg-6">
-    <div class="ip-section">
-      <div class="ip-empty">
+<div class="ip-auth-wrap">
+    <div class="ip-auth-card">
+      <div class="ip-empty ip-empty--sm">
         <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-compass"></i></span>
         <div class="ip-empty__title">404 — Page not found</div>
         <p>The link may be broken, or the item may have been moved or deleted.</p>
@@ -19,5 +18,4 @@
       </div>
     </div>
   </div>
-</div>
 {% endblock %}

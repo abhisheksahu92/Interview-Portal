@@ -17,7 +17,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700..800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'web/app.css' %}">
@@ -25,7 +25,11 @@
 {% brand_style %}
 {% block extra_head %}{% endblock %}
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+{# Candidate-facing and public surfaces opt into the warm personality with     #}
+{#     {% block body_attrs %} class="ip-warm"{% endblock %}                     #}
+{# (note the leading space) — it switches the accent to violet and the radii to #}
+{# the large set.  See the class inventory at the top of web/static/web/app.css.#}
+<body{% block body_attrs %}{% endblock %} hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 {% with vn=request.resolver_match.view_name %}
 {% if user.is_authenticated and current_company %}
   {# ---------------- Company workspace: sidebar shell ---------------- #}
@@ -196,6 +200,91 @@
     document.addEventListener("click", function (e) {
       var btn = e.target.closest("[data-ip-dismiss]");
       if (btn) { btn.closest(".ip-toast").remove(); }
+    });
+
+    /* --- Slide-over ------------------------------------------------------
+       Any control with data-ip-slideover="#panel-id" opens that panel; the
+       scrim, any [data-ip-slideover-close] inside it and Escape close it.
+       Focus is trapped in the panel and returned to the opener on close. */
+    var ipOpenPanel = null;
+    var ipOpener = null;
+
+    function ipFocusables(panel) {
+      return Array.prototype.filter.call(
+        panel.querySelectorAll(
+          'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),' +
+          'select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        ),
+        function (el) { return el.offsetWidth || el.offsetHeight || el.getClientRects().length; }
+      );
+    }
+
+    function ipCloseSlideover() {
+      if (!ipOpenPanel) { return; }
+      var panel = ipOpenPanel;
+      ipOpenPanel = null;
+      panel.classList.remove("is-open");
+      document.body.classList.remove("ip-slideover-open");
+      window.setTimeout(function () {
+        if (!panel.classList.contains("is-open")) { panel.hidden = true; }
+      }, 200);
+      if (ipOpener && document.contains(ipOpener)) { ipOpener.focus(); }
+      ipOpener = null;
+    }
+
+    function ipOpenSlideover(panel, opener) {
+      if (!panel) { return; }
+      if (ipOpenPanel && ipOpenPanel !== panel) { ipCloseSlideover(); }
+      ipOpener = opener || null;
+      ipOpenPanel = panel;
+      panel.hidden = false;
+      document.body.classList.add("ip-slideover-open");
+      /* next frame, so the transform transition actually runs */
+      window.requestAnimationFrame(function () { panel.classList.add("is-open"); });
+      var first = ipFocusables(panel)[0];
+      if (first) { first.focus(); }
+    }
+
+    document.addEventListener("click", function (e) {
+      var opener = e.target.closest("[data-ip-slideover]");
+      if (opener) {
+        var panel = document.querySelector(opener.getAttribute("data-ip-slideover"));
+        if (panel) { ipOpenSlideover(panel, opener); }
+        return;
+      }
+      if (e.target.closest("[data-ip-slideover-close]") ||
+          e.target.classList.contains("ip-slideover__scrim")) {
+        ipCloseSlideover();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (!ipOpenPanel) { return; }
+      if (e.key === "Escape") { ipCloseSlideover(); return; }
+      if (e.key !== "Tab") { return; }
+      var items = ipFocusables(ipOpenPanel);
+      if (!items.length) { return; }
+      var first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !ipOpenPanel.contains(document.activeElement))) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    });
+
+    /* HTMX may swap the panel's content, or swap away the whole subtree that
+       held it (the board re-renders on save).  Keep the trap honest either way. */
+    document.body.addEventListener("htmx:afterSwap", function (e) {
+      if (!ipOpenPanel) { return; }
+      if (!document.contains(ipOpenPanel)) {
+        ipOpenPanel = null; ipOpener = null;
+        document.body.classList.remove("ip-slideover-open");
+        return;
+      }
+      if (ipOpenPanel.contains(e.target) && !ipOpenPanel.contains(document.activeElement)) {
+        var first = ipFocusables(ipOpenPanel)[0];
+        if (first) { first.focus(); }
+      }
     });
     window.setTimeout(function () {
       document.querySelectorAll(".ip-toast:not(.ip-toast--error):not(.ip-toast--danger)")

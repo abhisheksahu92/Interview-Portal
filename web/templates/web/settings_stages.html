@@ -14,7 +14,9 @@
 {% block content %}
 <div class="row g-3">
   <div class="col-lg-7">
-    <section class="ip-section">
+    <section>
+      <div class="ip-section__head"><h2>Stages</h2>
+        <span class="ip-badge ip-badge--neutral">{{ stages|length }}</span></div>
       <div class="ip-table-wrap">
         <table class="ip-table">
           <caption class="visually-hidden">Stages for {{ job.title }}</caption>
@@ -23,7 +25,7 @@
           <tbody>
             {% for stage in stages %}
               <tr {% if edit_stage and edit_stage.pk == stage.pk %}class="table-active"{% endif %}>
-                <td class="ip-muted">{{ stage.order }}</td>
+                <td class="ip-muted ip-num">{{ stage.order }}</td>
                 <td class="fw-semibold">{{ stage.name }}</td>
                 <td><span class="ip-badge ip-badge--neutral">{{ stage.get_kind_display }}</span></td>
                 <td>{% if stage.requires_assessment %}<span class="ip-badge ip-badge--accent">Required</span>{% else %}<span class="ip-muted">—</span>{% endif %}</td>

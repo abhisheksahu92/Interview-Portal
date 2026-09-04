@@ -7,34 +7,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>500 Server error · Interview Portal</title>
 <style>
-  :root { color-scheme: light dark; }
+  /* Design system v3 tokens, inlined: this page cannot load app.css. */
+  :root {
+    color-scheme: light dark;
+    --paper-50: #FDFBF8; --paper-100: #FAF7F2; --paper-200: #F3EEE6;
+    --ink-900: #141210; --ink-500: #55504A; --ink-300: #8B847B;
+    --rule: #E3DCD1; --accent: #FF5A1F; --accent-on: #FFFFFF;
+    --shadow: 0 1px 2px rgba(20, 18, 16, .05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper-50: #0F0D0C; --paper-100: #12100E; --paper-200: #1A1714;
+      --ink-900: #F5F1EA; --ink-500: #A8A099; --ink-300: #7C746B;
+      --rule: #2A2621; --accent: #FF7A45; --accent-on: #1B0E07;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .5);
+    }
+  }
   body {
     margin: 0; min-height: 100vh; display: grid; place-items: center;
-    background: #f6f7f9; color: #1f2430; padding: 2rem;
-    font: 16px/1.55 "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--paper-100); color: var(--ink-900); padding: 2rem;
+    font: 15px/1.6 "Manrope", "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   .card {
-    max-width: 30rem; width: 100%; background: #fff; border: 1px solid #e3e6eb;
-    border-radius: 14px; padding: 2rem; text-align: center;
-    box-shadow: 0 12px 32px rgba(16, 24, 40, .08);
+    max-width: 25rem; width: 100%; background: var(--paper-50);
+    border: 1px solid var(--rule); border-radius: 12px;
+    padding: 2rem 1.5rem; text-align: center; box-shadow: var(--shadow);
   }
   .mark {
-    display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem;
-    border-radius: 10px; background: #4f46e5; color: #fff; font-weight: 700;
-    margin-bottom: 1rem;
+    display: inline-grid; place-items: center; width: 2rem; height: 2rem;
+    border-radius: 4px; background: var(--accent); color: var(--accent-on);
+    font-weight: 800; font-size: .8125rem; margin-bottom: 1.25rem;
+    font-family: "Bricolage Grotesque", "Space Grotesk", system-ui, sans-serif;
   }
-  h1 { font-size: 1.25rem; margin: 0 0 .5rem; }
-  p { margin: 0 0 1.25rem; color: #5b6472; font-size: .9375rem; }
+  h1 {
+    font-family: "Bricolage Grotesque", "Space Grotesk", system-ui, sans-serif;
+    font-size: 1.25rem; font-weight: 800; letter-spacing: -.03em;
+    line-height: 1.2; margin: 0 0 .5rem;
+  }
+  p { margin: 0 0 1.5rem; color: var(--ink-500); font-size: .8125rem; }
   a.btn {
-    display: inline-block; padding: .55rem 1.1rem; border-radius: 8px;
-    background: #4f46e5; color: #fff; text-decoration: none; font-weight: 600;
-    font-size: .9375rem;
+    display: inline-block; padding: .4375rem .875rem; border-radius: 4px;
+    background: var(--accent); color: var(--accent-on); text-decoration: none;
+    font-weight: 600; font-size: .8125rem;
   }
-  .brand { font-size: .8125rem; color: #8b93a1; margin-top: 1.25rem; }
-  @media (prefers-color-scheme: dark) {
-    body { background: #0f1218; color: #e6e9ef; }
-    .card { background: #161a22; border-color: #262c38; }
-    p { color: #9aa3b2; }
+  .brand {
+    font-size: .6875rem; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-300); margin-top: 1.5rem;
   }
 </style>
 </head>

@@ -14,23 +14,22 @@ serves the logged-in invite flow and the white-label client portal:
   show_auth_links show the sign-in / workspace buttons (app shell only)
 {% endcomment %}
 {% block title %}{{ page_title|default:"Link no longer valid" }} · Interview Portal{% endblock %}
-{% block main_class %}container py-5{% endblock %}
+{% block main_class %}container{% endblock %}
 {% block page_header %}
 <div class="ip-page-head"><div><h1>{{ page_title|default:"Link no longer valid" }}</h1>
   <p>This link can no longer be used.</p></div></div>
 {% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-sm-10 col-md-7 col-lg-5">
+<div class="ip-auth-wrap">
     {% if show_auth_links and not current_company %}
-      <div class="text-center mb-4">
-        <a class="ip-brand justify-content-center" href="/">
+      <div class="ip-auth-brand">
+        <a class="ip-brand" href="/">
           <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
           <span>Interview&nbsp;Portal</span>
         </a>
       </div>
     {% endif %}
-    <div class="ip-section cp-card p-4" data-token-state="{{ token_state|default:'unknown' }}">
+    <div class="ip-auth-card cp-card" data-token-state="{{ token_state|default:'unknown' }}">
       <div class="ip-empty ip-empty--sm">
         <span class="ip-empty__icon" aria-hidden="true" style="color:var(--ip-danger)"><i class="bi bi-exclamation-triangle"></i></span>
         <div class="ip-empty__title">This link is no longer valid</div>
@@ -46,5 +45,4 @@ serves the logged-in invite flow and the white-label client portal:
       </div>
     </div>
   </div>
-</div>
 {% endblock %}
