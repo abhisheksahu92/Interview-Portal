@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}My profile{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
 {% block content %}
 <div class="ip-page-head">
   <div>
@@ -59,7 +60,7 @@
     </div>
   </div>
   <div class="col-lg-4">
-    <div class="ip-section h-100">
+    <div class="ip-section">
       <h2 class="h6 mb-2">Résumé</h2>
       {% if profile.resume %}
         <p class="ip-muted small">Current file on record:</p>

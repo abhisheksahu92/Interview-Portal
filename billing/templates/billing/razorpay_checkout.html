@@ -6,9 +6,11 @@
   <p class="mb-1"><strong>{{ plan.name }}</strong> — {{ interval|lower }} billing</p>
   <p class="ip-kpi__value">₹{{ amount_inr|floatformat:0 }}</p>
   <p class="ip-muted small">18% GST is added on your invoice.</p>
-  <button class="btn btn-primary" id="rzp-pay" type="button">Pay with Razorpay</button>
-  <a class="btn btn-link" href="{% url 'billing:overview' %}">Cancel</a>
-  <p class="text-danger small mt-2 d-none" id="rzp-error"></p>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-primary" id="rzp-pay" type="button">Pay with Razorpay</button>
+    <a class="btn btn-outline-secondary" href="{% url 'billing:overview' %}">Cancel</a>
+  </div>
+  <p class="text-danger small mt-3 mb-0 d-none" id="rzp-error"></p>
   <form method="post" action="{{ verify_url }}" id="rzp-verify" class="d-none">
     {% csrf_token %}
     <input type="hidden" name="plan" value="{{ plan.code }}">

@@ -1,16 +1,16 @@
 {% for d in deliveries %}
   <tr>
     <td><code>{{ d.event }}</code></td>
-    {% if show_webhook %}<td class="text-truncate" style="max-width:14rem">{{ d.webhook.name }}</td>{% endif %}
+    {% if show_webhook %}<td class="text-truncate ip-muted" style="max-width:14rem">{{ d.webhook.name }}</td>{% endif %}
     <td>
-      {% if d.status == "SENT" %}<span class="badge text-bg-success">Sent</span>
-      {% elif d.status == "FAILED" %}<span class="badge text-bg-danger">Failed</span>
-      {% else %}<span class="badge text-bg-warning">Pending</span>{% endif %}
+      {% if d.status == "SENT" %}<span class="ip-badge ip-badge--success">Sent</span>
+      {% elif d.status == "FAILED" %}<span class="ip-badge ip-badge--danger">Failed</span>
+      {% else %}<span class="ip-badge ip-badge--warning">Pending</span>{% endif %}
     </td>
-    <td class="small">{{ d.attempts }}/{{ d.MAX_ATTEMPTS }}</td>
-    <td class="small">{{ d.response_code|default:"—" }}</td>
-    <td class="small text-muted">{{ d.created_at|date:"d M Y H:i" }}</td>
-    <td class="small text-muted">
+    <td class="text-end">{{ d.attempts }}/{{ d.MAX_ATTEMPTS }}</td>
+    <td class="text-end">{{ d.response_code|default:"—" }}</td>
+    <td class="ip-muted text-nowrap">{{ d.created_at|date:"d M Y H:i" }}</td>
+    <td class="ip-muted small">
       {% if d.status == "PENDING" and d.next_attempt_at %}retry {{ d.next_attempt_at|date:"d M H:i" }}
       {% elif d.last_error %}{{ d.last_error|truncatechars:60 }}
       {% else %}—{% endif %}
@@ -24,5 +24,5 @@
     </td>
   </tr>
 {% empty %}
-  <tr><td colspan="{% if show_webhook %}8{% else %}7{% endif %}" class="text-muted small">No deliveries yet.</td></tr>
+  <tr><td colspan="{% if show_webhook %}8{% else %}7{% endif %}" class="ip-muted">No deliveries yet.</td></tr>
 {% endfor %}

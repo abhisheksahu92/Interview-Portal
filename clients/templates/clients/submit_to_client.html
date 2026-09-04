@@ -17,7 +17,7 @@
       <div class="mb-3">
         <label class="form-label" for="{{ form.client.id_for_label }}">Client</label>
         {{ form.client }}
-        {% for e in form.client.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        {% for e in form.client.errors %}<div class="invalid-feedback d-block small">{{ e }}</div>{% endfor %}
       </div>
       <div class="mb-3">
         <label class="form-label" for="{{ form.note.id_for_label }}">Note for the client</label>

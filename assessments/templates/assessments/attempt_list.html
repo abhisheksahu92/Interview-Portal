@@ -10,20 +10,20 @@
 </div>
 {% endblock %}
 {% block content %}
-<section class="ip-section">
+<section>
   {% if attempts %}
     <div class="ip-table-wrap">
       <table class="ip-table">
         <caption class="visually-hidden">Attempts at {{ assessment.title }}</caption>
         <thead><tr><th scope="col">Candidate</th><th scope="col">Started</th>
-          <th scope="col">Submitted</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead>
+          <th scope="col">Submitted</th><th scope="col" class="text-end">Score</th><th scope="col">Result</th></tr></thead>
         <tbody>
           {% for row in rows %}
             <tr>
               <td>{{ row.attempt.application.candidate.user.email }}</td>
               <td class="ip-muted">{{ row.attempt.started_at }}</td>
               <td class="ip-muted">{{ row.attempt.submitted_at|default:"—" }}</td>
-              <td>{{ row.attempt.score_percent|default_if_none:"—" }}</td>
+              <td class="text-end">{{ row.attempt.score_percent|default_if_none:"—" }}</td>
               <td>
                 {% if row.attempt.passed is None %}<span class="ip-badge ip-badge--neutral">pending</span>
                 {% elif row.attempt.passed %}<span class="ip-badge ip-badge--success">passed</span>
@@ -36,15 +36,15 @@
             {% if row.pending %}
               <tr>
                 <td colspan="5">
-                  <p class="ip-muted small mb-2">
+                  <p class="ip-eyebrow mb-3">
                     {{ row.pending|length }} free-text answer{{ row.pending|pluralize }} awaiting a manual score.
                   </p>
                   {% for question in row.pending %}
-                    <form class="d-flex flex-wrap align-items-end gap-2 mb-3" method="post"
+                    <form class="ip-toolbar" method="post"
                           action="{% url 'assessments:attempt_manual_score' row.attempt.pk %}">
                       {% csrf_token %}
-                      <div class="flex-grow-1">
-                        <div class="fw-semibold small mb-1">{{ question.text }}</div>
+                      <div class="ip-toolbar__field ip-toolbar__field--grow">
+                        <div class="fw-semibold">{{ question.text }}</div>
                         <div class="ip-muted small">
                           Answer:
                           {% with answer=row.attempt.answers|get_item:question.pk %}
@@ -53,12 +53,14 @@
                         </div>
                       </div>
                       <input type="hidden" name="question" value="{{ question.pk }}">
-                      <div>
-                        <label class="form-label small mb-1" for="score-{{ row.attempt.pk }}-{{ question.pk }}">Score (0-100)</label>
-                        <input class="form-control" style="max-width:7rem" type="number" min="0" max="100"
+                      <div class="ip-toolbar__field ip-toolbar__field--narrow">
+                        <label for="score-{{ row.attempt.pk }}-{{ question.pk }}">Score (0-100)</label>
+                        <input class="form-control" type="number" min="0" max="100"
                                id="score-{{ row.attempt.pk }}-{{ question.pk }}" name="score" required>
                       </div>
-                      <button class="btn btn-sm btn-primary" type="submit">Save score</button>
+                      <div class="ip-toolbar__actions">
+                        <button class="btn btn-sm btn-primary" type="submit">Save score</button>
+                      </div>
                     </form>
                   {% endfor %}
                 </td>

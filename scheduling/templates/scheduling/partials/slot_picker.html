@@ -2,14 +2,14 @@
 <div id="slot-picker">
   {% timezone tz %}
   {% if not can_book %}
-    <p class="text-body-secondary mb-0">This interview is no longer open for booking.</p>
+    <p class="ip-muted mb-0">This interview is no longer open for booking.</p>
   {% elif days %}
     <form method="post" action="{% url 'scheduling:book_confirm' interview.booking_token %}">
       {% csrf_token %}
       <input type="hidden" name="timezone" value="{{ tz }}">
       {% for day in days %}
         <div class="mb-3">
-          <div class="fw-semibold small mb-1">{{ day.date|date:"D d M Y" }}</div>
+          <div class="ip-eyebrow mb-2">{{ day.date|date:"D d M Y" }}</div>
           <div class="d-flex flex-wrap gap-2">
             {% for item in day.slots %}
               <button class="btn btn-sm btn-outline-primary" type="submit" name="slot" value="{{ item.key }}">
@@ -21,7 +21,7 @@
       {% endfor %}
     </form>
   {% else %}
-    <p class="text-body-secondary mb-0">
+    <p class="ip-muted mb-0">
       No times are free in the next 14 days. The recruiter has been asked to add more availability.
     </p>
   {% endif %}

@@ -1,11 +1,11 @@
 {% load tz %}{% comment %}One interview as a list row. Expects `interview`.{% endcomment %}
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 py-2 border-bottom">
-  <div>
-    <div class="fw-semibold">
+<div class="ip-list__row d-flex flex-wrap justify-content-between align-items-start gap-3">
+  <div class="ip-list__main">
+    <div class="ip-list__title">
       {{ interview.application.candidate.user.email }}
-      <span class="text-body-secondary">· {{ interview.application.job.title }}</span>
+      <span class="ip-muted">· {{ interview.application.job.title }}</span>
     </div>
-    <div class="small text-body-secondary">
+    <div class="ip-list__meta">
       {% if interview.scheduled_start %}
         <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>
         {% timezone interview.timezone %}{{ interview.scheduled_start|date:"D d M Y, H:i" }}–{{ interview.scheduled_end|date:"H:i" }}{% endtimezone %}
@@ -17,8 +17,8 @@
       {% if interview.location_or_link %}· {{ interview.location_or_link }}{% endif %}
     </div>
   </div>
-  <div class="d-flex align-items-center gap-2">
-    <span class="badge text-bg-{% if interview.status == 'CONFIRMED' %}success{% elif interview.status == 'CANCELLED' %}danger{% elif interview.status == 'COMPLETED' %}secondary{% else %}warning{% endif %}">
+  <div class="ip-list__aside">
+    <span class="ip-badge ip-badge--{% if interview.status == 'CONFIRMED' %}success{% elif interview.status == 'CANCELLED' %}danger{% elif interview.status == 'COMPLETED' %}neutral{% else %}warning{% endif %}">
       {{ interview.get_status_display }}
     </span>
     {% if interview.scheduled_start %}

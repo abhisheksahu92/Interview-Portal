@@ -1,28 +1,102 @@
 {% extends "base.html" %}
 {% block title %}Interview Portal — multi-tenant hiring pipelines with AI screening{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
 {% block main_class %}{% endblock %}
 {% block content %}
 
 <section class="ip-hero">
   <div class="container">
-    <div class="row justify-content-center text-center">
-      <div class="col-lg-9">
+    <div class="ip-lp-hero">
+      <div>
         <span class="ip-pill"><span class="dot" aria-hidden="true"></span> Multi-tenant hiring, AI-assisted</span>
-        <h1 class="mx-auto mb-3">Hiring pipelines your whole team can actually run</h1>
-        <p class="ip-lede mx-auto mb-4">
+        <h1>Hiring pipelines <span class="accent">your whole team can actually run</span></h1>
+        <p class="ip-lede">
           Every company gets its own workspace: configurable pipeline stages, a shared
           kanban board, structured interview reviews, and AI screening that summarises
           each résumé against the role and scores fit before anyone opens a CV.
         </p>
-        <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <div class="ip-lp-ctas">
           <a class="btn btn-primary btn-lg" href="{% url 'core:company_signup' %}">Start hiring — Create a company</a>
           <a class="btn btn-outline-secondary btn-lg" href="{% url 'core:candidate_signup' %}">Looking for a job? Sign up</a>
         </div>
+        <ul class="ip-signals">
+          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> GST invoices</li>
+          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Data in India</li>
+          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> WhatsApp updates</li>
+        </ul>
         <p class="ip-muted small mt-3 mb-0">
-          No credit card needed on the Free plan ·
+          No credit card needed to start ·
           <a href="{% url 'web:job_browse' %}">Browse open roles</a>
         </p>
       </div>
+
+      <div class="ip-lp-side">
+        <div class="ip-bento__tile ip-bento__tile--lime">
+          <div class="ip-price">
+            <div>
+              <div class="ip-price__amount">₹1,499<small>/mo</small></div>
+              <p class="ip-price__note">Starter plan · billed in INR, GST invoice included</p>
+            </div>
+            <span class="ip-price__mark" aria-hidden="true"><i class="bi bi-cash-stack"></i></span>
+          </div>
+        </div>
+
+        <div class="ip-bento__tile" aria-label="Example pipeline">
+          <div class="ip-preview__head">
+            <strong>Active pipeline</strong>
+            <span class="ip-badge ip-badge--light">Senior Django Developer</span>
+          </div>
+          <div class="ip-preview__cols">
+            <div class="ip-preview__col">
+              <div class="ip-preview__coltitle">Screening <span class="ip-num">2</span></div>
+              <div class="ip-mini">
+                <div class="ip-mini__row">
+                  <span class="ip-mini__name">Rahul S.</span>
+                  <span class="ip-mini__score">86</span>
+                </div>
+                <div class="ip-mini__meta">7 yrs · Pune · 30-day notice</div>
+              </div>
+              <div class="ip-mini">
+                <div class="ip-mini__row">
+                  <span class="ip-mini__name">Aditi K.</span>
+                  <span class="ip-mini__score">74</span>
+                </div>
+                <div class="ip-mini__meta">5 yrs · Remote</div>
+              </div>
+            </div>
+            <div class="ip-preview__col">
+              <div class="ip-preview__coltitle">Interview <span class="ip-num">1</span></div>
+              <div class="ip-mini ip-mini--soft">
+                <div class="ip-mini__row">
+                  <span class="ip-mini__name">Priya M.</span>
+                  <span class="ip-mini__score">92</span>
+                </div>
+                <div class="ip-mini__meta">L2 · Today, 6:00 PM</div>
+              </div>
+              <div class="ip-mini">
+                <div class="ip-mini__row">
+                  <span class="ip-mini__name">Offer stage</span>
+                  <span class="ip-mini__meta">awaiting signature</span>
+                </div>
+                <div class="ip-mini__meta">Sent 2 days ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ip-band ip-band--alt">
+  <div class="container">
+    <p class="ip-eyebrow text-center mb-3">Trusted by 300+ recruiting teams</p>
+    <div class="ip-trust">
+      <span>Techhire</span>
+      <span>Agency.io</span>
+      <span>Talentforce</span>
+      <span>Recruitco</span>
+      <span>Nexus Staffing</span>
     </div>
   </div>
 </section>
@@ -69,32 +143,26 @@
   <div class="container">
     <p class="ip-eyebrow mb-2">How it works</p>
     <h2 class="h4 mb-4">Three steps from sign-up to signed offer</h2>
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="ip-step">
-          <span class="ip-step__n" aria-hidden="true">1</span>
-          <div>
-            <h3>Create your workspace</h3>
-            <p>Register the company, post a job, and a default six-stage pipeline is seeded for you.</p>
-          </div>
+    <div class="ip-steps">
+      <div class="ip-step">
+        <span class="ip-step__n" aria-hidden="true">1</span>
+        <div>
+          <h3>Create your workspace</h3>
+          <p>Register the company, post a job, and a default six-stage pipeline is seeded for you.</p>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="ip-step">
-          <span class="ip-step__n" aria-hidden="true">2</span>
-          <div>
-            <h3>Candidates apply</h3>
-            <p>They apply from the public openings board with a reusable profile and résumé, and get scored on arrival.</p>
-          </div>
+      <div class="ip-step">
+        <span class="ip-step__n" aria-hidden="true">2</span>
+        <div>
+          <h3>Candidates apply</h3>
+          <p>They apply from the public openings board with a reusable profile and résumé, and get scored on arrival.</p>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="ip-step">
-          <span class="ip-step__n" aria-hidden="true">3</span>
-          <div>
-            <h3>Your team decides</h3>
-            <p>Recruiters triage on the kanban board; interviewers work a review queue with PASS / FAIL / HOLD.</p>
-          </div>
+      <div class="ip-step">
+        <span class="ip-step__n" aria-hidden="true">3</span>
+        <div>
+          <h3>Your team decides</h3>
+          <p>Recruiters triage on the kanban board; interviewers work a review queue with PASS / FAIL / HOLD.</p>
         </div>
       </div>
     </div>
@@ -109,36 +177,51 @@
       <p class="ip-muted mb-0">Unlimited members, candidates and assessments on every plan.</p>
     </div>
     <div class="row g-3 justify-content-center">
-      <div class="col-md-5 col-lg-4">
-        <div class="ip-plan">
-          <div class="ip-plan__name">Free</div>
-          <div class="ip-plan__price">$0 <span>/ month</span></div>
-          <p class="ip-muted small mb-0">For your first role.</p>
+      <div class="col-md-6 col-lg-4">
+        <div class="ip-plan h-100">
+          <div class="ip-plan__name">Starter</div>
+          <div class="ip-plan__price"><span class="ip-plan__inr">₹1,499</span> <span>/ month</span></div>
+          <p class="ip-muted small mb-0">For your first few roles.</p>
           <ul class="ip-plan__list">
-            <li><i class="bi bi-check2" aria-hidden="true"></i> 1 open job</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> 3 open jobs</li>
             <li><i class="bi bi-check2" aria-hidden="true"></i> Configurable pipelines and assessments</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> Unlimited team members</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> Analytics and GST invoices</li>
           </ul>
           <div class="ip-plan__cta">
             <a class="btn btn-outline-secondary w-100" href="{% url 'core:company_signup' %}">Get started free</a>
           </div>
         </div>
       </div>
-      <div class="col-md-5 col-lg-4">
-        <div class="ip-plan is-current">
+      <div class="col-md-6 col-lg-4">
+        <div class="ip-plan is-current h-100">
           <div class="d-flex align-items-center gap-2">
-            <span class="ip-plan__name">Pro</span>
+            <span class="ip-plan__name">Growth</span>
             <span class="ip-badge ip-badge--accent">Most popular</span>
           </div>
-          <div class="ip-plan__price">$49 <span>/ month</span></div>
+          <div class="ip-plan__price"><span class="ip-plan__inr">₹4,999</span> <span>/ month</span></div>
           <p class="ip-muted small mb-0">For teams hiring continuously.</p>
           <ul class="ip-plan__list">
             <li><i class="bi bi-check2" aria-hidden="true"></i> 25 open jobs</li>
             <li><i class="bi bi-check2" aria-hidden="true"></i> AI screening and résumé fit scores</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> REST API and Stripe self-serve billing</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> Careers page, offers and WhatsApp updates</li>
           </ul>
           <div class="ip-plan__cta">
-            <a class="btn btn-primary w-100" href="{% url 'core:company_signup' %}">Start with Pro</a>
+            <a class="btn btn-primary w-100" href="{% url 'core:company_signup' %}">Start with Growth</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="ip-plan h-100">
+          <div class="ip-plan__name">Agency</div>
+          <div class="ip-plan__price"><span class="ip-plan__inr">₹12,999</span> <span>/ month</span></div>
+          <p class="ip-muted small mb-0">For staffing firms and RPOs.</p>
+          <ul class="ip-plan__list">
+            <li><i class="bi bi-check2" aria-hidden="true"></i> 200 open jobs</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> Client portal, video screens and white-label</li>
+            <li><i class="bi bi-check2" aria-hidden="true"></i> REST API, marketplace and integrations</li>
+          </ul>
+          <div class="ip-plan__cta">
+            <a class="btn btn-outline-secondary w-100" href="{% url 'core:company_signup' %}">Talk to us</a>
           </div>
         </div>
       </div>

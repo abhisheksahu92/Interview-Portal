@@ -1,66 +1,79 @@
 {% extends "base.html" %}
 {% block title %}Offers · Interview Portal{% endblock %}
 {% block page_header %}
-<div class="ip-page-head d-flex flex-wrap gap-3 align-items-end">
+<div class="ip-page-head">
   <div>
     <h1>Offers</h1>
-    <p class="mb-0 text-muted">{{ open_count }} awaiting a candidate decision.</p>
+    <p>{{ open_count }} awaiting a candidate decision.</p>
   </div>
-  <div class="ms-auto">
-    <a class="btn btn-outline-secondary" href="{% url 'offers:template_list' %}">
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'offers:template_list' %}">
       <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>Templates
     </a>
   </div>
 </div>
 {% endblock %}
 {% block content %}
-<form class="row g-2 mb-3" method="get">
-  <div class="col-auto">
-    <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+<form class="ip-toolbar" method="get">
+  <div class="ip-toolbar__field">
+    <label for="offer-status">Status</label>
+    <select class="form-select form-select-sm" id="offer-status" name="status" onchange="this.form.submit()">
       <option value="">All statuses</option>
       {% for value, label in status_choices %}
         <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
       {% endfor %}
     </select>
   </div>
-  <noscript><div class="col-auto"><button class="btn btn-sm btn-primary">Filter</button></div></noscript>
+  <div class="ip-toolbar__actions">
+    <noscript><button class="btn btn-sm btn-primary">Filter</button></noscript>
+  </div>
 </form>
 
-{% if offers %}
-<div class="table-responsive">
-  <table class="table align-middle">
-    <thead>
-      <tr>
-        <th>Candidate</th><th>Role</th><th>Salary</th><th>Expires</th><th>Status</th><th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for offer in offers %}
-      <tr {% if offer.expiring_soon %}class="table-warning"{% endif %}>
-        <td>
-          <a href="{% url 'offers:detail' offer.pk %}">
-            {{ offer.application.candidate.user.get_full_name|default:offer.application.candidate.user.email }}
-          </a>
-        </td>
-        <td>{{ offer.application.job.title }}</td>
-        <td>{{ offer.currency }} {{ offer.salary|floatformat:0 }}</td>
-        <td>
-          {% if offer.expires_at %}{{ offer.expires_at|date:"d M Y" }}
-            {% if offer.expiring_soon %}<span class="badge text-bg-warning ms-1">Expiring soon</span>{% endif %}
-          {% else %}<span class="text-muted">—</span>{% endif %}
-        </td>
-        <td>{% include "offers/_status_badge.html" %}</td>
-        <td class="text-end">
-          <a class="btn btn-sm btn-outline-secondary" href="{% url 'offers:detail' offer.pk %}">Open</a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-{% else %}
-<div class="alert alert-info">
-  No offers yet. Open a job's pipeline, pick a candidate at the Offer stage and create one.
-</div>
-{% endif %}
+<section>
+  {% if offers %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Offers issued by this company</caption>
+        <thead>
+          <tr>
+            <th scope="col">Candidate</th><th scope="col">Role</th>
+            <th scope="col" class="text-end">Salary</th><th scope="col">Expires</th>
+            <th scope="col">Status</th><th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for offer in offers %}
+          <tr {% if offer.expiring_soon %}class="is-warn"{% endif %}>
+            <td>
+              <a href="{% url 'offers:detail' offer.pk %}">
+                {{ offer.application.candidate.user.get_full_name|default:offer.application.candidate.user.email }}
+              </a>
+            </td>
+            <td class="ip-muted">{{ offer.application.job.title }}</td>
+            <td class="text-end text-nowrap">{{ offer.currency }} {{ offer.salary|floatformat:0 }}</td>
+            <td class="text-nowrap">
+              {% if offer.expires_at %}<span class="ip-muted">{{ offer.expires_at|date:"d M Y" }}</span>
+                {% if offer.expiring_soon %}<span class="ip-badge ip-badge--warning ms-1">Expiring soon</span>{% endif %}
+              {% else %}<span class="ip-muted">—</span>{% endif %}
+            </td>
+            <td>{% include "offers/_status_badge.html" %}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'offers:detail' offer.pk %}">Open</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+      <div class="ip-empty__title">
+        No offers yet. Open a job's pipeline, pick a candidate at the Offer stage and create one.
+      </div>
+      <p>Offers are generated from a reusable template and signed in the browser — no external e-sign needed.</p>
+      <a class="btn btn-outline-secondary" href="{% url 'offers:template_list' %}">Offer templates</a>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

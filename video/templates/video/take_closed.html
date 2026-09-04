@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Video screen closed{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
 {% block content %}
-<div class="card mx-auto" style="max-width:34rem">
-  <div class="card-body text-center">
-    <h1 class="h4">This video screen is closed</h1>
-    <p class="text-body-secondary mb-0">
+<div class="ip-standalone ip-standalone--narrow">
+  <div class="ip-section text-center">
+    <span class="ip-outcome ip-outcome--warning" aria-hidden="true"><i class="bi bi-hourglass-bottom"></i></span>
+    <h1>This video screen is closed</h1>
+    <p class="ip-muted mb-0">
       The link for “{{ invite.screen.title }}” ({{ invite.application.job.title }}) expired on
       {{ invite.expires_at|date:"d M Y" }}. Please contact the recruiter if you need another chance.
     </p>

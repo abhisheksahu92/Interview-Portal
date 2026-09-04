@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ job.title }} at {{ job.company.name }}{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
 {% block content %}
 <p class="ip-muted small mb-2">
   <a href="{% url 'web:job_browse' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> All open roles</a>
@@ -11,7 +12,7 @@
       {{ job.company.name }}<span class="ip-meta-dot"></span>{{ job.location|default:"Remote / unspecified" }}<span class="ip-meta-dot"></span>{{ job.get_employment_type_display }}{% if job.closes_at %}<span class="ip-meta-dot"></span>closes {{ job.closes_at|date:"j M Y" }}{% endif %}
     </p>
     {% if job.salary_published %}
-      <p class="mb-0">{% include "web/partials/salary_line.html" %}</p>
+      <p class="mb-0 fw-semibold">{% include "web/partials/salary_line.html" %}</p>
     {% endif %}
   </div>
 </div>
@@ -31,7 +32,7 @@
     </div>
   </div>
   <div class="col-lg-4">
-    <div class="ip-section">
+    <div class="ip-section ip-sticky-aside">
       {% if already_applied %}
         <div class="ip-badge ip-badge--success mb-3"><i class="bi bi-check-circle" aria-hidden="true"></i> Applied</div>
         <p class="ip-muted small">You have already applied to this role.</p>
@@ -57,6 +58,12 @@
         <a class="btn btn-primary w-100 mb-2" href="{% url 'core:candidate_signup' %}">Sign up to apply</a>
         <a class="btn btn-outline-secondary w-100" href="{% url 'core:login' %}">Sign in</a>
       {% endif %}
+      <dl class="ip-factlist mt-4 pt-4 border-top mb-0">
+        <div><dt>Company</dt><dd>{{ job.company.name }}</dd></div>
+        <div><dt>Location</dt><dd>{{ job.location|default:"Remote / unspecified" }}</dd></div>
+        <div><dt>Employment type</dt><dd>{{ job.get_employment_type_display }}</dd></div>
+        {% if job.closes_at %}<div><dt>Applications close</dt><dd>{{ job.closes_at|date:"j M Y" }}</dd></div>{% endif %}
+      </dl>
     </div>
   </div>
 </div>

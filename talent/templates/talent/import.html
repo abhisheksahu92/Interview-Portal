@@ -9,7 +9,7 @@
 </div>
 {% endblock %}
 {% block content %}
-<div class="row g-3">
+<div class="row g-4">
   <div class="col-lg-7">
     <section class="ip-section">
       <div class="ip-section__head"><h2>1 · Choose files</h2></div>
@@ -18,14 +18,14 @@
         <div class="mb-3">
           {{ form.files }}
           <div class="form-text">{{ form.files.help_text }}</div>
-          {% for e in form.files.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          {% for e in form.files.errors %}<div class="invalid-feedback d-block small">{{ e }}</div>{% endfor %}
         </div>
         <button class="btn btn-primary" type="submit">Start import</button>
       </form>
     </section>
-    <section class="ip-section mt-3">
+    <section class="ip-section mt-4">
       <div class="ip-section__head"><h2>2 · What happens next</h2></div>
-      <ol class="mb-0 small">
+      <ol class="ip-muted small mb-0">
         <li>Each resume's text is extracted (PDF, DOCX, TXT).</li>
         <li>Name, email, phone and experience are parsed
           {% if ai_enabled %}and refined by AI extraction{% else %}using text heuristics (AI extraction is off){% endif %}.</li>
@@ -39,9 +39,9 @@
     <section class="ip-section">
       <div class="ip-section__head"><h2>Past batches</h2></div>
       {% if batches %}
-        <ul class="list-group list-group-flush mb-0">
+        <ul class="ip-list">
           {% for batch in batches %}
-            <li class="list-group-item px-0 d-flex justify-content-between">
+            <li>
               <a href="{% url 'talent:batch_report' batch.pk %}">Batch #{{ batch.pk }}</a>
               <span class="ip-muted small">{{ batch.created }} new · {{ batch.updated }} upd · {{ batch.skipped }} skipped</span>
             </li>

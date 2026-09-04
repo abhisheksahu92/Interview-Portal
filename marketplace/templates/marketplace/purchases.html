@@ -4,22 +4,34 @@
 <div class="ip-page-head"><div><h1>My purchases</h1><p>Packs installed in this workspace.</p></div></div>
 {% endblock %}
 {% block content %}
-<div class="table-responsive">
-  <table class="table align-middle">
-    <thead><tr><th>Pack</th><th>Skill</th><th>Questions added</th><th>Installed</th><th>Invoice</th></tr></thead>
-    <tbody>
-      {% for purchase in purchases %}
-        <tr>
-          <td><a href="{% url 'marketplace:pack_detail' purchase.pack.slug %}">{{ purchase.pack.title }}</a></td>
-          <td>{{ purchase.pack.skill_name }}</td>
-          <td>{{ purchase.questions_created }}</td>
-          <td>{{ purchase.purchased_at|date:"Y-m-d" }}</td>
-          <td>{{ purchase.invoice_ref|default:"—" }}</td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="5" class="text-muted">Nothing installed yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+<section>
+  {% if purchases %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Question packs installed in this workspace</caption>
+        <thead><tr><th scope="col">Pack</th><th scope="col">Skill</th>
+          <th scope="col" class="text-end">Questions added</th>
+          <th scope="col">Installed</th><th scope="col">Invoice</th></tr></thead>
+        <tbody>
+          {% for purchase in purchases %}
+            <tr>
+              <td><a href="{% url 'marketplace:pack_detail' purchase.pack.slug %}">{{ purchase.pack.title }}</a></td>
+              <td class="ip-muted">{{ purchase.pack.skill_name }}</td>
+              <td class="text-end">{{ purchase.questions_created }}</td>
+              <td class="ip-muted text-nowrap">{{ purchase.purchased_at|date:"Y-m-d" }}</td>
+              <td class="ip-muted">{{ purchase.invoice_ref|default:"—" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-bag-check"></i></span>
+      <div class="ip-empty__title">Nothing installed yet.</div>
+      <p>Install a question pack from the marketplace and its questions land in your bank.</p>
+      <a class="btn btn-primary" href="{% url 'marketplace:index' %}">Browse the marketplace</a>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

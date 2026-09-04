@@ -1,45 +1,45 @@
 {% if oob %}{% include "analytics/_range_subtitle.html" %}{% endif %}
 {# HTMX-swapped body of the dashboard: KPI tiles, charts and tables for the current filters. #}
 <div class="viz" id="viz-body">
-  <div class="viz-kpi mb-4">
-    <div class="viz-card">
+  <div class="ip-bento mb-5">
+    <div class="ip-bento__tile ip-kpi">
       <p class="viz-kpi__label">Open jobs</p>
       <p class="viz-kpi__value mb-0">{{ overview.open_jobs }}</p>
     </div>
-    <div class="viz-card">
+    <div class="ip-bento__tile ip-kpi">
       <p class="viz-kpi__label">Applications</p>
       <p class="viz-kpi__value mb-0">{{ overview.applications }}</p>
     </div>
-    <div class="viz-card">
+    <div class="ip-bento__tile ip-kpi">
       <p class="viz-kpi__label">Hires</p>
       <p class="viz-kpi__value mb-0">{{ overview.hires }}</p>
     </div>
-    <div class="viz-card">
+    <div class="ip-bento__tile ip-kpi">
       <p class="viz-kpi__label">Hire rate</p>
       <p class="viz-kpi__value mb-0">{{ overview.hire_rate_percent }}%</p>
     </div>
-    <div class="viz-card">
+    <div class="ip-bento__tile ip-kpi">
       <p class="viz-kpi__label">Median time to hire</p>
       <p class="viz-kpi__value mb-0">
         {% if overview.median_time_to_hire_days is None %}—{% else %}{{ overview.median_time_to_hire_days }}<span class="fs-6 fw-normal"> days</span>{% endif %}
       </p>
     </div>
-    <div class="viz-card">
+    <div class="ip-bento__tile ip-bento__tile--lime ip-kpi">
       <p class="viz-kpi__label">Avg AI fit score</p>
       <p class="viz-kpi__value mb-0">{{ overview.avg_fit_score|default_if_none:"—" }}</p>
     </div>
     {% if offers %}
-      <div class="viz-card">
+      <div class="ip-bento__tile ip-kpi">
         <p class="viz-kpi__label">Offer acceptance</p>
         <p class="viz-kpi__value mb-0">{{ offers.acceptance_rate_percent }}%</p>
       </div>
     {% endif %}
   </div>
 
-  <div class="row g-3">
+  <div class="row g-4">
     <div class="col-12 col-xl-6">
       <div class="viz-card">
-        <div class="d-flex align-items-start justify-content-between gap-2">
+        <div class="viz-card__head">
           <div>
             <h2>Pipeline funnel</h2>
             <p class="viz-card__sub">Applications that entered each stage kind, split into those that
@@ -59,7 +59,7 @@
 
     <div class="col-12 col-xl-6">
       <div class="viz-card">
-        <div class="d-flex align-items-start justify-content-between gap-2">
+        <div class="viz-card__head">
           <div>
             <h2>Applications and hires per week</h2>
             <p class="viz-card__sub">Weekly volume across the selected window.</p>
@@ -78,7 +78,7 @@
 
     <div class="col-12 col-xl-6">
       <div class="viz-card">
-        <div class="d-flex align-items-start justify-content-between gap-2">
+        <div class="viz-card__head">
           <div>
             <h2>Median time in stage</h2>
             <p class="viz-card__sub">Days an application waits in each stage kind before moving.</p>

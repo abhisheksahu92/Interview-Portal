@@ -1,22 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Record your answers · {{ invite.application.job.title }}{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
 {% block main_class %}container-fluid px-3 py-3{% endblock %}
-{% block extra_head %}
-<style>
-  .vid-head { position: sticky; top: 0; z-index: 10; background: var(--bs-body-bg);
-              padding: .5rem 0; border-bottom: 1px solid var(--bs-border-color); }
-  .vid-stage { max-width: 44rem; margin: 0 auto; }
-  .vid-preview { width: 100%; aspect-ratio: 4 / 3; background: #000; border-radius: .75rem; object-fit: cover; }
-  .vid-placeholder { border: 1px dashed var(--bs-border-color); border-radius: .75rem;
-                     padding: 2rem 1rem; background: var(--bs-tertiary-bg); }
-  .vid-timer { font-variant-numeric: tabular-nums; font-size: 2.25rem; font-weight: 700; }
-  .vid-big { width: 100%; padding: 1rem; font-size: 1.125rem; border-radius: .75rem; }
-  .vid-dot { display:inline-block; width:.6rem; height:.6rem; border-radius:50%; background:#dc3545;
-             margin-right:.35rem; animation: vid-pulse 1s infinite; }
-  @keyframes vid-pulse { 50% { opacity: .25; } }
-  @media (max-width: 576px) { .vid-timer { font-size: 1.75rem; } }
-</style>
-{% endblock %}
 {% block content %}
 <div class="vid-stage" id="vidApp"
      data-upload-url="{{ upload_url }}"
@@ -24,7 +9,7 @@
      data-max-bytes="{{ max_bytes }}">
   <div class="vid-head d-flex align-items-center gap-2">
     <strong class="text-truncate">{{ invite.screen.title }}</strong>
-    <span class="ms-auto badge text-bg-light" id="vidProgress">
+    <span class="ms-auto ip-badge ip-badge--neutral" id="vidProgress">
       {{ invite.progress.answered }} / {{ invite.progress.total }}
     </span>
   </div>
@@ -35,15 +20,15 @@
 
   {# ---------------- Intro / device check ---------------- #}
   <section id="vidIntro" class="mt-3">
-    <h1 class="h4">Record your video answers</h1>
-    <p class="text-body-secondary">
+    <h1>Record your video answers</h1>
+    <p class="ip-muted">
       {{ invite.application.job.title }} — {{ questions|length }} question{{ questions|length|pluralize }}.
       Each question shows a short think timer, then recording starts automatically and stops at the time limit.
       You can only record each answer once. Finish by {{ invite.expires_at|date:"d M Y" }}.
     </p>
     <div class="vid-placeholder text-center" id="vidPlaceholder">
-      <p class="display-6 mb-2" aria-hidden="true">📷</p>
-      <p class="mb-3 small text-body-secondary">
+      <span class="ip-outcome" aria-hidden="true"><i class="bi bi-camera-video"></i></span>
+      <p class="mb-3 small ip-muted">
         Your camera stays off until you turn it on. Nothing is recorded or uploaded
         before you start a question.
       </p>
@@ -52,7 +37,7 @@
     <video id="vidPreview" class="vid-preview d-none" autoplay muted playsinline></video>
     <p class="small mt-2 mb-3" id="vidDeviceStatus">Turn on your camera and microphone to begin.</p>
     <button class="btn btn-primary vid-big d-none" id="vidStart" type="button" disabled>Allow camera to continue</button>
-    <ol class="mt-4 small text-body-secondary">
+    <ol class="mt-4 small ip-muted">
       {% for question in questions %}
         <li class="{% if question.pk in answered_ids %}text-decoration-line-through{% endif %}">
           {{ question.text }} ({{ question.answer_seconds }}s)
@@ -63,14 +48,14 @@
 
   {# ---------------- Runner ---------------- #}
   <section id="vidRunner" class="mt-3 d-none">
-    <p class="text-body-secondary small mb-1" id="vidQCount"></p>
+    <p class="ip-muted small mb-1" id="vidQCount"></p>
     <h2 class="h5" id="vidQText"></h2>
     <video id="vidLive" class="vid-preview my-2" autoplay muted playsinline></video>
     <div class="d-flex align-items-center gap-3 mb-2">
       <span class="vid-timer" id="vidTimer">--</span>
-      <span class="text-body-secondary small" id="vidPhase"></span>
+      <span class="ip-muted small" id="vidPhase"></span>
     </div>
-    <div class="progress mb-2 d-none" id="vidUploadWrap" style="height:1.25rem">
+    <div class="progress mb-2 d-none" id="vidUploadWrap" style="height:1.5rem">
       <div class="progress-bar" id="vidUploadBar" role="progressbar" style="width:0%"
            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</div>
     </div>
@@ -80,9 +65,9 @@
 
   {# ---------------- Submit ---------------- #}
   <section id="vidFinish" class="mt-3 d-none text-center">
-    <p class="display-6 mb-2" aria-hidden="true">🎬</p>
+    <span class="ip-outcome ip-outcome--success" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
     <h2 class="h5">All questions answered</h2>
-    <p class="text-body-secondary">Submit to send your recordings to the hiring team.</p>
+    <p class="ip-muted">Submit to send your recordings to the hiring team.</p>
     <form method="post" action="{{ submit_url }}">
       {% csrf_token %}
       <button class="btn btn-primary vid-big" type="submit">Submit my answers</button>

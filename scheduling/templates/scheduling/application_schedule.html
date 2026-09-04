@@ -13,10 +13,10 @@
 </div>
 {% endblock %}
 {% block content %}
-<div class="row g-3">
+<div class="row g-4">
   <div class="col-12 col-lg-6">
-    <div class="ip-card p-3">
-      <h2 class="h6">Propose a time</h2>
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Propose a time</h2></div>
       {% if not eligible_count %}
         <div class="alert alert-warning small">
           No member has declared availability yet — ask interviewers to fill in
@@ -27,39 +27,43 @@
         {% csrf_token %}
         {% if form.non_field_errors %}<div class="alert alert-danger small">{{ form.non_field_errors }}</div>{% endif %}
         <fieldset class="mb-3">
-          <legend class="form-label h6">Interviewers</legend>
+          <legend class="form-label">Interviewers</legend>
           {% for choice in form.interviewers %}
             <div class="form-check">
               {{ choice.tag }}
               <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
             </div>
           {% empty %}
-            <p class="small text-body-secondary mb-0">No bookable members.</p>
+            <p class="ip-muted small mb-0">No bookable members.</p>
           {% endfor %}
           <div class="form-text">{{ form.interviewers.help_text }}</div>
-          {{ form.interviewers.errors }}
+          {% for error in form.interviewers.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
         </fieldset>
         <div class="mb-3">
           <label class="form-label" for="{{ form.duration.id_for_label }}">Duration</label>
-          {{ form.duration }}{{ form.duration.errors }}
+          {{ form.duration }}
+          {% for error in form.duration.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
         </div>
         <div class="mb-3">
           <label class="form-label" for="{{ form.timezone.id_for_label }}">{{ form.timezone.label }}</label>
-          {{ form.timezone }}{{ form.timezone.errors }}
+          {{ form.timezone }}
+          {% for error in form.timezone.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
         </div>
         <div class="mb-3">
           <label class="form-label" for="{{ form.location_or_link.id_for_label }}">{{ form.location_or_link.label }}</label>
-          {{ form.location_or_link }}{{ form.location_or_link.errors }}
+          {{ form.location_or_link }}
+          {% for error in form.location_or_link.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
         </div>
         <div class="mb-3">
           <label class="form-label" for="{{ form.notes.id_for_label }}">Notes</label>
-          {{ form.notes }}{{ form.notes.errors }}
+          {{ form.notes }}
+          {% for error in form.notes.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
         </div>
         <button class="btn btn-primary" type="submit">
           <i class="bi bi-send me-1" aria-hidden="true"></i>Propose &amp; send booking link
         </button>
       </form>
-    </div>
+    </section>
   </div>
   <div class="col-12 col-lg-6">
     {% include "scheduling/partials/application_interviews.html" with application=application interviews=interviews %}

@@ -6,37 +6,54 @@
     <h1>Video screens</h1>
     <p>{{ job.title }}</p>
   </div>
-  {% if can_manage %}<a class="btn btn-primary" href="{% url 'video:screen_create' job.pk %}">New screen</a>{% endif %}
+  {% if can_manage %}
+    <div class="ip-page-head__actions">
+      <a class="btn btn-sm btn-primary" href="{% url 'video:screen_create' job.pk %}">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New screen</a>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
 {% block content %}
-<div class="card">
-  <div class="table-responsive">
-    <table class="table mb-0 align-middle">
-      <thead><tr><th>Title</th><th>Stage</th><th>Questions</th><th>Deadline</th><th>Active</th><th></th></tr></thead>
-      <tbody>
-      {% for screen in screens %}
-        <tr>
-          <td>{{ screen.title }}</td>
-          <td>{{ screen.stage.name|default:"Any stage" }}</td>
-          <td>{{ screen.questions.count }}</td>
-          <td>{{ screen.deadline_days }} day{{ screen.deadline_days|pluralize }}</td>
-          <td>{% if screen.is_active %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-secondary">No</span>{% endif %}</td>
-          <td class="text-end text-nowrap">
-            {% if can_manage %}
-              <a class="btn btn-sm btn-outline-secondary" href="{% url 'video:screen_edit' screen.pk %}">Edit</a>
-              <form method="post" action="{% url 'video:screen_delete' screen.pk %}" class="d-inline">
-                {% csrf_token %}
-                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-              </form>
-            {% endif %}
-          </td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="6" class="text-body-secondary">No screens on this job yet.</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+<section>
+  {% if screens %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Video screens on {{ job.title }}</caption>
+        <thead><tr><th scope="col">Title</th><th scope="col">Stage</th>
+          <th scope="col" class="text-end">Questions</th><th scope="col">Deadline</th>
+          <th scope="col">Active</th><th scope="col"></th></tr></thead>
+        <tbody>
+        {% for screen in screens %}
+          <tr>
+            <td>{{ screen.title }}</td>
+            <td class="ip-muted">{{ screen.stage.name|default:"Any stage" }}</td>
+            <td class="text-end">{{ screen.questions.count }}</td>
+            <td class="ip-muted text-nowrap">{{ screen.deadline_days }} day{{ screen.deadline_days|pluralize }}</td>
+            <td>{% if screen.is_active %}<span class="ip-badge ip-badge--success">Yes</span>{% else %}<span class="ip-badge ip-badge--neutral">No</span>{% endif %}</td>
+            <td class="text-end text-nowrap">
+              {% if can_manage %}
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'video:screen_edit' screen.pk %}">Edit</a>
+                <form method="post" action="{% url 'video:screen_delete' screen.pk %}" class="d-inline">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-camera-video"></i></span>
+      <div class="ip-empty__title">No screens on this job yet.</div>
+      <p>Pick questions from the library and attach them to a stage — candidates entering it get invited.</p>
+      {% if can_manage %}
+        <a class="btn btn-primary" href="{% url 'video:screen_create' job.pk %}">New screen</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

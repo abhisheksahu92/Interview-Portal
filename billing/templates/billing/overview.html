@@ -30,152 +30,149 @@
   </div>
 {% endif %}
 
-<div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <section class="ip-section h-100">
-      <div class="ip-section__head">
-        <h2>Subscription</h2>
+<div class="ip-bento mb-5">
+  <div class="ip-bento__tile ip-bento__tile--wide ip-kpi">
+    <div class="ip-kpi__label">Subscription</div>
+    <div class="ip-kpi__value">
+      {% if plan.price_monthly_inr %}₹{{ plan.price_monthly_inr|floatformat:0 }}{% else %}Free{% endif %}
+    </div>
+    <div class="ip-kpi__trend">
+      {% if plan.price_monthly_inr %}per month ({{ subscription.get_interval_display|lower }} billing){% else %}no card required{% endif %}
+      <span class="ip-meta-dot"></span>up to {{ max_open_jobs }} open job{{ max_open_jobs|pluralize }}
+      {% if subscription.current_period_end %}
+        <span class="d-block">Renews {{ subscription.current_period_end|date:"j M Y" }}</span>
+      {% endif %}
+      <span class="d-block mt-2">
         <span class="ip-badge ip-badge--{% if subscription.status == 'ACTIVE' %}success{% elif subscription.status == 'PAST_DUE' %}danger{% else %}neutral{% endif %}">
           {{ subscription.get_status_display }}
         </span>
-      </div>
-      <div class="ip-kpi__value">
-        {% if plan.price_monthly_inr %}₹{{ plan.price_monthly_inr|floatformat:0 }}{% else %}Free{% endif %}
-      </div>
-      <div class="ip-kpi__trend">
-        {% if plan.price_monthly_inr %}per month ({{ subscription.get_interval_display|lower }} billing){% else %}no card required{% endif %}
-        <span class="ip-meta-dot"></span>up to {{ max_open_jobs }} open job{{ max_open_jobs|pluralize }}
-      </div>
-      {% if subscription.current_period_end %}
-        <p class="ip-muted small mt-3 mb-0">Renews {{ subscription.current_period_end|date:"j M Y" }}</p>
-      {% endif %}
-    </section>
+      </span>
+    </div>
   </div>
-
-  <div class="col-md-4">
-    <section class="ip-section h-100">
-      <div class="ip-section__head"><h2>Seats</h2></div>
-      <div class="ip-kpi__value">{{ seats_used }} / {{ max_seats }}</div>
-      <div class="ip-kpi__trend">team members using this workspace</div>
-      <div class="progress mt-3" style="height:8px" role="progressbar" aria-label="Seats used">
-        <div class="progress-bar" style="width:{% widthratio seats_used max_seats 100 %}%"></div>
-      </div>
-    </section>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Seats</div>
+    <div class="ip-kpi__value">{{ seats_used }} / {{ max_seats }}</div>
+    <div class="ip-kpi__trend">
+      <span class="d-block mb-2">team members using this workspace</span>
+      <span class="ip-meter" role="progressbar" aria-label="Seats used"
+            aria-valuenow="{% widthratio seats_used max_seats 100 %}" aria-valuemin="0" aria-valuemax="100">
+        <span class="ip-meter__fill" style="--pct:{% widthratio seats_used max_seats 100 %}"></span>
+      </span>
+    </div>
   </div>
-
-  <div class="col-md-4">
-    <section class="ip-section h-100">
-      <div class="ip-section__head"><h2>Open jobs</h2></div>
-      <div class="ip-kpi__value">{{ open_jobs }} / {{ max_open_jobs }}</div>
-      <div class="ip-kpi__trend">
-        {% if at_limit %}plan limit reached{% else %}{{ remaining }} more can be opened{% endif %}
-      </div>
-    </section>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Open jobs</div>
+    <div class="ip-kpi__value">{{ open_jobs }} / {{ max_open_jobs }}</div>
+    <div class="ip-kpi__trend">
+      {% if at_limit %}plan limit reached{% else %}{{ remaining }} more can be opened{% endif %}
+    </div>
   </div>
 </div>
 
-<section class="ip-section mb-4">
+<section class="mb-5">
   <div class="ip-section__head"><h2>Monthly usage</h2></div>
-  <div class="row g-3">
+  <div class="ip-meter-grid">
     {% for row in usage_rows %}
-      <div class="col-md-4">
-        <div class="small fw-semibold d-flex justify-content-between">
-          <span>{{ row.label }}</span>
-          <span class="{% if row.warning %}text-danger{% else %}ip-muted{% endif %}">
+      <div class="ip-meter-row{% if not row.included %}{% elif row.used >= row.quota %} ip-meter--over{% elif row.warning %} ip-meter--warn{% endif %}">
+        <div class="ip-meter__head">
+          <span class="ip-meter__name">{{ row.label }}</span>
+          <span class="ip-meter__value">
             {% if row.included %}{{ row.used }} / {{ row.quota }}{% else %}not included{% endif %}
           </span>
         </div>
-        <div class="progress mt-1" style="height:8px" role="progressbar"
-             aria-label="{{ row.label }} usage" aria-valuenow="{{ row.percent }}">
-          <div class="progress-bar {% if row.warning %}bg-danger{% endif %}"
-               style="width:{{ row.percent }}%"></div>
+        <div class="ip-meter" role="progressbar"
+             aria-label="{{ row.label }} usage" aria-valuenow="{{ row.percent }}"
+             aria-valuemin="0" aria-valuemax="100">
+          <span class="ip-meter__fill" style="--pct:{{ row.percent }}"></span>
         </div>
         {% if row.warning %}
-          <p class="small text-danger mb-0 mt-1">Over 80% used — upgrade to avoid interruptions.</p>
+          <p class="ip-meter__note">Over 80% used — upgrade to avoid interruptions.</p>
         {% endif %}
       </div>
     {% endfor %}
   </div>
 </section>
 
-<section class="ip-section mb-4">
+<section class="mb-5">
   <div class="ip-section__head">
     <h2>Plans</h2>
-    <div class="btn-group btn-group-sm" role="group" aria-label="Billing interval">
-      <a class="btn btn-outline-secondary {% if interval == 'MONTHLY' %}active{% endif %}"
-         href="?interval=MONTHLY">Monthly</a>
-      <a class="btn btn-outline-secondary {% if interval == 'YEARLY' %}active{% endif %}"
-         href="?interval=YEARLY">Yearly <span class="ip-muted">(2 months free)</span></a>
+    <div class="ip-switch" role="group" aria-label="Billing interval">
+      <a class="{% if interval == 'MONTHLY' %}is-active{% endif %}" href="?interval=MONTHLY">Monthly</a>
+      <a class="{% if interval == 'YEARLY' %}is-active{% endif %}" href="?interval=YEARLY">Yearly
+        <span class="ip-switch__note">(2 months free)</span></a>
     </div>
   </div>
-  <div class="row g-3">
+  <div class="ip-plan-grid">
     {% for p in plans %}
-      <div class="col-md-4">
-        <div class="ip-plan {% if p.pk == plan.pk %}is-current{% endif %}">
-          <div class="d-flex align-items-center gap-2">
-            <span class="ip-plan__name">{{ p.name }}</span>
-            {% if p.pk == plan.pk %}<span class="ip-badge ip-badge--accent">Current plan</span>{% endif %}
-          </div>
-          <div class="ip-plan__price">
-            {% if interval == 'YEARLY' %}
-              ₹{{ p.price_yearly_inr|floatformat:0 }} <span>/ year</span>
-            {% else %}
-              ₹{{ p.price_monthly_inr|floatformat:0 }} <span>/ month</span>
-            {% endif %}
-          </div>
-          <ul class="ip-plan__list">
-            <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_open_jobs }} open job{{ p.max_open_jobs|pluralize }}</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_seats }} seats</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.ai_credits_monthly }} AI credits / month</li>
-            {% for name, on in p.features.items %}
-              {% if on %}<li><i class="bi bi-check2" aria-hidden="true"></i> {{ name|cut:"_"|title }}</li>{% endif %}
-            {% endfor %}
-          </ul>
-          <div class="ip-plan__cta">
-            {% if not is_owner %}
-              <p class="ip-muted small mb-0">Only the company owner can change the plan.</p>
-            {% elif provider == 'RAZORPAY' %}
-              <form method="post" action="{% url 'billing:razorpay_checkout' %}" class="m-0">
-                {% csrf_token %}
-                <input type="hidden" name="plan" value="{{ p.code }}">
-                <input type="hidden" name="interval" value="{{ interval }}">
-                <button class="btn btn-primary w-100" type="submit">
-                  Pay with Razorpay — {{ p.name }}
-                </button>
-              </form>
-            {% elif provider == 'STRIPE' %}
-              <form method="post" action="{% url 'billing:checkout' %}" class="m-0">
-                {% csrf_token %}
-                <input type="hidden" name="plan" value="{{ p.code }}">
-                <button class="btn btn-primary w-100" type="submit" {% if not stripe_ready %}disabled{% endif %}>
-                  Pay with Stripe — {{ p.name }}
-                </button>
-              </form>
-            {% else %}
-              <button class="btn btn-outline-secondary w-100" type="button" disabled>Not configured</button>
-            {% endif %}
-          </div>
+      <div class="ip-plan {% if p.pk == plan.pk %}is-current{% endif %}">
+        <div class="ip-plan__head">
+          <span class="ip-plan__name">{{ p.name }}</span>
+          {% if p.pk == plan.pk %}<span class="ip-badge ip-badge--accent">Current plan</span>{% endif %}
+        </div>
+        <div class="ip-plan__price">
+          {% if interval == 'YEARLY' %}
+            ₹{{ p.price_yearly_inr|floatformat:0 }} <span>/ year</span>
+          {% else %}
+            ₹{{ p.price_monthly_inr|floatformat:0 }} <span>/ month</span>
+          {% endif %}
+        </div>
+        <ul class="ip-plan__list">
+          <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_open_jobs }} open job{{ p.max_open_jobs|pluralize }}</li>
+          <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_seats }} seats</li>
+          <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.ai_credits_monthly }} AI credits / month</li>
+          {% for name, on in p.features.items %}
+            {% if on %}<li><i class="bi bi-check2" aria-hidden="true"></i> {{ name|cut:"_"|title }}</li>{% endif %}
+          {% endfor %}
+        </ul>
+        <div class="ip-plan__cta">
+          {% if not is_owner %}
+            <p class="ip-muted small mb-0">Only the company owner can change the plan.</p>
+          {% elif provider == 'RAZORPAY' %}
+            <form method="post" action="{% url 'billing:razorpay_checkout' %}" class="m-0">
+              {% csrf_token %}
+              <input type="hidden" name="plan" value="{{ p.code }}">
+              <input type="hidden" name="interval" value="{{ interval }}">
+              <button class="btn {% if p.pk == plan.pk %}btn-outline-secondary{% else %}btn-primary{% endif %} w-100" type="submit">
+                Pay with Razorpay — {{ p.name }}
+              </button>
+            </form>
+          {% elif provider == 'STRIPE' %}
+            <form method="post" action="{% url 'billing:checkout' %}" class="m-0">
+              {% csrf_token %}
+              <input type="hidden" name="plan" value="{{ p.code }}">
+              <button class="btn {% if p.pk == plan.pk %}btn-outline-secondary{% else %}btn-primary{% endif %} w-100"
+                      type="submit" {% if not stripe_ready %}disabled{% endif %}>
+                Pay with Stripe — {{ p.name }}
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-outline-secondary w-100" type="button" disabled>Not configured</button>
+          {% endif %}
         </div>
       </div>
     {% endfor %}
   </div>
 </section>
 
-<div class="row g-3 mb-4">
+<div class="row g-4 mb-5">
   <div class="col-lg-7">
-    <section class="ip-section h-100">
+    <section>
       <div class="ip-section__head"><h2>Invoices</h2></div>
       {% if invoices %}
-        <div class="table-responsive">
-          <table class="table table-sm align-middle mb-0">
-            <thead><tr><th>Number</th><th>Issued</th><th class="text-end">Total</th><th>Tax</th><th></th></tr></thead>
+        <div class="ip-table-wrap">
+          <table class="ip-table">
+            <caption class="visually-hidden">Tax invoices for this workspace</caption>
+            <thead>
+              <tr><th scope="col">Number</th><th scope="col">Issued</th>
+                <th scope="col" class="text-end">Total</th><th scope="col">Tax</th><th scope="col"></th></tr>
+            </thead>
             <tbody>
               {% for inv in invoices %}
                 <tr>
-                  <td>{{ inv.number }}</td>
-                  <td>{{ inv.issued_at|date:"j M Y" }}</td>
+                  <td class="text-nowrap">{{ inv.number }}</td>
+                  <td class="ip-muted text-nowrap">{{ inv.issued_at|date:"j M Y" }}</td>
                   <td class="text-end">₹{{ inv.total|floatformat:2 }}</td>
-                  <td class="ip-muted small">
+                  <td class="ip-muted text-nowrap">
                     {% if inv.is_intra_state %}CGST+SGST{% else %}IGST{% endif %} {{ inv.gst_rate|floatformat:0 }}%
                   </td>
                   <td class="text-end">
@@ -188,7 +185,11 @@
           </table>
         </div>
       {% else %}
-        <p class="ip-muted small mb-0">No invoices yet — they appear here after your first payment.</p>
+        <div class="ip-empty ip-empty--sm">
+          <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+          <div class="ip-empty__title">No invoices yet</div>
+          <p>They appear here after your first payment.</p>
+        </div>
       {% endif %}
     </section>
   </div>
@@ -197,7 +198,7 @@
     <section class="ip-section h-100">
       <div class="ip-section__head"><h2>GST &amp; billing address</h2></div>
       {% if is_owner %}
-        <form method="post" action="{% url 'billing:details' %}" class="row g-2" novalidate>
+        <form method="post" action="{% url 'billing:details' %}" class="row g-3" novalidate>
           {% csrf_token %}
           {% if details_form.non_field_errors %}
             <div class="col-12"><div class="alert alert-danger py-2 mb-0 small">
@@ -206,20 +207,21 @@
           {% endif %}
           {% for field in details_form %}
             <div class="{% if field.name == 'city' or field.name == 'pincode' %}col-6{% else %}col-12{% endif %}">
-              <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
               {{ field }}
+              {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
               {% for error in field.errors %}
                 <div class="invalid-feedback d-block small">{{ error }}</div>
               {% endfor %}
             </div>
           {% endfor %}
           <div class="col-12">
-            <p class="ip-muted small mb-2">
+            <p class="ip-muted small mb-3">
               Place of supply:
               <strong>{{ subscription.billing_state_code|default:"—" }}</strong>
               (taken from the first two digits of your GSTIN)
             </p>
-            <button class="btn btn-sm btn-primary" type="submit">Save billing details</button>
+            <button class="btn btn-primary" type="submit">Save billing details</button>
           </div>
         </form>
       {% else %}
@@ -230,18 +232,20 @@
 </div>
 
 {% if placement_fees %}
-  <section class="ip-section mb-4">
+  <section class="mb-5">
     <div class="ip-section__head"><h2>Placement fees</h2></div>
-    <div class="table-responsive">
-      <table class="table table-sm align-middle mb-0">
-        <thead><tr><th>Hire</th><th>Job</th><th class="text-end">Amount</th><th>Status</th></tr></thead>
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Placement fees charged on hires</caption>
+        <thead><tr><th scope="col">Hire</th><th scope="col">Job</th>
+          <th scope="col" class="text-end">Amount</th><th scope="col">Status</th></tr></thead>
         <tbody>
           {% for fee in placement_fees %}
             <tr>
-              <td>{{ fee.created_at|date:"j M Y" }}</td>
+              <td class="text-nowrap">{{ fee.created_at|date:"j M Y" }}</td>
               <td>{{ fee.application.job.title }}</td>
               <td class="text-end">₹{{ fee.amount|floatformat:2 }}</td>
-              <td>{{ fee.get_status_display }}</td>
+              <td class="ip-muted">{{ fee.get_status_display }}</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -251,7 +255,7 @@
 {% endif %}
 
 <div class="ip-section ip-section--tight">
-  <div class="d-flex flex-wrap align-items-center gap-2">
+  <div class="d-flex flex-wrap align-items-center gap-3">
     {% if is_owner and subscription.stripe_customer_id %}
       <form method="post" action="{% url 'billing:portal' %}" class="m-0">
         {% csrf_token %}

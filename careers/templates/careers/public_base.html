@@ -1,6 +1,6 @@
 {# Standalone public shell: deliberately does NOT extend the app base (no sidebar). #}
-<!doctype html>
-<html lang="en">
+{% load static %}<!doctype html>
+<html lang="en" data-bs-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,64 +14,49 @@
 <meta property="og:url" content="{{ canonical }}">
 {% if site.hero_image %}<meta property="og:image" content="{{ site.hero_image.url }}">{% endif %}
 <meta name="twitter:card" content="summary_large_image">
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("ip-theme");
+      if (!t) {
+        t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", t);
+    } catch (e) { /* storage blocked — stay light */ }
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700..800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'web/app.css' %}">
 <style>
-  :root {
-    --brand: {{ site.brand_color|default:"#2563eb" }};
-    --page-bg: #ffffff;
-    --page-fg: #16181d;
-    --muted: #5c636e;
-    --card-bg: #ffffff;
-    --card-border: #e3e6ea;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --page-bg: #0f1115;
-      --page-fg: #e9ecf1;
-      --muted: #9aa3b0;
-      --card-bg: #171a20;
-      --card-border: #262b33;
-    }
-  }
-  body { background: var(--page-bg); color: var(--page-fg); }
-  a { color: var(--brand); }
-  .cx-hero {
-    background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 55%, #000));
-    color: #fff; padding: 3.5rem 0;
-  }
-  .cx-hero h1 { font-weight: 700; }
-  .cx-logo { max-height: 56px; width: auto; background: rgba(255,255,255,.9);
-             border-radius: .5rem; padding: .35rem .5rem; }
-  .cx-card { background: var(--card-bg); border: 1px solid var(--card-border);
-             border-radius: .75rem; }
-  .cx-card:hover { border-color: var(--brand); }
-  .cx-muted { color: var(--muted); }
-  .cx-btn { background: var(--brand); color: #fff; border: 0; }
-  .cx-btn:hover { color: #fff; filter: brightness(1.08); }
-  .cx-chip { border: 1px solid var(--card-border); border-radius: 999px;
-             padding: .1rem .6rem; font-size: .8rem; color: var(--muted); }
-  .cx-preview-flag { background: #f59e0b; color: #17181c; text-align: center;
-                     font-size: .8rem; padding: .3rem; }
+  /* The tenant's own brand colour drives the whole accent ramp: every control,
+     link and chip on this page reads --ip-accent, which falls back through
+     --ip-brand.  One variable, no hardcoded hexes. */
+  :root { --ip-brand: {{ site.brand_color|default:"#2563eb" }}; }
 </style>
 {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="ip-warm">
 {% if is_preview %}<div class="cx-preview-flag">Preview — {% if site.published %}live{% else %}not published yet{% endif %}</div>{% endif %}
 <header class="cx-hero">
   <div class="container">
-    <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+    <a class="cx-hero__brand" href="{% url 'careers:site' site.slug %}">
       {% if site.logo %}<img class="cx-logo" src="{{ site.logo.url }}" alt="{{ company.name }} logo">{% endif %}
-      <a class="text-white text-decoration-none fw-semibold" href="{% url 'careers:site' site.slug %}">{{ company.name }}</a>
-    </div>
+      <span>{{ company.name }}</span>
+    </a>
     {% block hero %}
-      <h1 class="display-6">{{ site.headline|default:"Join our team" }}</h1>
-      <p class="mb-0 opacity-75">{{ jobs|length }} open role{{ jobs|length|pluralize }}</p>
+      <p class="ip-eyebrow">Careers</p>
+      <h1>{{ site.headline|default:"Join our team" }}</h1>
+      <p class="ip-lede mb-0 mt-3">{{ jobs|length }} open role{{ jobs|length|pluralize }}</p>
     {% endblock %}
   </div>
 </header>
-<main class="container py-4 py-lg-5">{% block content %}{% endblock %}</main>
-<footer class="container pb-5">
-  <p class="cx-muted small mb-0">
+<main class="container py-4 py-lg-5" id="main">{% block content %}{% endblock %}</main>
+<footer class="container">
+  <p class="ip-pubfoot mb-0">
     Careers at {{ company.name }} ·
     <a href="{% url 'careers:sitemap' site.slug %}">sitemap</a>
   </p>

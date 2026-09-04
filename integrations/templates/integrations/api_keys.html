@@ -10,23 +10,23 @@
 
 {% if issued_key %}
   <div class="alert alert-success">
-    <div class="fw-semibold mb-1">Your new API key — copy it now, it is shown only once.</div>
-    <pre class="mb-0"><code>{{ issued_key }}</code></pre>
+    <div class="fw-semibold mb-2">Your new API key — copy it now, it is shown only once.</div>
+    <pre class="ip-code ip-code--wrap mb-0"><code>{{ issued_key }}</code></pre>
   </div>
 {% endif %}
 
-<div class="card p-3 mb-4">
+<section class="ip-section mb-5">
   {% if token %}
-    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-      <div>
-        <div class="text-muted small">Active key</div>
+    <div class="d-flex justify-content-between align-items-start gap-4 flex-wrap">
+      <div style="min-width:0">
+        <div class="ip-eyebrow mb-1">Active key</div>
         <code>{{ masked }}</code>
-        <div class="text-muted small mt-1">Issued {{ token.created|date:"d M Y H:i" }} · service account <code>{{ service_email }}</code></div>
+        <div class="ip-muted small mt-2">Issued {{ token.created|date:"d M Y H:i" }} · service account <code>{{ service_email }}</code></div>
       </div>
-      <div class="d-flex gap-2">
+      <div class="d-flex flex-wrap gap-2">
         <form method="post" action="{% url 'integrations:api_key_issue' %}"
               onsubmit="return confirm('Rotate the key? The current key stops working immediately.')">
-          {% csrf_token %}<button class="btn btn-sm btn-outline-warning" type="submit">Rotate</button>
+          {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Rotate</button>
         </form>
         <form method="post" action="{% url 'integrations:api_key_revoke' %}"
               onsubmit="return confirm('Revoke the key? Integrations using it will stop working.')">
@@ -37,18 +37,20 @@
   {% else %}
     <p class="mb-3">No API key yet. Issuing one creates a recruiter-level service account for this company.</p>
     <form method="post" action="{% url 'integrations:api_key_issue' %}">
-      {% csrf_token %}<button class="btn btn-primary btn-sm" type="submit">Issue API key</button>
+      {% csrf_token %}<button class="btn btn-primary" type="submit">Issue API key</button>
     </form>
   {% endif %}
-</div>
+</section>
 
-<h2 class="h6">Using it</h2>
-<pre class="card p-3 small"><code>curl -H "Authorization: Token &lt;key&gt;" \
+<section>
+  <div class="ip-section__head"><h2>Using it</h2></div>
+  <pre class="ip-code"><code>curl -H "Authorization: Token &lt;key&gt;" \
      -H "X-Company: {{ current_company.slug }}" \
      {{ request.scheme }}://{{ request.get_host }}/api/v1/interviews/</code></pre>
-<p class="small text-muted">
-  The key belongs to the company, not to you — a departing employee does not break it. It has the
-  RECRUITER role, so it can read and write pipeline data but not billing or member management.
-  Full reference: <a href="{% url 'api:docs' %}">API docs</a>.
-</p>
+  <p class="ip-muted small mt-3 mb-0">
+    The key belongs to the company, not to you — a departing employee does not break it. It has the
+    RECRUITER role, so it can read and write pipeline data but not billing or member management.
+    Full reference: <a href="{% url 'api:docs' %}">API docs</a>.
+  </p>
+</section>
 {% endblock %}

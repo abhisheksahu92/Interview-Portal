@@ -7,41 +7,51 @@
     <p>Ready-made question packs and the verified candidate pool.</p>
   </div>
   <div class="ip-page-head__actions">
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'marketplace:purchases' %}">My purchases</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'marketplace:purchases' %}">My purchases</a>
     {% if can_pool %}
-      <a class="btn btn-outline-secondary btn-sm" href="{% url 'marketplace:pool' %}">Talent pool</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'marketplace:pool' %}">Talent pool</a>
     {% endif %}
   </div>
 </div>
 {% endblock %}
 {% block content %}
-<form class="row g-2 mb-4" method="get">
-  <div class="col-sm-8 col-lg-5">
-    <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search packs by title or skill">
+<form class="ip-toolbar" method="get" role="search">
+  <div class="ip-toolbar__field ip-toolbar__field--grow">
+    <label for="pack-q">Search packs by title or skill</label>
+    <input class="form-control form-control-sm" type="search" id="pack-q" name="q" value="{{ q }}"
+           placeholder="Search packs by title or skill">
   </div>
-  <div class="col-auto"><button class="btn btn-primary" type="submit">Search</button></div>
+  <div class="ip-toolbar__actions">
+    <button class="btn btn-sm btn-primary" type="submit">Search</button>
+  </div>
 </form>
 
-<div class="row g-3">
-  {% for pack in packs %}
-    <div class="col-md-6 col-xl-4">
-      <div class="card h-100 p-3">
-        <div class="d-flex justify-content-between align-items-start gap-2">
-          <h2 class="h6 mb-1"><a href="{% url 'marketplace:pack_detail' pack.slug %}">{{ pack.title }}</a></h2>
-          {% if pack.id in installed_ids %}
-            <span class="badge text-bg-success">Installed</span>
-          {% elif pack.is_free %}
-            <span class="badge text-bg-secondary">Free</span>
-          {% else %}
-            <span class="badge text-bg-primary">₹{{ pack.price_inr }}</span>
-          {% endif %}
-        </div>
-        <div class="text-muted small mb-2">{{ pack.skill_name }} · {{ pack.question_count }} questions</div>
-        <p class="small mb-0">{{ pack.description|truncatewords:24 }}</p>
+{% if packs %}
+  <div class="row g-4">
+    {% for pack in packs %}
+      <div class="col-md-6 col-xl-4">
+        <section class="ip-section h-100">
+          <div class="ip-section__head">
+            <h2><a href="{% url 'marketplace:pack_detail' pack.slug %}">{{ pack.title }}</a></h2>
+            {% if pack.id in installed_ids %}
+              <span class="ip-badge ip-badge--success">Installed</span>
+            {% elif pack.is_free %}
+              <span class="ip-badge ip-badge--neutral">Free</span>
+            {% else %}
+              <span class="ip-badge ip-badge--accent">₹{{ pack.price_inr }}</span>
+            {% endif %}
+          </div>
+          <p class="ip-eyebrow mb-2">{{ pack.skill_name }} · {{ pack.question_count }} questions</p>
+          <p class="small mb-0">{{ pack.description|truncatewords:24 }}</p>
+        </section>
       </div>
-    </div>
-  {% empty %}
-    <div class="col-12"><div class="alert alert-info mb-0">No packs published yet.</div></div>
-  {% endfor %}
-</div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-bag"></i></span>
+    <div class="ip-empty__title">No packs published yet.</div>
+    <p>Question packs appear here once they are published — check back soon.</p>
+  </div>
+{% endif %}
 {% endblock %}

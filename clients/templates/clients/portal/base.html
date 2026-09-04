@@ -1,33 +1,48 @@
 {% comment %}Standalone client-portal shell — deliberately NOT core/base.html:
-no sidebar, no auth chrome, no request.company lookups.{% endcomment %}
-<!doctype html>
-<html lang="en">
+no sidebar, no auth chrome, no request.company lookups.  It loads the shared
+design system and opts into the warm personality, so the page an end client
+sees matches the candidate-facing surfaces.{% endcomment %}
+{% load static %}<!doctype html>
+<html lang="en" data-bs-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>{% block title %}{{ brand_name }} · Candidate review{% endblock %}</title>
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("ip-theme");
+      if (!t) {
+        t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", t);
+    } catch (e) { /* storage blocked — stay light */ }
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700..800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-<style>
-  body { background: #f7f8fa; }
-  .cp-header { background: #fff; border-bottom: 1px solid #e6e8ec; }
-  .cp-logo { max-height: 44px; width: auto; }
-  .cp-card { background: #fff; border: 1px solid #e6e8ec; border-radius: .75rem; }
-  .cp-muted { color: #6b7280; }
-</style>
+<link rel="stylesheet" href="{% static 'web/app.css' %}">
 </head>
-<body>
-<header class="cp-header py-3 mb-4">
-  <div class="container d-flex align-items-center gap-3">
-    {% if client.logo %}<img class="cp-logo" src="{{ client.logo.url }}" alt="{{ brand_name }}">{% endif %}
+<body class="ip-warm">
+<header class="ip-pubhead">
+  <div class="container ip-pubhead__inner">
+    {% if client.logo %}
+      <img class="ip-pubhead__logo" src="{{ client.logo.url }}" alt="{{ brand_name }}">
+    {% endif %}
     <div>
-      <h1 class="h5 mb-0">{{ brand_name }}</h1>
-      <p class="cp-muted small mb-0">Candidate shortlist{% if provider_name %} · presented by {{ provider_name }}{% endif %}</p>
+      <h1>{{ brand_name }}</h1>
+      <p>Candidate shortlist{% if provider_name %} · presented by {{ provider_name }}{% endif %}</p>
     </div>
+    <span class="ms-auto ip-badge ip-badge--light">
+      <i class="bi bi-shield-lock" aria-hidden="true"></i> Private link
+    </span>
   </div>
 </header>
-<main class="container pb-5">
+<main class="container pb-5" id="main">
 {% if messages %}
   {% for message in messages %}
     <div class="alert alert-{% if 'error' in message.tags %}danger{% elif 'success' in message.tags %}success{% else %}info{% endif %}">{{ message }}</div>
@@ -35,8 +50,8 @@ no sidebar, no auth chrome, no request.company lookups.{% endcomment %}
 {% endif %}
 {% block content %}{% endblock %}
 </main>
-<footer class="container pb-4">
-  <p class="cp-muted small mb-0">This is a private link. Please do not share it.</p>
+<footer class="container">
+  <p class="ip-pubfoot mb-0">This is a private link. Please do not share it.</p>
 </footer>
 </body>
 </html>

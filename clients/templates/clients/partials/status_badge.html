@@ -1,7 +1,2 @@
 {% comment %}Submission status pill. Usage: {% include "clients/partials/status_badge.html" with submission=submission %}{% endcomment %}
-<span class="badge
-  {% if submission.status == 'SHORTLISTED' %}text-bg-info
-  {% elif submission.status == 'REJECTED' %}text-bg-danger
-  {% elif submission.status == 'INTERVIEW_REQUESTED' %}text-bg-warning
-  {% elif submission.status == 'HIRED' %}text-bg-success
-  {% else %}text-bg-secondary{% endif %}">{{ submission.get_status_display }}</span>
+<span class="ip-badge ip-badge--{% if submission.status == 'SHORTLISTED' %}info{% elif submission.status == 'REJECTED' %}danger{% elif submission.status == 'INTERVIEW_REQUESTED' %}warning{% elif submission.status == 'HIRED' %}success{% else %}neutral{% endif %}">{{ submission.get_status_display }}</span>

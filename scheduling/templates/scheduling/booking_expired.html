@@ -1,15 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Booking link expired{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-12 col-lg-6">
-    <div class="ip-card p-4 text-center">
-      <i class="bi bi-hourglass-bottom display-5 text-warning" aria-hidden="true"></i>
-      <h1 class="h4 mt-2">This booking link has expired</h1>
-      <p class="text-body-secondary mb-0">
-        Please contact {{ interview.company.name }} and ask for a fresh interview invitation.
-      </p>
-    </div>
+<div class="ip-standalone ip-standalone--narrow">
+  <div class="ip-section text-center">
+    <span class="ip-outcome ip-outcome--warning" aria-hidden="true"><i class="bi bi-hourglass-bottom"></i></span>
+    <h1>This booking link has expired</h1>
+    <p class="ip-muted mb-0">
+      Please contact {{ interview.company.name }} and ask for a fresh interview invitation.
+    </p>
   </div>
 </div>
 {% endblock %}

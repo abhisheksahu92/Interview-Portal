@@ -2,32 +2,34 @@
 {% load web_money %}
 
 {% block content %}
-{% if about_html %}<section class="mb-4 mb-lg-5" style="max-width:52rem">{{ about_html }}</section>{% endif %}
+{% if about_html %}<section class="cx-prose mb-4 mb-lg-5">{{ about_html }}</section>{% endif %}
 
-<form class="row g-2 align-items-end mb-4" method="get" role="search" aria-label="Filter jobs">
-  <div class="col-12 col-sm-5">
-    <label class="form-label small cx-muted" for="cx-q">Title or skill</label>
-    <input class="form-control" id="cx-q" type="search" name="q" value="{{ filters.q }}"
-           placeholder="e.g. Python">
-  </div>
-  <div class="col-12 col-sm-4">
-    <label class="form-label small cx-muted" for="cx-location">Location</label>
-    <input class="form-control" id="cx-location" name="location" list="cx-locations"
-           value="{{ filters.location }}" placeholder="Anywhere">
-    <datalist id="cx-locations">
-      {% for loc in locations %}<option value="{{ loc }}"></option>{% endfor %}
-    </datalist>
-  </div>
-  <div class="col-12 col-sm-3 d-flex gap-2">
-    <button class="btn cx-btn flex-grow-1" type="submit">Search</button>
-    <a class="btn btn-outline-secondary" href="{% url 'careers:site' site.slug %}">Clear</a>
+<form class="cx-filters mb-4" method="get" role="search" aria-label="Filter jobs">
+  <div class="row g-3 align-items-end">
+    <div class="col-12 col-sm-5">
+      <label class="form-label" for="cx-q">Title or skill</label>
+      <input class="form-control" id="cx-q" type="search" name="q" value="{{ filters.q }}"
+             placeholder="e.g. Python">
+    </div>
+    <div class="col-12 col-sm-4">
+      <label class="form-label" for="cx-location">Location</label>
+      <input class="form-control" id="cx-location" name="location" list="cx-locations"
+             value="{{ filters.location }}" placeholder="Anywhere">
+      <datalist id="cx-locations">
+        {% for loc in locations %}<option value="{{ loc }}"></option>{% endfor %}
+      </datalist>
+    </div>
+    <div class="col-12 col-sm-3 d-flex gap-2">
+      <button class="btn cx-btn flex-grow-1" type="submit">Search</button>
+      <a class="btn btn-outline-secondary" href="{% url 'careers:site' site.slug %}">Clear</a>
+    </div>
   </div>
 </form>
 
 <div class="row g-3">
   {% for job in jobs %}
     <div class="col-12 col-lg-6">
-      <article class="cx-card h-100 p-3 p-lg-4">
+      <article class="cx-card h-100 p-4">
         <h2 class="h5 mb-1">
           <a class="text-decoration-none" href="{% url 'careers:job_detail' site.slug job.pk %}">{{ job.title }}</a>
         </h2>
@@ -35,16 +37,23 @@
           {{ job.location|default:"Remote" }} · {{ job.get_employment_type_display }}
         </p>
         {% if job.salary_published %}
-          <p class="cx-muted small mb-2">{% salary_range job %}</p>
+          <p class="fw-semibold small mb-2">{% salary_range job %}</p>
         {% endif %}
-        <div class="d-flex flex-wrap gap-1 mb-3">
-          {% for skill in job.skills.all %}<span class="cx-chip">{{ skill.name }}</span>{% endfor %}
-        </div>
-        <a class="btn btn-sm cx-btn" href="{% url 'careers:job_detail' site.slug job.pk %}">View role</a>
+        {% if job.skills.all %}
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            {% for skill in job.skills.all %}<span class="cx-chip">{{ skill.name }}</span>{% endfor %}
+          </div>
+        {% endif %}
+        <a class="btn btn-sm cx-btn mt-3" href="{% url 'careers:job_detail' site.slug job.pk %}">View role</a>
       </article>
     </div>
   {% empty %}
-    <div class="col-12"><p class="cx-muted">No open roles match your search right now.</p></div>
+    <div class="col-12">
+      <div class="cx-card p-5 text-center">
+        <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-search"></i></span>
+        <p class="cx-muted mb-0">No open roles match your search right now.</p>
+      </div>
+    </div>
   {% endfor %}
 </div>
 {% endblock %}

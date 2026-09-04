@@ -9,30 +9,31 @@
       <p>{{ client.contact_name|default:"No contact" }}{% if client.contact_email %} <span class="ip-meta-dot"></span>{{ client.contact_email }}{% endif %}</p>
     </div>
   </div>
-  <div class="ms-auto">
+  <div class="ip-page-head__actions">
     <a class="btn btn-sm btn-outline-secondary" href="{% url 'clients:edit' client.pk %}">Edit</a>
   </div>
 </div>
 {% endblock %}
 {% block content %}
-<div class="row g-3">
+<div class="row g-4">
   <div class="col-lg-7">
-    <section class="ip-section mb-3">
+    <section class="ip-section mb-4">
       <div class="ip-section__head"><h2>Jobs</h2></div>
       {% if jobs %}
-        <ul class="list-group list-group-flush mb-0">
+        <ul class="ip-list">
           {% for job in jobs %}
-            <li class="list-group-item d-flex justify-content-between px-0">
-              <span>{{ job.title }} <span class="ip-muted small"><span class="ip-meta-dot"></span>{{ job.get_status_display }}</span></span>
+            <li>
+              <span class="ip-list__main">{{ job.title }}
+                <span class="ip-muted small"><span class="ip-meta-dot"></span>{{ job.get_status_display }}</span></span>
               <a class="btn btn-sm btn-outline-secondary" href="{% url 'clients:job_client' job.pk %}">Change client</a>
             </li>
           {% endfor %}
         </ul>
       {% else %}
-        <p class="ip-muted small mb-2">No jobs are linked to this client yet.</p>
+        <p class="ip-muted small mb-0">No jobs are linked to this client yet.</p>
       {% endif %}
       {% if unassigned_jobs %}
-        <details class="mt-3">
+        <details class="mt-4">
           <summary class="small">Link an existing job</summary>
           <ul class="list-unstyled mt-2 mb-0">
             {% for job in unassigned_jobs %}
@@ -43,26 +44,32 @@
       {% endif %}
     </section>
 
-    <section class="ip-section">
+    <section>
       <div class="ip-section__head"><h2>Submissions</h2></div>
       {% if submissions %}
-        <div class="table-responsive">
-          <table class="table table-sm align-middle mb-0">
-            <thead><tr><th>Candidate</th><th>Job</th><th>Status</th><th>Submitted</th></tr></thead>
+        <div class="ip-table-wrap">
+          <table class="ip-table">
+            <caption class="visually-hidden">Candidates submitted to {{ client.name }}</caption>
+            <thead><tr><th scope="col">Candidate</th><th scope="col">Job</th>
+              <th scope="col">Status</th><th scope="col">Submitted</th></tr></thead>
             <tbody>
               {% for submission in submissions %}
                 <tr>
                   <td><a href="{% url 'clients:submission_detail' submission.pk %}">{{ submission.candidate }}</a></td>
-                  <td>{{ submission.job.title }}</td>
+                  <td class="ip-muted">{{ submission.job.title }}</td>
                   <td>{% include "clients/partials/status_badge.html" with submission=submission %}</td>
-                  <td class="ip-muted small">{{ submission.created_at|date:"d M Y" }}</td>
+                  <td class="ip-muted text-nowrap">{{ submission.created_at|date:"d M Y" }}</td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
       {% else %}
-        <p class="ip-muted small mb-0">Nothing submitted to this client yet.</p>
+        <div class="ip-empty ip-empty--sm">
+          <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-send"></i></span>
+          <div class="ip-empty__title">Nothing submitted to this client yet.</div>
+          <p>Submit a candidate from any pipeline card and it appears here with its status.</p>
+        </div>
       {% endif %}
     </section>
   </div>
@@ -73,7 +80,7 @@
       {% if accesses %}
         {# Same component the team-members invitations table uses #}
         {% include "core/_access_links_table.html" with rows=accesses purpose_label="Purpose" caption="Portal access links for "|add:client.name resend_url_name="clients:access_resend" revoke_url_name="clients:access_revoke" url_arg=client.pk can_manage=True confirm_noun="portal link" %}
-        <ul class="list-unstyled small mt-2">
+        <ul class="list-unstyled small mt-3">
           {% for access in accesses %}
             {% if access.is_active %}
               <li><code class="d-block text-truncate">{% url 'clients:portal' access.token %}</code></li>
@@ -85,15 +92,15 @@
       {% endif %}
       <form method="post" action="{% url 'clients:access_create' client.pk %}" novalidate>
         {% csrf_token %}
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label" for="{{ access_form.email.id_for_label }}">Contact email</label>
           {{ access_form.email }}
         </div>
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label" for="{{ access_form.valid_days.id_for_label }}">Valid for (days)</label>
           {{ access_form.valid_days }}
         </div>
-        <button class="btn btn-primary btn-sm" type="submit">Generate &amp; email link</button>
+        <button class="btn btn-primary" type="submit">Generate &amp; email link</button>
       </form>
     </section>
   </div>

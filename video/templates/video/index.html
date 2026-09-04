@@ -6,68 +6,81 @@
     <h1>Video screening</h1>
     <p>One-way video interviews: build a screen, invite candidates, review answers.</p>
   </div>
-  <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="{% url 'video:question_list' %}">Question library ({{ question_count }})</a>
-    <a class="btn btn-outline-secondary" href="{% url 'video:invite_list' %}">All invites</a>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'video:question_list' %}">Question library ({{ question_count }})</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'video:invite_list' %}">All invites</a>
   </div>
 </div>
 {% endblock %}
 {% block content %}
 <div class="row g-4">
   <div class="col-lg-7">
-    <div class="card h-100">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span class="fw-semibold">Screens</span>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-sm mb-0 align-middle">
-          <thead><tr><th>Screen</th><th>Job</th><th>Stage</th><th>Questions</th><th></th></tr></thead>
-          <tbody>
-          {% for screen in screens %}
-            <tr>
-              <td>{{ screen.title }}{% if not screen.is_active %} <span class="badge text-bg-secondary">inactive</span>{% endif %}</td>
-              <td><a href="{% url 'video:job_screens' screen.job_id %}">{{ screen.job.title }}</a></td>
-              <td>{{ screen.stage.name|default:"Any stage" }}</td>
-              <td>{{ screen.questions.count }}</td>
-              <td class="text-end">{% if can_manage %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'video:screen_edit' screen.pk %}">Edit</a>{% endif %}</td>
-            </tr>
-          {% empty %}
-            <tr><td colspan="5" class="text-body-secondary">No video screens yet.</td></tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% if can_manage %}
-      <div class="card-footer">
-        <form class="d-flex gap-2 align-items-center" method="get" action="" id="ipVideoJobPick">
-          <label class="form-label mb-0 small text-body-secondary" for="ipVideoJob">Add a screen to</label>
-          <select class="form-select form-select-sm w-auto" id="ipVideoJob">
-            {% for job in jobs %}<option value="{% url 'video:screen_create' job.pk %}">{{ job.title }}</option>{% endfor %}
-          </select>
-          <button class="btn btn-sm btn-primary" type="button"
-                  onclick="var s=document.getElementById('ipVideoJob'); if (s.value) { window.location = s.value; }">Continue</button>
-        </form>
-      </div>
+    <section>
+      <div class="ip-section__head"><h2>Screens</h2></div>
+      {% if screens %}
+        <div class="ip-table-wrap">
+          <table class="ip-table">
+            <caption class="visually-hidden">Video screens across every job</caption>
+            <thead><tr><th scope="col">Screen</th><th scope="col">Job</th><th scope="col">Stage</th>
+              <th scope="col" class="text-end">Questions</th><th scope="col"></th></tr></thead>
+            <tbody>
+            {% for screen in screens %}
+              <tr>
+                <td>{{ screen.title }}{% if not screen.is_active %}
+                  <span class="ip-badge ip-badge--neutral">inactive</span>{% endif %}</td>
+                <td><a href="{% url 'video:job_screens' screen.job_id %}">{{ screen.job.title }}</a></td>
+                <td class="ip-muted">{{ screen.stage.name|default:"Any stage" }}</td>
+                <td class="text-end">{{ screen.questions.count }}</td>
+                <td class="text-end">{% if can_manage %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'video:screen_edit' screen.pk %}">Edit</a>{% endif %}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="ip-empty ip-empty--sm">
+          <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-camera-video"></i></span>
+          <div class="ip-empty__title">No video screens yet.</div>
+          <p>Attach a set of recorded questions to a pipeline stage and candidates are invited automatically.</p>
+        </div>
       {% endif %}
-    </div>
+      {% if can_manage %}
+        <form class="ip-toolbar mt-4" method="get" action="" id="ipVideoJobPick">
+          <div class="ip-toolbar__field ip-toolbar__field--grow">
+            <label for="ipVideoJob">Add a screen to</label>
+            <select class="form-select form-select-sm" id="ipVideoJob">
+              {% for job in jobs %}<option value="{% url 'video:screen_create' job.pk %}">{{ job.title }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="ip-toolbar__actions">
+            <button class="btn btn-sm btn-primary" type="button"
+                    onclick="var s=document.getElementById('ipVideoJob'); if (s.value) { window.location = s.value; }">Continue</button>
+          </div>
+        </form>
+      {% endif %}
+    </section>
   </div>
   <div class="col-lg-5">
-    <div class="card h-100">
-      <div class="card-header fw-semibold">Recent invites</div>
-      <ul class="list-group list-group-flush">
-        {% for invite in invites %}
-          <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
-            <div class="min-w-0">
-              <a class="d-block text-truncate" href="{% url 'video:invite_review' invite.pk %}">{{ invite.application.candidate.user.email }}</a>
-              <small class="text-body-secondary">{{ invite.application.job.title }} · {{ invite.screen.title }}</small>
-            </div>
-            <span class="badge text-bg-light">{{ invite.get_status_display }}</span>
-          </li>
-        {% empty %}
-          <li class="list-group-item text-body-secondary">No invites yet.</li>
-        {% endfor %}
-      </ul>
-    </div>
+    <section class="ip-section h-100">
+      <div class="ip-section__head"><h2>Recent invites</h2></div>
+      {% if invites %}
+        <ul class="ip-list">
+          {% for invite in invites %}
+            <li>
+              <span class="ip-list__main">
+                <a class="d-block text-truncate" href="{% url 'video:invite_review' invite.pk %}">{{ invite.application.candidate.user.email }}</a>
+                <span class="ip-list__meta">{{ invite.application.job.title }} · {{ invite.screen.title }}</span>
+              </span>
+              <span class="ip-list__aside">
+                <span class="ip-badge ip-badge--light">{{ invite.get_status_display }}</span>
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="ip-muted small mb-0">No invites yet.</p>
+      {% endif %}
+    </section>
   </div>
 </div>
 {% endblock %}

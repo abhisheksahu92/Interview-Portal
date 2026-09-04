@@ -3,37 +3,52 @@
 {% block page_header %}
 <div class="ip-page-head">
   <div><h1>Video invites</h1><p>Who has been asked to record, and who has finished.</p></div>
-  <form method="get" class="d-flex gap-2">
-    <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+</div>
+{% endblock %}
+{% block content %}
+<form class="ip-toolbar" method="get">
+  <div class="ip-toolbar__field">
+    <label for="invite-status">Status</label>
+    <select class="form-select form-select-sm" id="invite-status" name="status" onchange="this.form.submit()">
       <option value="">All statuses</option>
       {% for value, label in status_choices %}
         <option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>
       {% endfor %}
     </select>
-  </form>
-</div>
-{% endblock %}
-{% block content %}
-<div class="card">
-  <div class="table-responsive">
-    <table class="table mb-0 align-middle">
-      <thead><tr><th>Candidate</th><th>Job</th><th>Screen</th><th>Status</th><th>Answered</th><th>Deadline</th><th></th></tr></thead>
-      <tbody>
-      {% for invite in invites %}
-        <tr>
-          <td>{{ invite.application.candidate.user.email }}</td>
-          <td>{{ invite.application.job.title }}</td>
-          <td>{{ invite.screen.title }}</td>
-          <td><span class="badge text-bg-light">{{ invite.get_status_display }}</span></td>
-          <td>{{ invite.progress.answered }} / {{ invite.progress.total }}</td>
-          <td>{{ invite.expires_at|date:"d M Y" }}</td>
-          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'video:invite_review' invite.pk %}">Review</a></td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="7" class="text-body-secondary">No invites match.</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
   </div>
-</div>
+  <div class="ip-toolbar__actions">
+    <noscript><button class="btn btn-sm btn-primary" type="submit">Filter</button></noscript>
+  </div>
+</form>
+<section>
+  {% if invites %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Video screening invites</caption>
+        <thead><tr><th scope="col">Candidate</th><th scope="col">Job</th><th scope="col">Screen</th>
+          <th scope="col">Status</th><th scope="col" class="text-end">Answered</th>
+          <th scope="col">Deadline</th><th scope="col"></th></tr></thead>
+        <tbody>
+        {% for invite in invites %}
+          <tr>
+            <td>{{ invite.application.candidate.user.email }}</td>
+            <td class="ip-muted">{{ invite.application.job.title }}</td>
+            <td class="ip-muted">{{ invite.screen.title }}</td>
+            <td><span class="ip-badge ip-badge--light">{{ invite.get_status_display }}</span></td>
+            <td class="text-end">{{ invite.progress.answered }} / {{ invite.progress.total }}</td>
+            <td class="ip-muted text-nowrap">{{ invite.expires_at|date:"d M Y" }}</td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'video:invite_review' invite.pk %}">Review</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-inbox"></i></span>
+      <div class="ip-empty__title">No invites match.</div>
+      <p>Clear the status filter, or attach a video screen to a stage to start inviting candidates.</p>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

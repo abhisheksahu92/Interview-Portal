@@ -9,53 +9,78 @@
 </div>
 {% endblock %}
 {% block content %}
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3"><div class="card p-3"><div class="text-muted small">Referrals</div>
-    <div class="h4 mb-0">{{ referrals.count }}</div></div></div>
-  <div class="col-6 col-lg-3"><div class="card p-3"><div class="text-muted small">Invoiced</div>
-    <div class="h4 mb-0">₹{{ totals.invoiced }}</div></div></div>
-  <div class="col-6 col-lg-3"><div class="card p-3"><div class="text-muted small">Earned</div>
-    <div class="h4 mb-0">₹{{ totals.earned }}</div></div></div>
-  <div class="col-6 col-lg-3"><div class="card p-3"><div class="text-muted small">Pending payout</div>
-    <div class="h4 mb-0">₹{{ totals.pending }}</div></div></div>
+<div class="ip-bento mb-5">
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Referrals</div><div class="ip-kpi__value">{{ referrals.count }}</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Invoiced</div><div class="ip-kpi__value">₹{{ totals.invoiced }}</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Earned</div><div class="ip-kpi__value">₹{{ totals.earned }}</div>
+  </div>
+  <div class="ip-bento__tile ip-bento__tile--lime ip-kpi">
+    <div class="ip-kpi__label">Pending payout</div><div class="ip-kpi__value">₹{{ totals.pending }}</div>
+  </div>
 </div>
 
-<div class="card p-3 mb-4">
-  <div class="text-muted small">Your referral link</div>
-  <code>{{ referral_url }}</code>
-</div>
+<section class="ip-section mb-5">
+  <div class="ip-eyebrow mb-2">Your referral link</div>
+  <pre class="ip-code ip-code--wrap mb-0"><code>{{ referral_url }}</code></pre>
+</section>
 
-<h2 class="h6">Referred companies</h2>
-<div class="table-responsive mb-4">
-  <table class="table align-middle">
-    <thead><tr><th>Company</th><th>Signed up</th><th>First payment</th></tr></thead>
-    <tbody>
-      {% for referral in referrals %}
-        <tr><td>{{ referral.company.name }}</td>
-          <td>{{ referral.signed_up_at|date:"Y-m-d" }}</td>
-          <td>{{ referral.first_payment_at|date:"Y-m-d"|default:"—" }}</td></tr>
-      {% empty %}
-        <tr><td colspan="3" class="text-muted">No referrals yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+<section class="mb-5">
+  <div class="ip-section__head"><h2>Referred companies</h2></div>
+  {% if referrals %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Companies referred by {{ reseller.name }}</caption>
+        <thead><tr><th scope="col">Company</th><th scope="col">Signed up</th>
+          <th scope="col">First payment</th></tr></thead>
+        <tbody>
+          {% for referral in referrals %}
+            <tr><td>{{ referral.company.name }}</td>
+              <td class="ip-muted text-nowrap">{{ referral.signed_up_at|date:"Y-m-d" }}</td>
+              <td class="ip-muted text-nowrap">{{ referral.first_payment_at|date:"Y-m-d"|default:"—" }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty ip-empty--sm">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-building"></i></span>
+      <div class="ip-empty__title">No referrals yet.</div>
+      <p>Share the referral link above — sign-ups through it are attributed to you.</p>
+    </div>
+  {% endif %}
+</section>
 
-<h2 class="h6">Commissions</h2>
-<div class="table-responsive">
-  <table class="table align-middle">
-    <thead><tr><th>Invoice</th><th>Company</th><th>Invoice amount</th><th>Commission</th><th>Paid out</th></tr></thead>
-    <tbody>
-      {% for entry in commissions %}
-        <tr><td><code>{{ entry.invoice_ref }}</code></td>
-          <td>{{ entry.company.name }}</td>
-          <td>₹{{ entry.amount_inr }}</td>
-          <td>₹{{ entry.commission_inr }}</td>
-          <td>{{ entry.paid_out_at|date:"Y-m-d"|default:"pending" }}</td></tr>
-      {% empty %}
-        <tr><td colspan="5" class="text-muted">No commissions recorded yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+<section>
+  <div class="ip-section__head"><h2>Commissions</h2></div>
+  {% if commissions %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Commissions earned per invoice</caption>
+        <thead><tr><th scope="col">Invoice</th><th scope="col">Company</th>
+          <th scope="col" class="text-end">Invoice amount</th><th scope="col" class="text-end">Commission</th>
+          <th scope="col">Paid out</th></tr></thead>
+        <tbody>
+          {% for entry in commissions %}
+            <tr><td><code>{{ entry.invoice_ref }}</code></td>
+              <td>{{ entry.company.name }}</td>
+              <td class="text-end">₹{{ entry.amount_inr }}</td>
+              <td class="text-end">₹{{ entry.commission_inr }}</td>
+              <td class="ip-muted text-nowrap">{{ entry.paid_out_at|date:"Y-m-d"|default:"pending" }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty ip-empty--sm">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
+      <div class="ip-empty__title">No commissions recorded yet.</div>
+      <p>A commission is recorded when a referred company pays an invoice.</p>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

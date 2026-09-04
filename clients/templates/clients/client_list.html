@@ -6,8 +6,8 @@
     <h1>Clients</h1>
     <p>End clients you submit candidates to, and their branded review portals.</p>
   </div>
-  <div class="ms-auto">
-    <a class="btn btn-primary btn-sm" href="{% url 'clients:create' %}">
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-primary" href="{% url 'clients:create' %}">
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New client
     </a>
   </div>
@@ -15,17 +15,17 @@
 {% endblock %}
 {% block content %}
 {% if clients %}
-  <div class="row g-3">
+  <div class="row g-4">
     {% for client in clients %}
       <div class="col-md-6 col-xl-4">
         <section class="ip-section h-100">
-          <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="d-flex align-items-center gap-2 mb-3">
             {% if client.logo %}
               <img src="{{ client.logo.url }}" alt="" style="height:32px;width:auto">
             {% endif %}
-            <h2 class="h6 mb-0"><a href="{% url 'clients:detail' client.pk %}">{{ client.name }}</a></h2>
+            <h2 class="mb-0" style="font-size:var(--ip-fs-h3)"><a href="{% url 'clients:detail' client.pk %}">{{ client.name }}</a></h2>
           </div>
-          <p class="ip-muted small mb-2">
+          <p class="ip-muted small mb-3">
             {{ client.contact_name|default:"No contact" }}
             {% if client.contact_email %}<span class="ip-meta-dot"></span>{{ client.contact_email }}{% endif %}
           </p>
@@ -45,7 +45,7 @@
     <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-building"></i></span>
     <div class="ip-empty__title">No clients yet</div>
     <p>Add the companies you recruit for, then share a branded portal link with them.</p>
-    <a class="btn btn-primary btn-sm" href="{% url 'clients:create' %}">Add your first client</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'clients:create' %}">Add your first client</a>
   </div>
 {% endif %}
 {% endblock %}

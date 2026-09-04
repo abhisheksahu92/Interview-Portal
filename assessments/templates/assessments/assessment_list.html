@@ -16,19 +16,19 @@
 </div>
 {% endblock %}
 {% block content %}
-<section class="ip-section">
+<section>
   {% if assessments %}
     <div class="ip-table-wrap">
       <table class="ip-table">
         <caption class="visually-hidden">Assessments for {{ job.title }}</caption>
-        <thead><tr><th scope="col">Title</th><th scope="col">Stage</th><th scope="col">Questions</th>
+        <thead><tr><th scope="col">Title</th><th scope="col">Stage</th><th scope="col" class="text-end">Questions</th>
           <th scope="col">Time</th><th scope="col">Pass mark</th><th scope="col">Active</th><th scope="col"></th></tr></thead>
         <tbody>
           {% for a in assessments %}
             <tr>
               <td class="fw-semibold">{{ a.title }}</td>
               <td class="ip-muted">{{ a.stage.name|default:"—" }}</td>
-              <td>{{ a.questions.count }}</td>
+              <td class="text-end">{{ a.questions.count }}</td>
               <td class="ip-muted">{{ a.time_limit_minutes }} min</td>
               <td class="ip-muted">{{ a.pass_mark_percent }}%</td>
               <td>

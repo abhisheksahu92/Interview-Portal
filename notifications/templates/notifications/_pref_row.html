@@ -1,13 +1,12 @@
 <tr id="pref-row-{{ row.event.name }}">
-  <th scope="row" class="fw-normal">
+  <th scope="row">
     {{ row.event.label }}
-    <div class="small text-body-secondary">{{ row.event.description }}</div>
+    <div class="ip-muted small fw-normal">{{ row.event.description }}</div>
   </th>
   {% for cell in row.cells %}
-    <td class="text-center">
+    <td class="ip-toggle-cell">
       {% if cell.supported %}
-        <button type="button"
-                class="btn btn-sm {% if cell.enabled %}btn-success{% else %}btn-outline-secondary{% endif %}"
+        <button type="button" class="ip-toggle"
                 hx-post="{% url 'notifications:toggle' row.event.name cell.channel %}"
                 hx-target="#pref-row-{{ row.event.name }}"
                 hx-swap="outerHTML"
@@ -16,7 +15,7 @@
           {% if cell.enabled %}On{% else %}Off{% endif %}
         </button>
       {% else %}
-        <span class="text-body-tertiary small">n/a</span>
+        <span class="ip-muted small">n/a</span>
       {% endif %}
     </td>
   {% endfor %}

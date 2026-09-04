@@ -12,76 +12,84 @@
 </div>
 {% endblock %}
 {% block content %}
-<div class="row g-3">
+<div class="row g-4">
   <div class="col-12 col-lg-7">
-    <div class="ip-card p-3">
-      <h2 class="h6">Weekly grid</h2>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle mb-0">
+    <section>
+      <div class="ip-section__head"><h2>Weekly grid</h2></div>
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Your bookable windows for each weekday</caption>
           <thead><tr><th scope="col">Day</th><th scope="col">Windows</th></tr></thead>
           <tbody>
             {% for row in grid %}
               <tr>
-                <th scope="row" class="fw-semibold">{{ row.label }}</th>
+                <th scope="row" class="text-nowrap">{{ row.label }}</th>
                 <td>
-                  {% for window in row.windows %}
-                    <span class="badge text-bg-light border me-1 mb-1">
-                      {{ window.start|time:"H:i" }}–{{ window.end|time:"H:i" }} {{ window.timezone }}
-                      <form method="post" action="{% url 'scheduling:availability_delete' window.pk %}"
-                            class="d-inline m-0">{% csrf_token %}
-                        <button class="btn btn-link btn-sm p-0 ms-1 text-danger" type="submit"
-                                aria-label="Remove window">&times;</button>
-                      </form>
-                    </span>
-                  {% empty %}
-                    <span class="text-body-secondary small">Not available</span>
-                  {% endfor %}
+                  <div class="ip-chips">
+                    {% for window in row.windows %}
+                      <span class="ip-window">
+                        {{ window.start|time:"H:i" }}–{{ window.end|time:"H:i" }} {{ window.timezone }}
+                        <form method="post" action="{% url 'scheduling:availability_delete' window.pk %}">
+                          {% csrf_token %}
+                          <button type="submit" aria-label="Remove window">&times;</button>
+                        </form>
+                      </span>
+                    {% empty %}
+                      <span class="ip-muted small">Not available</span>
+                    {% endfor %}
+                  </div>
                 </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   </div>
   <div class="col-12 col-lg-5">
-    <div class="ip-card p-3 mb-3">
-      <h2 class="h6">Add a window</h2>
+    <section class="ip-section mb-4">
+      <div class="ip-section__head"><h2>Add a window</h2></div>
       <form method="post" novalidate>
         {% csrf_token %}
         {% if form.non_field_errors %}<div class="alert alert-danger small">{{ form.non_field_errors }}</div>{% endif %}
         {% for field in form %}
-          <div class="mb-2">
+          <div class="mb-3">
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}{{ field.errors }}
+            {{ field }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% for error in field.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
           </div>
         {% endfor %}
-        <button class="btn btn-primary btn-sm" type="submit">Add window</button>
+        <button class="btn btn-primary" type="submit">Add window</button>
       </form>
-    </div>
-    <div class="ip-card p-3">
-      <h2 class="h6">Connect calendar</h2>
-      {% for provider in providers %}
-        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-          <div>
-            <div class="fw-semibold small">{{ provider.label }}</div>
-            {% if provider.note %}<div class="small text-body-secondary">{{ provider.note }}</div>{% endif %}
-          </div>
-          {% if not provider.configured %}
-            <button class="btn btn-sm btn-outline-secondary" type="button" disabled
-                    title="{{ provider.note }}">Connect calendar</button>
-          {% elif provider.connection %}
-            <form method="post" action="{% url 'scheduling:calendar_disconnect' provider.connection.pk %}" class="m-0">
-              {% csrf_token %}
-              <button class="btn btn-sm btn-outline-danger" type="submit">Disconnect</button>
-            </form>
-          {% else %}
-            <a class="btn btn-sm btn-outline-primary"
-               href="{% url 'scheduling:oauth_start' provider.provider %}">Connect calendar</a>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
+    </section>
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Connect calendar</h2></div>
+      <ul class="ip-list">
+        {% for provider in providers %}
+          <li>
+            <span class="ip-list__main">
+              <span class="ip-list__title">{{ provider.label }}</span>
+              {% if provider.note %}<span class="ip-list__meta">{{ provider.note }}</span>{% endif %}
+            </span>
+            <span class="ip-list__aside">
+              {% if not provider.configured %}
+                <button class="btn btn-sm btn-outline-secondary" type="button" disabled
+                        title="{{ provider.note }}">Connect calendar</button>
+              {% elif provider.connection %}
+                <form method="post" action="{% url 'scheduling:calendar_disconnect' provider.connection.pk %}" class="m-0">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Disconnect</button>
+                </form>
+              {% else %}
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{% url 'scheduling:oauth_start' provider.provider %}">Connect calendar</a>
+              {% endif %}
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
   </div>
 </div>
 {% endblock %}

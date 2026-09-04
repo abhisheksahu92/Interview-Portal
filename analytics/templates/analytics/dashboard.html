@@ -13,8 +13,8 @@
     <h1>Analytics</h1>
     {% include "analytics/_range_subtitle.html" %}
   </div>
-  <div class="ms-auto d-flex gap-2 viz-noprint">
-    <a class="btn btn-outline-secondary" href="{% url 'analytics:report' %}?{{ query_string }}">
+  <div class="ip-page-head__actions viz-noprint">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'analytics:report' %}?{{ query_string }}">
       <i class="bi bi-printer me-1" aria-hidden="true"></i>Monthly report
     </a>
   </div>
@@ -22,19 +22,19 @@
 {% endblock %}
 
 {% block content %}
-<form class="row g-2 align-items-end mb-4 viz-noprint" role="search"
+<form class="ip-toolbar viz-noprint" role="search"
       hx-get="{% url 'analytics:charts' %}" hx-target="#viz-charts" hx-swap="innerHTML"
       hx-trigger="change, submit" hx-push-url="false">
-  <div class="col-6 col-md-3">
-    <label class="form-label" for="id_date_from">From</label>
+  <div class="ip-toolbar__field ip-toolbar__field--narrow">
+    <label for="id_date_from">From</label>
     <input class="form-control" type="date" id="id_date_from" name="date_from" value="{{ date_from|date:'Y-m-d' }}">
   </div>
-  <div class="col-6 col-md-3">
-    <label class="form-label" for="id_date_to">To</label>
+  <div class="ip-toolbar__field ip-toolbar__field--narrow">
+    <label for="id_date_to">To</label>
     <input class="form-control" type="date" id="id_date_to" name="date_to" value="{{ date_to|date:'Y-m-d' }}">
   </div>
-  <div class="col-12 col-md-4">
-    <label class="form-label" for="id_job">Job</label>
+  <div class="ip-toolbar__field ip-toolbar__field--grow">
+    <label for="id_job">Job</label>
     <select class="form-select" id="id_job" name="job">
       <option value="">All jobs</option>
       {% for job in jobs %}
@@ -42,8 +42,8 @@
       {% endfor %}
     </select>
   </div>
-  <div class="col-12 col-md-2">
-    <button class="btn btn-primary w-100" type="submit">Apply</button>
+  <div class="ip-toolbar__actions">
+    <button class="btn btn-primary" type="submit">Apply</button>
   </div>
 </form>
 

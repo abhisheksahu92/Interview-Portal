@@ -20,27 +20,29 @@
   </div>
 {% endif %}
 {% if not calendar_configured %}
-  <div class="alert alert-secondary small">
+  <div class="alert alert-info small">
     Calendar sync is not configured on this deployment — interviews are still scheduled,
     they are just not pushed to Google or Outlook.
   </div>
 {% endif %}
 
-<div class="row g-3">
+<div class="row g-4">
   <div class="col-12 col-xl-5">
-    <div class="ip-card p-3">
-      <h2 class="h6"><i class="bi bi-list-check me-1" aria-hidden="true"></i>Upcoming interviews</h2>
+    <section class="ip-section h-100">
+      <div class="ip-section__head">
+        <h2><i class="bi bi-list-check me-1" aria-hidden="true"></i>Upcoming interviews</h2>
+      </div>
       {% for interview in upcoming %}
         {% include "scheduling/partials/interview_row.html" with interview=interview %}
       {% empty %}
-        <p class="text-body-secondary small mb-0">No upcoming interviews.</p>
+        <p class="ip-muted small mb-0">No upcoming interviews.</p>
       {% endfor %}
-    </div>
+    </section>
   </div>
   <div class="col-12 col-xl-7">
-    <div class="ip-card p-3">
+    <section class="ip-section h-100">
       {% include "scheduling/partials/week.html" %}
-    </div>
+    </section>
   </div>
 </div>
 {% endblock %}

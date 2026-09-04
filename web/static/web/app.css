@@ -1544,3 +1544,973 @@ body.ip-slideover-open { overflow: hidden; }
     transition-duration: .001ms !important;
   }
 }
+
+
+/* ==========================================================================
+   === Candidate & public surfaces (agent 2) ===
+   Landing bento, candidate application cards, and the standalone token-link
+   pages (careers, client portal, offer signing, booking, video recording).
+   Everything below is scoped to .ip-warm or to an agent-2-only class, uses
+   only the tokens declared above, and has no colour of its own.
+   ========================================================================== */
+
+/* --- A. Bootstrap components on the standalone warm pages ----------------
+   The token-link templates (client portal, offers, booking, video) are plain
+   Bootstrap markup that predates the design system.  Re-point the components
+   they use rather than rewriting every element, so they inherit the warm
+   ramp in both themes. */
+
+.ip-warm .card {
+  background: var(--ip-paper-50);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-tile);
+  box-shadow: var(--ip-shadow-card);
+  color: var(--ip-ink-900);
+  /* the radius is ours, so header/footer corners must be clipped to match */
+  overflow: hidden;
+}
+.ip-warm .card-body { padding: var(--ip-5); }
+.ip-warm .card-header,
+.ip-warm .card-footer {
+  background: var(--ip-paper-100);
+  border-color: var(--ip-rule);
+  color: var(--ip-ink-700);
+  padding: var(--ip-3) var(--ip-5);
+}
+.ip-warm .card-header strong { font-family: var(--ip-font-head); letter-spacing: -0.01em; }
+
+.ip-warm .alert {
+  border: 1px solid var(--ip-rule);
+  border-left: 3px solid var(--ip-ink-300);
+  border-radius: var(--ip-r-surface);
+  background: var(--ip-paper-200);
+  color: var(--ip-ink-900);
+  padding: var(--ip-3) var(--ip-4);
+  font-size: var(--ip-fs-body);
+}
+.ip-warm .alert-success { background: var(--ip-green-100); border-left-color: var(--ip-green-600); }
+.ip-warm .alert-danger  { background: var(--ip-red-100);   border-left-color: var(--ip-red-600); }
+.ip-warm .alert-warning { background: var(--ip-amber-100); border-left-color: var(--ip-amber-600); }
+.ip-warm .alert-info    { background: var(--ip-blue-100);  border-left-color: var(--ip-blue-600); }
+.ip-warm .alert-light, .ip-warm .alert-secondary { background: var(--ip-paper-200); }
+.ip-warm .alert a { color: var(--ip-accent-600); }
+
+/* Bootstrap .badge.text-bg-* on the warm pages, mapped onto .ip-badge looks. */
+.ip-warm .badge {
+  display: inline-flex; align-items: center; gap: var(--ip-1);
+  font-family: var(--ip-font-body);
+  font-size: var(--ip-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--ip-tracking-label);
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--ip-rule);
+  background: var(--ip-paper-200) !important;
+  color: var(--ip-ink-700) !important;
+}
+.ip-warm .badge.text-bg-success { background: var(--ip-green-100) !important; color: var(--ip-green-600) !important; border-color: color-mix(in srgb, var(--ip-green-600) 30%, transparent); }
+.ip-warm .badge.text-bg-danger  { background: var(--ip-red-100) !important;   color: var(--ip-red-600) !important;   border-color: color-mix(in srgb, var(--ip-red-600) 30%, transparent); }
+.ip-warm .badge.text-bg-warning { background: var(--ip-amber-100) !important; color: var(--ip-amber-600) !important; border-color: color-mix(in srgb, var(--ip-amber-600) 30%, transparent); }
+.ip-warm .badge.text-bg-info    { background: var(--ip-blue-100) !important;  color: var(--ip-blue-600) !important;  border-color: color-mix(in srgb, var(--ip-blue-600) 30%, transparent); }
+.ip-warm .badge.text-bg-primary { background: var(--ip-accent-soft) !important; color: var(--ip-accent-600) !important; border-color: var(--ip-accent-line); }
+
+.ip-warm .list-group { border-radius: var(--ip-r-tile); overflow: hidden; }
+.ip-warm .list-group-item {
+  background: var(--ip-paper-50);
+  border-color: var(--ip-rule);
+  color: var(--ip-ink-900);
+  padding: var(--ip-4);
+}
+.ip-warm .list-group-item-action:hover,
+.ip-warm .list-group-item-action:focus { background: var(--ip-paper-200); color: var(--ip-ink-900); }
+
+.ip-warm .progress { background: var(--ip-paper-300); border-radius: 999px; }
+.ip-warm .progress-bar { background: var(--ip-accent); color: var(--ip-accent-on); font-weight: 700; }
+
+.ip-warm .btn-success {
+  --bs-btn-bg: var(--ip-green-600); --bs-btn-border-color: var(--ip-green-600);
+  --bs-btn-color: var(--ip-paper-50);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--ip-green-600) 86%, #000);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--ip-green-600) 86%, #000);
+  --bs-btn-hover-color: var(--ip-paper-50);
+  --bs-btn-active-bg: color-mix(in srgb, var(--ip-green-600) 80%, #000);
+  --bs-btn-active-color: var(--ip-paper-50);
+}
+.ip-warm .btn-danger {
+  --bs-btn-bg: var(--ip-red-600); --bs-btn-border-color: var(--ip-red-600);
+  --bs-btn-color: var(--ip-paper-50);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--ip-red-600) 86%, #000);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--ip-red-600) 86%, #000);
+  --bs-btn-hover-color: var(--ip-paper-50);
+  --bs-btn-active-bg: color-mix(in srgb, var(--ip-red-600) 80%, #000);
+  --bs-btn-active-color: var(--ip-paper-50);
+}
+.ip-warm .text-danger  { color: var(--ip-red-600) !important; }
+.ip-warm .text-success { color: var(--ip-green-600) !important; }
+.ip-warm .text-warning { color: var(--ip-amber-600) !important; }
+.ip-warm dl dt { color: var(--ip-ink-500); font-weight: 600; }
+.ip-warm dl dd { color: var(--ip-ink-900); }
+
+/* A centred standalone panel: offer signing, booking, video, thank-you pages. */
+.ip-standalone { max-width: 58rem; margin-inline: auto; }
+.ip-standalone--narrow { max-width: 34rem; }
+.ip-standalone--wide { max-width: 72rem; }
+
+/* Public / token-link page header: brand lockup, title, one line of context. */
+.ip-pubhead {
+  border-bottom: 1px solid var(--ip-rule);
+  background: var(--ip-paper-50);
+  padding: var(--ip-4) 0;
+  margin-bottom: var(--ip-6);
+}
+.ip-pubhead__inner { display: flex; align-items: center; gap: var(--ip-3); flex-wrap: wrap; }
+.ip-pubhead__logo { max-height: 40px; width: auto; border-radius: var(--ip-r-sm); }
+.ip-pubhead h1 { font-size: var(--ip-fs-h2); margin: 0; }
+.ip-pubhead p { margin: 0; color: var(--ip-ink-500); font-size: var(--ip-fs-sm); }
+.ip-pubfoot {
+  border-top: 1px solid var(--ip-rule);
+  margin-top: var(--ip-7); padding: var(--ip-5) 0;
+  color: var(--ip-ink-500); font-size: var(--ip-fs-sm);
+}
+
+/* Big reassuring outcome mark (booked / submitted / expired). */
+.ip-outcome {
+  display: grid; place-items: center;
+  width: 3.5rem; height: 3.5rem; margin: 0 auto var(--ip-4);
+  border-radius: 50%; font-size: 1.5rem;
+  background: var(--ip-paper-200); border: 1px solid var(--ip-rule);
+  color: var(--ip-ink-700);
+}
+.ip-outcome--success { background: var(--ip-green-100); border-color: transparent; color: var(--ip-green-600); }
+.ip-outcome--danger  { background: var(--ip-red-100);   border-color: transparent; color: var(--ip-red-600); }
+.ip-outcome--warning { background: var(--ip-amber-100); border-color: transparent; color: var(--ip-amber-600); }
+
+@media (min-width: 992px) {
+  .ip-sticky-aside { position: sticky; top: var(--ip-4); }
+}
+
+/* Small-caps definition rows (offer summary, job facts). */
+.ip-factlist { display: grid; gap: var(--ip-3); margin: 0; }
+.ip-factlist > div { display: grid; gap: 0.125rem; }
+.ip-factlist dt {
+  font-size: var(--ip-fs-label); font-weight: 600; text-transform: uppercase;
+  letter-spacing: var(--ip-tracking-label); color: var(--ip-ink-500);
+}
+.ip-factlist dd { margin: 0; font-weight: 600; color: var(--ip-ink-900); }
+
+
+/* --- B. Landing bento ---------------------------------------------------- */
+
+.ip-lp-hero {
+  display: grid; gap: var(--ip-5);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: center;
+}
+@media (max-width: 991.98px) { .ip-lp-hero { grid-template-columns: minmax(0, 1fr); } }
+
+.ip-lp-hero h1 {
+  font-size: clamp(2.125rem, 5.4vw, 3.5rem);
+  font-weight: 800; letter-spacing: -0.035em; line-height: 1.03;
+  margin: 0 0 var(--ip-4);
+  max-width: 22ch;
+}
+.ip-lp-hero h1 .accent { color: var(--ip-accent-600); }
+.ip-lp-hero .ip-lede { margin-bottom: var(--ip-5); max-width: 46ch; }
+
+.ip-lp-ctas { display: flex; flex-wrap: wrap; gap: var(--ip-3); }
+.ip-lp-ctas .btn { min-height: 46px; }
+
+/* "GST invoices · Data in India · WhatsApp updates" */
+.ip-signals {
+  display: flex; flex-wrap: wrap; gap: var(--ip-2) var(--ip-4);
+  margin: var(--ip-5) 0 0; padding: 0; list-style: none;
+  font-size: var(--ip-fs-sm); color: var(--ip-ink-500);
+}
+.ip-signals li { display: inline-flex; align-items: center; gap: var(--ip-2); }
+.ip-signals i { color: var(--ip-green-600); font-size: 0.875rem; }
+
+.ip-lp-side { display: grid; gap: var(--ip-3); align-content: start; }
+
+/* Price block — a lime tile.  The tile re-points the ink ramp, so the numeral
+   is ink-on-lime, never lime-on-lime. */
+.ip-price { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ip-3); }
+.ip-price__amount {
+  font-family: var(--ip-font-head); font-weight: 800;
+  font-size: clamp(2.25rem, 5vw, 3rem); line-height: 1;
+  letter-spacing: -0.04em; font-variant-numeric: tabular-nums;
+  color: var(--ip-ink-900);
+}
+.ip-price__amount small { font-size: var(--ip-fs-body); font-weight: 700; letter-spacing: 0; }
+.ip-price__note { font-size: var(--ip-fs-sm); font-weight: 600; color: var(--ip-ink-700); margin: var(--ip-2) 0 0; }
+.ip-price__mark { font-size: 2rem; line-height: 1; opacity: .5; color: var(--ip-ink-900); }
+
+/* Live-looking pipeline preview tile. */
+.ip-preview__head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--ip-2); margin-bottom: var(--ip-3);
+}
+.ip-preview__cols {
+  display: grid; gap: var(--ip-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ip-preview__col { min-width: 0; }
+.ip-preview__coltitle {
+  font-size: var(--ip-fs-label); font-weight: 600; text-transform: uppercase;
+  letter-spacing: var(--ip-tracking-label); color: var(--ip-ink-500);
+  padding-bottom: var(--ip-2); border-bottom: 1px solid var(--ip-rule);
+  margin-bottom: var(--ip-2);
+}
+.ip-mini {
+  background: var(--ip-paper-50); border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-md); padding: var(--ip-2) var(--ip-3);
+  margin-bottom: var(--ip-2); min-width: 0;
+}
+.ip-mini__row { display: flex; align-items: center; justify-content: space-between; gap: var(--ip-2); }
+.ip-mini__name { font-weight: 700; font-size: var(--ip-fs-sm); }
+.ip-mini__score {
+  font-family: var(--ip-font-head); font-weight: 800; font-size: var(--ip-fs-sm);
+  font-variant-numeric: tabular-nums; color: var(--ip-green-600);
+}
+.ip-mini__meta { color: var(--ip-ink-500); font-size: var(--ip-fs-label); }
+.ip-mini--soft { background: var(--ip-accent-soft); border-color: var(--ip-accent-line); }
+
+/* Trust logo strip — wordmarks, not images. */
+.ip-trust {
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: center; gap: var(--ip-4) var(--ip-7);
+}
+.ip-trust span {
+  font-family: var(--ip-font-head); font-weight: 700;
+  font-size: 1.0625rem; letter-spacing: 0.02em;
+  text-transform: uppercase; color: var(--ip-ink-300);
+}
+.ip-trust span:nth-child(2) { font-style: italic; letter-spacing: -0.01em; }
+.ip-trust span:last-child {
+  border: 1px solid var(--ip-rule-strong); border-radius: 999px;
+  padding: 0.25rem 0.875rem; font-size: var(--ip-fs-sm);
+}
+
+/* Three-step strip: numbered columns split by hairlines. */
+.ip-steps {
+  display: grid; gap: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--ip-rule); border-radius: var(--ip-r-xl);
+  background: var(--ip-paper-50); overflow: hidden;
+}
+.ip-steps > * {
+  padding: var(--ip-5); border-left: 1px solid var(--ip-rule); min-width: 0;
+}
+.ip-steps > *:first-child { border-left: 0; }
+@media (max-width: 767.98px) {
+  .ip-steps { grid-template-columns: minmax(0, 1fr); }
+  .ip-steps > * { border-left: 0; border-top: 1px solid var(--ip-rule); padding: var(--ip-4); }
+  .ip-steps > *:first-child { border-top: 0; }
+}
+
+.ip-warm .ip-plan { border-radius: var(--ip-r-xl); }
+.ip-plan__price .ip-plan__inr { font-variant-numeric: tabular-nums; }
+
+
+/* --- C. Candidate portal application cards ------------------------------- */
+
+.ip-appcard {
+  background: var(--ip-paper-50);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-xl);
+  box-shadow: var(--ip-shadow-card);
+  padding: var(--ip-5);
+  margin-bottom: var(--ip-4);
+  min-width: 0;
+}
+.ip-appcard__head {
+  display: flex; flex-wrap: wrap; align-items: flex-start;
+  justify-content: space-between; gap: var(--ip-2) var(--ip-3);
+}
+.ip-appcard__head > div { min-width: 0; flex: 1 1 16rem; }
+.ip-appcard__title { font-size: var(--ip-fs-h2); margin: 0 0 var(--ip-1); }
+.ip-appcard__meta {
+  margin: 0; color: var(--ip-ink-500); font-size: var(--ip-fs-sm);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--ip-1);
+}
+.ip-appcard__meta i { font-size: 0.8125rem; margin-right: 0.2rem; }
+.ip-appcard__flow { margin-top: var(--ip-5); }
+.ip-appcard__foot {
+  margin-top: var(--ip-5); padding-top: var(--ip-4);
+  border-top: 1px solid var(--ip-rule);
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: var(--ip-3);
+}
+.ip-appcard--closed { background: var(--ip-paper-100); box-shadow: none; }
+.ip-appcard--closed .ip-appcard__title { color: var(--ip-ink-500); }
+
+/* The one prominent action on the page: an assessment that is due. */
+.ip-duecard {
+  border-radius: var(--ip-r-xl); padding: var(--ip-5);
+  margin-bottom: var(--ip-5);
+  background: var(--ip-lime-block); border: 1px solid transparent;
+  --ip-ink-900: #141210; --ip-ink-700: #221F1A;
+  --ip-ink-500: #33302A; --ip-ink-300: #44403A;
+  color: var(--ip-ink-900);
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: var(--ip-4);
+}
+.ip-duecard h2 { font-size: var(--ip-fs-h1); margin: var(--ip-2) 0 var(--ip-1); color: var(--ip-ink-900); }
+.ip-duecard p { margin: 0; color: var(--ip-ink-700); font-size: var(--ip-fs-sm); }
+.ip-duecard__body { min-width: 0; flex: 1 1 20rem; }
+.ip-duecard__actions { display: flex; flex-wrap: wrap; gap: var(--ip-2); }
+.ip-duecard .ip-pill { background: rgba(255, 255, 255, .55); border-color: rgba(20, 18, 16, .18); color: var(--ip-ink-900); }
+.ip-duecard .ip-pill .dot { background: var(--ip-ink-900); }
+.ip-duecard .ip-signals { margin-top: var(--ip-3); color: var(--ip-ink-700); }
+.ip-duecard .ip-signals i { color: var(--ip-ink-700); }
+
+/* Interview-scheduled chip: solid ink, with the join link inside it. */
+.ip-joinchip {
+  display: inline-flex; align-items: center; gap: var(--ip-2);
+  background: var(--ip-rail-bg); color: var(--ip-rail-fg);
+  border-radius: 999px; padding: 0.4375rem 0.875rem;
+  font-size: var(--ip-fs-sm); font-weight: 600; min-height: 40px;
+  max-width: 100%; text-decoration: none;
+}
+a.ip-joinchip:hover { background: var(--ip-rail-raised); color: var(--ip-rail-fg); text-decoration: none; }
+.ip-joinchip i { color: var(--ip-accent); }
+.ip-joinchip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Compact "recommended for you" rows. */
+.ip-reco { display: grid; gap: var(--ip-2); }
+.ip-reco__row {
+  display: flex; align-items: center; gap: var(--ip-3);
+  padding: var(--ip-3) var(--ip-4);
+  border: 1px solid var(--ip-rule); border-radius: var(--ip-r-lg);
+  background: var(--ip-paper-50); min-width: 0;
+}
+.ip-reco__row > div { min-width: 0; flex: 1 1 auto; }
+.ip-reco__title { font-weight: 700; display: block; }
+
+@media (max-width: 575.98px) {
+  .ip-appcard { padding: var(--ip-4); border-radius: var(--ip-r-lg); }
+  .ip-appcard__title { font-size: var(--ip-fs-h3); }
+  .ip-appcard__foot { flex-direction: column; align-items: stretch; }
+  .ip-appcard__foot > * { width: 100%; }
+  .ip-duecard { padding: var(--ip-4); border-radius: var(--ip-r-lg); }
+  .ip-duecard h2 { font-size: var(--ip-fs-h2); }
+  .ip-duecard__actions, .ip-duecard__actions .btn { width: 100%; }
+  .ip-joinchip { width: 100%; justify-content: center; }
+  .ip-lp-ctas { flex-direction: column; align-items: stretch; }
+  .ip-lp-ctas .btn { width: 100%; }
+  .ip-preview__cols { grid-template-columns: minmax(0, 1fr); }
+  .ip-trust { gap: var(--ip-3) var(--ip-5); }
+}
+
+
+/* --- D. Assessment taking, warm ----------------------------------------- */
+
+/* Inside a container the bar reads as a card, not a half-width rule. */
+.ip-warm .ip-exam-bar {
+  top: var(--ip-3);
+  background: var(--ip-paper-50);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-xl);
+  box-shadow: var(--ip-shadow-pop);
+  padding: var(--ip-4) var(--ip-5) 0;
+  overflow: hidden;
+}
+.ip-warm .ip-exam-bar__row { padding-bottom: var(--ip-4); }
+.ip-warm .ip-exam-bar .ip-progress { margin: 0 calc(var(--ip-5) * -1); }
+.ip-warm .ip-timer { border-radius: 999px; padding: 0.3125rem 0.75rem; }
+.ip-warm .ip-progress { height: 4px; border-radius: 999px; overflow: hidden; }
+.ip-warm .ip-question { border-radius: var(--ip-r-xl); box-shadow: var(--ip-shadow-card); }
+.ip-warm .ip-question legend { font-size: 1.0625rem; }
+.ip-warm .ip-question__num {
+  border-radius: 999px; width: 1.75rem; height: 1.75rem;
+  background: var(--ip-accent-soft); border-color: var(--ip-accent-line);
+  color: var(--ip-accent-600); margin-right: var(--ip-3);
+}
+.ip-warm .ip-option {
+  padding: var(--ip-3) var(--ip-4); min-height: 48px;
+  gap: var(--ip-3); align-items: center; border-radius: var(--ip-r-lg);
+}
+.ip-warm .ip-option input { margin-top: 0; }
+.ip-exam-bar__count { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ip-exam-bar + .ip-standalone { margin-top: var(--ip-6); }
+@media (max-width: 575.98px) {
+  .ip-warm .ip-question { padding: var(--ip-4); }
+  .ip-exam-bar__row { flex-wrap: wrap; }
+  .ip-exam-bar__title h1 { font-size: 1rem; }
+}
+
+
+/* --- E. Careers public site ---------------------------------------------
+   The careers shell sets --ip-brand from the site's own brand colour, so the
+   accent (buttons, links, chips) follows the tenant's brand automatically.
+   These classes keep the historical cx-* names the templates already use. */
+
+.cx-hero {
+  padding: var(--ip-7) 0;
+  background: var(--ip-paper-200);
+  border-bottom: 1px solid var(--ip-rule);
+  position: relative;
+}
+.cx-hero::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(120deg,
+    color-mix(in srgb, var(--ip-accent) 16%, transparent), transparent 62%);
+  pointer-events: none;
+}
+.cx-hero > * { position: relative; }
+.cx-hero h1 {
+  font-size: clamp(1.875rem, 5vw, 3rem); font-weight: 800;
+  letter-spacing: -0.035em; margin: 0;
+}
+.cx-hero__brand {
+  display: inline-flex; align-items: center; gap: var(--ip-3);
+  margin-bottom: var(--ip-4); text-decoration: none;
+  font-family: var(--ip-font-head); font-weight: 700; color: var(--ip-ink-900);
+}
+.cx-hero__brand:hover { color: var(--ip-ink-900); text-decoration: none; }
+.cx-logo {
+  max-height: 48px; width: auto;
+  background: var(--ip-paper-50); border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-md); padding: 0.25rem 0.5rem;
+}
+.cx-card {
+  background: var(--ip-paper-50); border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-xl); box-shadow: var(--ip-shadow-card);
+  transition: border-color .15s ease;
+}
+.cx-card:hover { border-color: var(--ip-accent); }
+.cx-muted { color: var(--ip-ink-500); }
+.cx-btn {
+  background: var(--ip-accent); color: var(--ip-accent-on);
+  border: 1px solid var(--ip-accent); font-weight: 600;
+}
+.cx-btn:hover, .cx-btn:focus {
+  background: var(--ip-accent-600); border-color: var(--ip-accent-600);
+  color: var(--ip-accent-on); filter: none;
+}
+.cx-chip {
+  display: inline-flex; align-items: center;
+  border: 1px solid var(--ip-rule); border-radius: 999px;
+  padding: 0.125rem 0.625rem; font-size: var(--ip-fs-sm);
+  color: var(--ip-ink-700); background: var(--ip-paper-100);
+}
+.cx-preview-flag {
+  background: var(--ip-amber-100); color: var(--ip-amber-600);
+  border-bottom: 1px solid color-mix(in srgb, var(--ip-amber-600) 40%, transparent);
+  text-align: center; font-size: var(--ip-fs-sm); font-weight: 600;
+  padding: var(--ip-2);
+}
+.cx-prose { max-width: 52rem; color: var(--ip-ink-700); }
+.cx-prose h2, .cx-prose h3 { margin-top: var(--ip-5); }
+.cx-prose ul, .cx-prose ol { padding-left: 1.25rem; }
+.cx-filters {
+  background: var(--ip-paper-50); border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-xl); padding: var(--ip-4);
+}
+
+
+/* --- F. Video recording, warm ------------------------------------------- */
+
+.vid-head {
+  position: sticky; top: 0; z-index: 1020;
+  background: var(--ip-paper-50); border-bottom: 1px solid var(--ip-rule);
+  padding: var(--ip-3) 0;
+}
+.vid-stage { max-width: 44rem; margin: 0 auto; }
+.vid-preview {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  background: var(--ip-rail-bg); border-radius: var(--ip-r-xl);
+  border: 1px solid var(--ip-rule);
+}
+.vid-placeholder {
+  border: 1px dashed var(--ip-rule-strong); border-radius: var(--ip-r-xl);
+  padding: var(--ip-6) var(--ip-4); background: var(--ip-paper-200);
+}
+.vid-timer {
+  font-family: var(--ip-font-mono); font-variant-numeric: tabular-nums;
+  font-size: 2.25rem; font-weight: 700; color: var(--ip-ink-900);
+}
+.vid-big {
+  width: 100%; padding: var(--ip-4); font-size: 1.0625rem;
+  border-radius: var(--ip-r-lg); min-height: 52px;
+}
+.vid-dot {
+  display: inline-block; width: .6rem; height: .6rem; border-radius: 50%;
+  background: currentColor; margin-right: .35rem; animation: vid-pulse 1s infinite;
+}
+@keyframes vid-pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .vid-dot { animation: none; } }
+@media (max-width: 575.98px) { .vid-timer { font-size: 1.75rem; } }
+
+
+/* === Feature app screens (agent 3) ======================================= */
+/* Billing, analytics, talent, video, clients, offers, careers settings,
+   integrations, marketplace, partners, notifications and scheduling.  Every
+   rule below uses tokens declared in section 1 — no literal colours, no new
+   token names.  Nothing here re-defines a rule owned by another agent. */
+
+/* -- Compact filter / action toolbar ------------------------------------- */
+/* A form of filters that sits above a table.  Fields keep their own labels in
+   the small-caps label style; the bar itself is a hairline strip, not a card. */
+.ip-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ip-3);
+  padding: var(--ip-3) var(--ip-4);
+  margin-bottom: var(--ip-4);
+  background: var(--ip-paper-50);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-surface);
+}
+.ip-toolbar__field { display: flex; flex-direction: column; gap: var(--ip-1); min-width: 0; flex: 1 1 10rem; }
+.ip-toolbar__field--grow { flex: 2 1 16rem; }
+.ip-toolbar__field--narrow { flex: 0 1 7.5rem; }
+.ip-toolbar__field > label {
+  font-size: var(--ip-fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ip-tracking-label);
+  text-transform: uppercase;
+  color: var(--ip-ink-500);
+  margin: 0;
+}
+.ip-toolbar__actions { display: flex; flex-wrap: wrap; gap: var(--ip-2); margin-left: auto; }
+.ip-toolbar .form-control, .ip-toolbar .form-select { min-width: 0; width: 100%; }
+@media (max-width: 575.98px) {
+  .ip-toolbar { padding: var(--ip-3); }
+  .ip-toolbar__field, .ip-toolbar__field--grow, .ip-toolbar__field--narrow { flex: 1 1 100%; }
+  .ip-toolbar__actions { margin-left: 0; width: 100%; }
+  .ip-toolbar__actions .btn { flex: 1 1 auto; }
+}
+
+/* -- Usage meters (billing quotas, import progress) ---------------------- */
+/* Set the fill with style="--pct:0..100".  Bands: accent under 80, amber at
+   80+, red at 100.  The bar is a hairline trough, never a rounded pill. */
+.ip-meter-row { display: grid; gap: var(--ip-1); min-width: 0; }
+.ip-meter-row + .ip-meter-row { margin-top: var(--ip-4); }
+.ip-meter__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--ip-2);
+  font-size: var(--ip-fs-sm);
+}
+.ip-meter__name { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.ip-meter__value { font-variant-numeric: tabular-nums; color: var(--ip-ink-500); white-space: nowrap; }
+.ip-meter {
+  height: 6px;
+  background: var(--ip-paper-300);
+  border-radius: var(--ip-r-sm);
+  overflow: hidden;
+}
+.ip-meter__fill {
+  display: block;
+  height: 100%;
+  width: calc(var(--pct, 0) * 1%);
+  max-width: 100%;
+  background: var(--ip-accent);
+  border-radius: inherit;
+  transition: width .18s ease;
+}
+.ip-meter--warn .ip-meter__fill { background: var(--ip-amber-600); }
+.ip-meter--warn .ip-meter__value { color: var(--ip-amber-600); font-weight: 700; }
+.ip-meter--over .ip-meter__fill { background: var(--ip-red-600); }
+.ip-meter--over .ip-meter__value { color: var(--ip-red-600); font-weight: 700; }
+.ip-meter__note { font-size: var(--ip-fs-sm); color: var(--ip-ink-500); margin: 0; }
+.ip-meter--warn .ip-meter__note { color: var(--ip-amber-600); }
+.ip-meter--over .ip-meter__note { color: var(--ip-red-600); }
+.ip-meter-grid {
+  display: grid;
+  gap: var(--ip-5);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.ip-meter-grid .ip-meter-row + .ip-meter-row { margin-top: 0; }
+
+/* -- Key/value detail lists (profiles, offer terms, response meta) -------- */
+.ip-kv { display: grid; grid-template-columns: minmax(6rem, 11rem) 1fr; margin: 0; font-size: var(--ip-fs-sm); }
+.ip-kv > dt {
+  padding: var(--ip-2) var(--ip-3) var(--ip-2) 0;
+  border-top: 1px solid var(--ip-rule);
+  color: var(--ip-ink-500);
+  font-weight: 600;
+}
+.ip-kv > dd {
+  padding: var(--ip-2) 0;
+  margin: 0;
+  border-top: 1px solid var(--ip-rule);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ip-kv > dt:first-child, .ip-kv > dt:first-child + dd { border-top: 0; }
+@media (max-width: 575.98px) {
+  .ip-kv { grid-template-columns: 1fr; }
+  .ip-kv > dd { border-top: 0; padding-top: 0; }
+}
+
+/* -- Hairline row lists (replaces Bootstrap list-group-flush) ------------ */
+.ip-list { list-style: none; padding: 0; margin: 0; }
+.ip-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ip-2);
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--ip-3) 0;
+  border-top: 1px solid var(--ip-rule);
+  min-width: 0;
+}
+.ip-list > li:first-child { border-top: 0; padding-top: 0; }
+.ip-list > li:last-child { padding-bottom: 0; }
+.ip-list__main { min-width: 0; flex: 1 1 12rem; }
+.ip-list__title { font-weight: 600; }
+.ip-list__meta { display: block; color: var(--ip-ink-500); font-size: var(--ip-fs-sm); }
+.ip-list__aside { flex: 0 0 auto; display: flex; gap: var(--ip-2); align-items: center; }
+
+/* -- Chip rows (skills, tags, event names) ------------------------------- */
+.ip-chips { display: flex; flex-wrap: wrap; gap: var(--ip-1); align-items: center; min-width: 0; }
+
+/* -- Event timeline / audit trail ---------------------------------------- */
+.ip-timeline { list-style: none; padding: 0; margin: 0; }
+.ip-timeline > li {
+  position: relative;
+  padding: 0 0 var(--ip-4) var(--ip-5);
+  border-left: 1px solid var(--ip-rule);
+  min-width: 0;
+}
+.ip-timeline > li:last-child { padding-bottom: 0; border-left-color: transparent; }
+.ip-timeline > li::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 0.4rem;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ip-paper-50);
+  border: 1px solid var(--ip-rule-strong);
+}
+.ip-timeline > li.is-done::before { background: var(--ip-green-600); border-color: var(--ip-green-600); }
+.ip-timeline > li.is-accent::before { background: var(--ip-accent); border-color: var(--ip-accent); }
+.ip-timeline__title { font-weight: 600; display: flex; flex-wrap: wrap; gap: var(--ip-2); align-items: baseline; }
+.ip-timeline__when { color: var(--ip-ink-500); font-size: var(--ip-fs-sm); font-weight: 400; }
+.ip-timeline__body { color: var(--ip-ink-700); font-size: var(--ip-fs-sm); margin: var(--ip-1) 0 0; overflow-wrap: anywhere; }
+
+/* -- Two-pane split (video review: player beside transcript) ------------- */
+.ip-split { display: grid; gap: var(--ip-4); align-items: start; }
+@media (min-width: 992px) {
+  .ip-split { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+}
+.ip-split__media { min-width: 0; }
+.ip-split__media video {
+  width: 100%;
+  display: block;
+  background: var(--ip-paper-300);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-surface);
+}
+.ip-split__aside { min-width: 0; }
+.ip-transcript {
+  max-height: 18rem;
+  overflow-y: auto;
+  font-size: var(--ip-fs-sm);
+  color: var(--ip-ink-700);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-family: var(--ip-font-body);
+}
+
+/* -- Monospace panel for secrets, feeds and sample requests -------------- */
+.ip-code {
+  display: block;
+  overflow-x: auto;
+  padding: var(--ip-3);
+  margin: 0;
+  background: var(--ip-paper-200);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-surface);
+  font-family: var(--ip-font-mono);
+  font-size: var(--ip-fs-sm);
+  color: var(--ip-ink-700);
+  line-height: 1.55;
+}
+.ip-code code { color: inherit; background: none; }
+.ip-code--wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* -- Sub-navigation pills (integrations, partners tabs) ------------------ */
+.nav-pills {
+  gap: var(--ip-1);
+  border-bottom: 1px solid var(--ip-rule);
+  padding-bottom: var(--ip-2);
+  margin-bottom: var(--ip-5);
+  flex-wrap: wrap;
+}
+.nav-pills .nav-link {
+  border-radius: var(--ip-r-control);
+  padding: 0.3125rem var(--ip-3);
+  font-size: var(--ip-fs-sm);
+  font-weight: 600;
+  color: var(--ip-ink-500);
+}
+.nav-pills .nav-link:hover { background: var(--ip-paper-200); color: var(--ip-ink-900); }
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background: var(--ip-accent-soft);
+  color: var(--ip-accent-600);
+}
+
+/* -- Pagination ---------------------------------------------------------- */
+.pagination { gap: var(--ip-1); flex-wrap: wrap; }
+.page-link {
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-control);
+  background: var(--ip-paper-50);
+  color: var(--ip-ink-700);
+  font-size: var(--ip-fs-sm);
+  font-weight: 600;
+  padding: 0.25rem var(--ip-3);
+}
+.page-link:hover { background: var(--ip-paper-200); color: var(--ip-ink-900); border-color: var(--ip-rule-strong); }
+.page-item.disabled .page-link { background: transparent; color: var(--ip-ink-300); border-color: var(--ip-rule); }
+.page-item.active .page-link {
+  background: var(--ip-accent);
+  border-color: var(--ip-accent);
+  color: var(--ip-accent-on);
+}
+
+/* -- Plan cards: the card grid around .ip-plan --------------------------- */
+.ip-plan-grid {
+  display: grid;
+  gap: var(--ip-4);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  align-items: stretch;
+}
+.ip-plan-grid > .ip-plan { height: 100%; }
+.ip-plan__head { display: flex; flex-wrap: wrap; gap: var(--ip-2); align-items: center; }
+
+/* -- Segmented interval switch (monthly / yearly) ------------------------ */
+.ip-switch {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  background: var(--ip-paper-200);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-control);
+}
+.ip-switch > a {
+  padding: 0.1875rem var(--ip-3);
+  border-radius: var(--ip-r-sm);
+  font-size: var(--ip-fs-sm);
+  font-weight: 600;
+  color: var(--ip-ink-500);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.ip-switch > a:hover { color: var(--ip-ink-900); }
+.ip-switch > a.is-active {
+  background: var(--ip-paper-50);
+  border: 1px solid var(--ip-rule-strong);
+  padding: 0.125rem calc(var(--ip-3) - 1px);
+  color: var(--ip-ink-900);
+}
+.ip-switch__note { font-weight: 400; color: var(--ip-ink-500); }
+
+/* -- Week grid (scheduling) --------------------------------------------- */
+.ip-week { display: grid; gap: var(--ip-2); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 576px) { .ip-week { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ip-week__day {
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-surface);
+  background: var(--ip-paper-50);
+  padding: var(--ip-2) var(--ip-3) var(--ip-3);
+  min-width: 0;
+}
+.ip-week__day.is-today { border-color: var(--ip-accent); }
+.ip-week__date {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ip-1);
+  align-items: baseline;
+  font-size: var(--ip-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--ip-tracking-label);
+  text-transform: uppercase;
+  color: var(--ip-ink-500);
+  padding-bottom: var(--ip-2);
+  border-bottom: 1px solid var(--ip-rule);
+  margin-bottom: var(--ip-2);
+}
+.ip-week__day.is-today .ip-week__date { color: var(--ip-accent-600); }
+.ip-week__slot {
+  border-left: 2px solid var(--ip-accent-line);
+  padding-left: var(--ip-2);
+  font-size: var(--ip-fs-sm);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ip-week__slot + .ip-week__slot { margin-top: var(--ip-2); }
+.ip-week__slot strong { display: block; }
+.ip-week__none { font-size: var(--ip-fs-sm); color: var(--ip-ink-300); }
+
+/* -- Availability window chip with its inline remove control ------------- */
+.ip-window {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ip-1);
+  padding: 0.125rem var(--ip-1) 0.125rem var(--ip-2);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-control);
+  background: var(--ip-paper-50);
+  font-size: var(--ip-fs-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ip-window form { margin: 0; display: inline-flex; }
+.ip-window button {
+  border: 0;
+  background: none;
+  padding: 0 var(--ip-1);
+  line-height: 1;
+  color: var(--ip-ink-300);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.ip-window button:hover { color: var(--ip-red-600); }
+
+/* -- Toggle cell in the notification channel matrix ---------------------- */
+.ip-toggle-cell { text-align: center; }
+.ip-toggle {
+  min-width: 3.25rem;
+  border-radius: var(--ip-r-control);
+  font-size: var(--ip-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--ip-tracking-label);
+  text-transform: uppercase;
+  padding: 0.1875rem var(--ip-2);
+  border: 1px solid var(--ip-rule);
+  background: var(--ip-paper-50);
+  color: var(--ip-ink-500);
+}
+.ip-toggle:hover { border-color: var(--ip-rule-strong); color: var(--ip-ink-900); }
+.ip-toggle[aria-pressed="true"] {
+  background: var(--ip-green-100);
+  border-color: color-mix(in srgb, var(--ip-green-600) 40%, transparent);
+  color: var(--ip-green-600);
+}
+
+/* -- Live preview frame (careers site, offer letter) --------------------- */
+.ip-preview {
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-surface);
+  background: var(--ip-paper-50);
+  padding: var(--ip-4);
+  min-height: 6rem;
+  overflow-x: auto;
+}
+.ip-preview > :last-child { margin-bottom: 0; }
+.ip-preview-frame {
+  width: 100%;
+  height: 32.5rem;
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-surface);
+  background: var(--ip-paper-50);
+  display: block;
+}
+
+/* -- Analytics chrome ---------------------------------------------------- */
+/* The dataviz palette (--series-*, --viz-text*, --viz-grid) is declared in
+   analytics/_viz_style.html and is deliberately untouched: only the card,
+   heading and empty-state chrome around the canvases is restyled here. */
+.viz-card {
+  background: var(--ip-paper-50);
+  border: 1px solid var(--ip-rule);
+  border-radius: var(--ip-r-surface);
+  padding: var(--ip-4);
+  height: 100%;
+  min-width: 0;
+}
+.viz-card h2 {
+  font-family: var(--ip-font-head);
+  font-size: var(--ip-fs-h3);
+  font-weight: 700;
+  letter-spacing: var(--ip-tracking-head);
+  margin: 0;
+}
+.viz-card__sub { color: var(--ip-ink-500); font-size: var(--ip-fs-sm); margin: var(--ip-1) 0 var(--ip-3); }
+.viz-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ip-3); }
+.viz-card__head > div { min-width: 0; }
+.viz-empty {
+  color: var(--ip-ink-500);
+  font-size: var(--ip-fs-sm);
+  background: var(--ip-paper-200);
+  border: 1px dashed var(--ip-rule-strong);
+  border-radius: var(--ip-r-surface);
+  padding: var(--ip-5) var(--ip-4);
+  text-align: center;
+}
+.viz-kpi__label {
+  font-size: var(--ip-fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ip-tracking-label);
+  text-transform: uppercase;
+  color: var(--ip-ink-500);
+  margin: 0 0 var(--ip-1);
+}
+.viz-kpi__value {
+  font-family: var(--ip-font-head);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: var(--ip-tracking-head);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  color: var(--ip-ink-900);
+}
+.viz-canvas { position: relative; height: 260px; min-width: 0; }
+
+@media print {
+  .ip-sidebar, .ip-topbar, .ip-page-head__actions, .ip-toolbar, .viz-noprint { display: none !important; }
+  .ip-main { margin-left: 0 !important; }
+  .ip-content { padding: 0 !important; max-width: none !important; }
+}
+
+/* Row-header cells: several feature tables use <th scope="row"> for the first
+   column (analytics, notifications, availability).  Agent 1's .ip-table styles
+   only thead th and tbody td, so give the body's header cells the same box. */
+.ip-table > tbody > tr > th {
+  padding: var(--ip-3);
+  border-bottom: 1px solid var(--ip-rule);
+  font-family: var(--ip-font-body);
+  font-size: var(--ip-fs-body);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ip-ink-900);
+  text-align: left;
+  vertical-align: middle;
+  background: none;
+}
+.ip-table > tbody > tr:last-child > th { border-bottom: 0; }
+.ip-table > tbody > tr:hover > th { background: var(--ip-paper-200); }
+.viz-card > .ip-table-wrap { margin-top: var(--ip-1); }
+.ip-table > tbody > tr.is-warn > td,
+.ip-table > tbody > tr.is-warn > th { background: var(--ip-amber-100); }
+.ip-kv > dt code { overflow-wrap: anywhere; }
+.ip-section__head h3 { font-size: var(--ip-fs-h3); margin: 0; }
+/* A row rendered by an include rather than an <li> (scheduling interview_row). */
+.ip-list__row { padding: var(--ip-3) 0; border-top: 1px solid var(--ip-rule); }
+.ip-list__row:first-of-type { border-top: 0; padding-top: 0; }
+/* Inline code: Bootstrap's default is a magenta that reads as a link on paper. */
+:not(pre) > code { color: var(--ip-ink-700); background: none; }
+.alert :not(pre) > code, .ip-nav :not(pre) > code { color: inherit; }
+/* Colour inputs render as a full-width bar under .form-control; make them a swatch. */
+input[type="color"].form-control {
+  width: 3.5rem;
+  min-width: 3.5rem;
+  height: 2.25rem;
+  padding: 0.1875rem;
+  cursor: pointer;
+}
+/* Buttons appended to an input group: the faint accent rule disappears against
+   the field's own border, so give the seam a full-strength edge. */
+.input-group > .btn-outline-primary { --bs-btn-border-color: var(--ip-rule-strong); }
+.input-group > .btn-outline-primary:hover { --bs-btn-hover-border-color: var(--ip-accent); }

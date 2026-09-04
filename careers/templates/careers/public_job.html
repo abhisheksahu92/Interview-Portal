@@ -11,34 +11,39 @@
 {% endblock %}
 
 {% block hero %}
-  <h1 class="h2">{{ job.title }}</h1>
-  <p class="mb-0 opacity-75">{{ job.location|default:"Remote" }} · {{ job.get_employment_type_display }}</p>
+  <p class="ip-eyebrow">Open role</p>
+  <h1>{{ job.title }}</h1>
+  <p class="ip-lede mb-0 mt-3">{{ job.location|default:"Remote" }} · {{ job.get_employment_type_display }}</p>
   {% if job.salary_published %}
-    <p class="mb-0 mt-2">{% include "web/partials/salary_line.html" %}</p>
+    <p class="mb-0 mt-2 fw-semibold">{% include "web/partials/salary_line.html" %}</p>
   {% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="row g-4">
-  <div class="col-12 col-lg-8" style="max-width:52rem">
-    {% if description_html %}<section class="mb-4"><h2 class="h5">About the role</h2>{{ description_html }}</section>{% endif %}
-    {% if requirements_html %}<section class="mb-4"><h2 class="h5">Requirements</h2>{{ requirements_html }}</section>{% endif %}
+  <div class="col-12 col-lg-8">
+    <div class="cx-prose">
+      {% if description_html %}<section class="mb-4"><h2 class="h5">About the role</h2>{{ description_html }}</section>{% endif %}
+      {% if requirements_html %}<section class="mb-4"><h2 class="h5">Requirements</h2>{{ requirements_html }}</section>{% endif %}
+    </div>
   </div>
   <aside class="col-12 col-lg-4">
-    <div class="cx-card p-3 p-lg-4">
-      <a class="btn cx-btn w-100 mb-3" href="{% url 'web:job_public_detail' job.pk %}">Apply for this role</a>
-      <dl class="mb-0 small">
-        <dt class="cx-muted fw-normal">Location</dt><dd>{{ job.location|default:"Remote" }}</dd>
-        <dt class="cx-muted fw-normal">Employment type</dt><dd>{{ job.get_employment_type_display }}</dd>
+    <div class="cx-card p-4">
+      <a class="btn cx-btn w-100 mb-4" href="{% url 'web:job_public_detail' job.pk %}">Apply for this role</a>
+      <dl class="ip-factlist mb-0">
+        <div><dt>Location</dt><dd>{{ job.location|default:"Remote" }}</dd></div>
+        <div><dt>Employment type</dt><dd>{{ job.get_employment_type_display }}</dd></div>
         {% if job.salary_published %}
-          <dt class="cx-muted fw-normal">Salary</dt><dd>{% salary_range job %}</dd>
+          <div><dt>Salary</dt><dd>{% salary_range job %}</dd></div>
         {% endif %}
-        {% if job.closes_at %}<dt class="cx-muted fw-normal">Applications close</dt><dd>{{ job.closes_at }}</dd>{% endif %}
+        {% if job.closes_at %}<div><dt>Applications close</dt><dd>{{ job.closes_at }}</dd></div>{% endif %}
         {% if job.skills.all %}
-          <dt class="cx-muted fw-normal">Skills</dt>
-          <dd class="d-flex flex-wrap gap-1">
-            {% for skill in job.skills.all %}<span class="cx-chip">{{ skill.name }}</span>{% endfor %}
-          </dd>
+          <div>
+            <dt>Skills</dt>
+            <dd class="d-flex flex-wrap gap-1">
+              {% for skill in job.skills.all %}<span class="cx-chip">{{ skill.name }}</span>{% endfor %}
+            </dd>
+          </div>
         {% endif %}
       </dl>
     </div>

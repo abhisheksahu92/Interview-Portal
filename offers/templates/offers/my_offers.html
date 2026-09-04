@@ -1,25 +1,38 @@
 {% extends "base.html" %}
 {% block title %}My offers · Interview Portal{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
 {% block content %}
-<h1 class="h3 mb-4">My offers</h1>
+<div class="ip-page-head">
+  <div>
+    <h1>My offers</h1>
+    <p>Every offer letter sent to you, newest first.</p>
+  </div>
+</div>
 {% if offers %}
 <div class="list-group">
   {% for offer in offers %}
-    <a class="list-group-item list-group-item-action d-flex align-items-center gap-3"
+    <a class="list-group-item list-group-item-action d-flex flex-wrap align-items-center gap-3"
        href="{% url 'offers:sign' offer.sign_token %}">
-      <div class="flex-grow-1">
+      <div class="flex-grow-1" style="min-width:0">
         <div class="fw-semibold">{{ offer.application.job.title }}</div>
-        <div class="small text-muted">
+        <div class="small ip-muted">
           {{ offer.application.job.company.name }} ·
           {{ offer.currency }} {{ offer.salary|floatformat:0 }}
           {% if offer.expires_at %}· expires {{ offer.expires_at|date:"d M Y" }}{% endif %}
         </div>
       </div>
       {% include "offers/_status_badge.html" %}
+      <i class="bi bi-chevron-right ip-muted" aria-hidden="true"></i>
     </a>
   {% endfor %}
 </div>
 {% else %}
-<div class="alert alert-info mb-0">You have no offers yet.</div>
+<div class="ip-section">
+  <div class="ip-empty ip-empty--sm">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+    <div class="ip-empty__title">You have no offers yet.</div>
+    <p>When a hiring team sends you an offer letter it will appear here, ready to sign.</p>
+  </div>
+</div>
 {% endif %}
 {% endblock %}

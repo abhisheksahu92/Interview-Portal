@@ -7,57 +7,86 @@
     <p>Send hiring events to your own systems, connect an HRMS, and manage API keys.</p>
   </div>
   <div class="ip-page-head__actions">
-    <a class="btn btn-primary btn-sm" href="{% url 'integrations:webhook_create' %}">New webhook</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'integrations:webhook_create' %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New webhook</a>
   </div>
 </div>
 {% endblock %}
 {% block content %}
 {% include "integrations/_nav.html" %}
 
-<div class="row g-3 mb-4">
-  <div class="col-sm-4"><div class="card p-3"><div class="text-muted small">Webhooks</div><div class="h4 mb-0">{{ webhooks|length }}</div></div></div>
-  <div class="col-sm-4"><div class="card p-3"><div class="text-muted small">Pending deliveries</div><div class="h4 mb-0">{{ pending_count }}</div></div></div>
-  <div class="col-sm-4"><div class="card p-3"><div class="text-muted small">Exhausted</div><div class="h4 mb-0">{{ failed_count }}</div></div></div>
-</div>
-
-<div class="card mb-4">
-  <div class="table-responsive">
-    <table class="table table-sm align-middle mb-0">
-      <thead><tr><th>Name</th><th>Endpoint</th><th>Events</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
-      <tbody>
-        {% for hook in webhooks %}
-          <tr>
-            <td><a href="{% url 'integrations:webhook_edit' hook.pk %}">{{ hook.name }}</a></td>
-            <td class="small text-truncate" style="max-width:20rem"><code>{{ hook.url }}</code></td>
-            <td class="small">{% for label in hook.event_labels %}<span class="badge text-bg-light">{{ label }}</span> {% endfor %}</td>
-            <td>{% if hook.active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Paused</span>{% endif %}</td>
-            <td class="text-end">
-              <form method="post" action="{% url 'integrations:webhook_test' hook.pk %}" class="d-inline">
-                {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Send test event</button>
-              </form>
-              <form method="post" action="{% url 'integrations:webhook_delete' hook.pk %}" class="d-inline"
-                    onsubmit="return confirm('Delete {{ hook.name|escapejs }}?')">
-                {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-              </form>
-            </td>
-          </tr>
-        {% empty %}
-          <tr><td colspan="5" class="text-muted small">
-            No webhooks yet. <a href="{% url 'integrations:webhook_create' %}">Add one</a> to start receiving events.
-          </td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<div class="ip-bento mb-5">
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Webhooks</div>
+    <div class="ip-kpi__value">{{ webhooks|length }}</div>
+    <div class="ip-kpi__trend">endpoints receiving events</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Pending deliveries</div>
+    <div class="ip-kpi__value">{{ pending_count }}</div>
+    <div class="ip-kpi__trend">queued for another attempt</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Exhausted</div>
+    <div class="ip-kpi__value">{{ failed_count }}</div>
+    <div class="ip-kpi__trend">out of retries — redeliver by hand</div>
   </div>
 </div>
 
-<h2 class="h6">Recent deliveries</h2>
-<div class="card">
-  <div class="table-responsive">
-    <table class="table table-sm align-middle mb-0">
-      <thead><tr><th>Event</th><th>Webhook</th><th>Status</th><th>Attempts</th><th>Code</th><th>Created</th><th>Detail</th><th></th></tr></thead>
+<section class="mb-5">
+  <div class="ip-section__head"><h2>Webhooks</h2></div>
+  {% if webhooks %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Webhook endpoints for this company</caption>
+        <thead><tr><th scope="col">Name</th><th scope="col">Endpoint</th><th scope="col">Events</th>
+          <th scope="col">Status</th><th scope="col" class="text-end">Actions</th></tr></thead>
+        <tbody>
+          {% for hook in webhooks %}
+            <tr>
+              <td><a href="{% url 'integrations:webhook_edit' hook.pk %}">{{ hook.name }}</a></td>
+              <td class="text-truncate" style="max-width:20rem"><code>{{ hook.url }}</code></td>
+              <td>
+                <div class="ip-chips">
+                  {% for label in hook.event_labels %}<span class="ip-badge ip-badge--light">{{ label }}</span>{% endfor %}
+                </div>
+              </td>
+              <td>{% if hook.active %}<span class="ip-badge ip-badge--success">Active</span>{% else %}<span class="ip-badge ip-badge--neutral">Paused</span>{% endif %}</td>
+              <td class="text-end text-nowrap">
+                <form method="post" action="{% url 'integrations:webhook_test' hook.pk %}" class="d-inline">
+                  {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Send test event</button>
+                </form>
+                <form method="post" action="{% url 'integrations:webhook_delete' hook.pk %}" class="d-inline"
+                      onsubmit="return confirm('Delete {{ hook.name|escapejs }}?')">
+                  {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-broadcast"></i></span>
+      <div class="ip-empty__title">
+        No webhooks yet. <a href="{% url 'integrations:webhook_create' %}">Add one</a> to start receiving events.
+      </div>
+      <p>Every request is signed with an HMAC-SHA256 header, and failed deliveries retry on a schedule.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section>
+  <div class="ip-section__head"><h2>Recent deliveries</h2></div>
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Most recent webhook delivery attempts</caption>
+      <thead><tr><th scope="col">Event</th><th scope="col">Webhook</th><th scope="col">Status</th>
+        <th scope="col" class="text-end">Attempts</th><th scope="col" class="text-end">Code</th>
+        <th scope="col">Created</th><th scope="col">Detail</th><th scope="col"></th></tr></thead>
       <tbody>{% include "integrations/_delivery_rows.html" with deliveries=recent_deliveries show_webhook=1 %}</tbody>
     </table>
   </div>
-</div>
+</section>
 {% endblock %}

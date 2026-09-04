@@ -9,7 +9,7 @@
 </div>
 {% endblock %}
 {% block content %}
-<ul class="nav nav-tabs mb-4">
+<ul class="nav nav-pills">
   <li class="nav-item">
     <a class="nav-link {% if tab == 'branding' %}active{% endif %}"
        href="{% url 'partners:settings' %}?tab=branding">Branding</a>
@@ -24,18 +24,25 @@
 
 {% if tab == 'branding' %}
   {% if can_white_label %}
-    <form method="post" enctype="multipart/form-data" class="card p-4 mb-4" style="max-width:42rem">
-      {% csrf_token %}
-      <input type="hidden" name="form" value="branding">
-      {% for field in form %}
-        <div class="mb-3">
-          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}<div class="text-danger small">{{ field.errors|join:", " }}</div>{% endif %}
-        </div>
-      {% endfor %}
-      <button class="btn btn-primary" type="submit">Save branding</button>
-    </form>
+    <section class="ip-section mb-5" style="max-width:42rem">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="form" value="branding">
+        {% for field in form %}
+          <div class="mb-3{% if field.field.widget.input_type == "checkbox" %} form-check{% endif %}">
+            {% if field.field.widget.input_type == "checkbox" %}
+              {{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% else %}
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            {% endif %}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% if field.errors %}<div class="invalid-feedback d-block small">{{ field.errors|join:", " }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">Save branding</button>
+      </form>
+    </section>
   {% else %}
     <div class="alert alert-warning">
       White-labelling is not included in your plan.
@@ -43,30 +50,34 @@
     </div>
   {% endif %}
 
-  <div class="card p-4" style="max-width:42rem">
-    <h2 class="h6">Self-hosted licence</h2>
+  <section class="ip-section" style="max-width:42rem">
+    <div class="ip-section__head"><h2>Self-hosted licence</h2></div>
     {% if licenses %}
-      <ul class="list-unstyled small mb-3">
+      <ul class="ip-list mb-4">
         {% for licence in licenses %}
-          <li>{{ licence.seats }} seats · expires {{ licence.expires_at|date:"Y-m-d" }}</li>
+          <li>
+            <span class="ip-list__main">{{ licence.seats }} seats</span>
+            <span class="ip-muted small">expires {{ licence.expires_at|date:"Y-m-d" }}</span>
+          </li>
         {% endfor %}
       </ul>
     {% else %}
-      <p class="text-muted small">No licence issued for this workspace.</p>
+      <p class="ip-muted small">No licence issued for this workspace.</p>
     {% endif %}
     <form method="post" action="{% url 'partners:verify_license' %}" class="d-flex gap-2">
       {% csrf_token %}
-      <input class="form-control" type="text" name="key" placeholder="Paste a licence key" required>
-      <button class="btn btn-outline-secondary" type="submit">Verify</button>
+      <label class="visually-hidden" for="licence-key">Licence key</label>
+      <input class="form-control" type="text" id="licence-key" name="key" placeholder="Paste a licence key" required>
+      <button class="btn btn-outline-secondary text-nowrap" type="submit">Verify</button>
     </form>
-  </div>
+  </section>
 {% else %}
   {% if referral %}
-    <p class="text-muted small">Referred by <strong>{{ referral.reseller.name }}</strong>
+    <p class="ip-muted small">Referred by <strong>{{ referral.reseller.name }}</strong>
       on {{ referral.signed_up_at|date:"Y-m-d" }}.</p>
   {% endif %}
-  <div class="card p-4 mb-4" style="max-width:42rem">
-    <h2 class="h6">Add a reseller</h2>
+  <section class="ip-section mb-5" style="max-width:42rem">
+    <div class="ip-section__head"><h2>Add a reseller</h2></div>
     <form method="post">
       {% csrf_token %}
       <input type="hidden" name="form" value="reseller">
@@ -74,29 +85,41 @@
         <div class="mb-3">
           <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
           {{ field }}
-          {% if field.errors %}<div class="text-danger small">{{ field.errors|join:", " }}</div>{% endif %}
+          {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+          {% if field.errors %}<div class="invalid-feedback d-block small">{{ field.errors|join:", " }}</div>{% endif %}
         </div>
       {% endfor %}
       <button class="btn btn-primary" type="submit">Save reseller</button>
     </form>
-  </div>
-  <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Reseller</th><th>Code</th><th>Commission</th><th>Referrals</th><th>Dashboard</th></tr></thead>
-      <tbody>
-        {% for reseller in resellers %}
-          <tr>
-            <td>{{ reseller.name }}</td>
-            <td><code>{{ reseller.code }}</code></td>
-            <td>{{ reseller.commission_pct }}%</td>
-            <td>{{ reseller.referrals.count }}</td>
-            <td><a href="{% url 'partners:reseller_dashboard' reseller.code %}?t={{ reseller.token }}">Open</a></td>
-          </tr>
-        {% empty %}
-          <tr><td colspan="5" class="text-muted">No resellers yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  </section>
+  <section>
+    {% if resellers %}
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Resellers in the partner programme</caption>
+          <thead><tr><th scope="col">Reseller</th><th scope="col">Code</th>
+            <th scope="col" class="text-end">Commission</th><th scope="col" class="text-end">Referrals</th>
+            <th scope="col">Dashboard</th></tr></thead>
+          <tbody>
+            {% for reseller in resellers %}
+              <tr>
+                <td>{{ reseller.name }}</td>
+                <td><code>{{ reseller.code }}</code></td>
+                <td class="text-end">{{ reseller.commission_pct }}%</td>
+                <td class="text-end">{{ reseller.referrals.count }}</td>
+                <td><a href="{% url 'partners:reseller_dashboard' reseller.code %}?t={{ reseller.token }}">Open</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="ip-empty ip-empty--sm">
+        <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+        <div class="ip-empty__title">No resellers yet.</div>
+        <p>Add one with the form above and share its referral link.</p>
+      </div>
+    {% endif %}
+  </section>
 {% endif %}
 {% endblock %}

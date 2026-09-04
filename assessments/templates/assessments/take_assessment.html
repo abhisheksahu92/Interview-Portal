@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 {% block title %}{{ assessment.title }}{% endblock %}
-{% block main_class %}container py-0 pb-5{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block main_class %}container pt-3 pb-5{% endblock %}
 {% block content %}
-<div class="ip-exam-bar mb-4">
+<div class="ip-exam-bar">
   <div class="ip-exam-bar__row">
     <div class="ip-exam-bar__title">
-      <h1 class="h5 mb-1">{{ assessment.title }}</h1>
+      <h1 class="h2 mb-1">{{ assessment.title }}</h1>
       <p class="ip-muted small mb-0 ip-exam-bar__meta">
         {{ assessment.time_limit_minutes }} minute limit<span class="ip-meta-dot"></span>pass mark {{ assessment.pass_mark_percent }}%
       </p>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <span class="ip-muted small"><span id="answered-count">0</span>/{{ questions|length }}</span>
+      <span class="ip-muted small ip-exam-bar__count"><span id="answered-count">0</span>/{{ questions|length }} answered</span>
       <span class="ip-timer" id="timer-pill">
         <i class="bi bi-stopwatch" aria-hidden="true"></i>
         <strong id="timer" data-seconds="{{ attempt.seconds_remaining }}">--:--</strong>
@@ -24,6 +25,7 @@
   </div>
 </div>
 
+<div class="ip-standalone">
 <form id="attempt-form" method="post" action="{% url 'assessments:submit_attempt' attempt.pk %}">
   {% csrf_token %}
   {% for q in questions %}
@@ -60,6 +62,7 @@
     <span class="ip-muted small">You cannot change your answers after submitting.</span>
   </div>
 </form>
+</div>
 {% endblock %}
 
 {% block scripts %}

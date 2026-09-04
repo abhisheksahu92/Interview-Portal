@@ -6,7 +6,7 @@ import os
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.db.models import Avg, Count, Max, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -828,6 +828,35 @@ def _candidate_profile(request):
     return profile
 
 
+def _upcoming_interviews_by_application(applications):
+    """Map application id -> the next still-open, scheduled interview.
+
+    Purely presentational: the portal card shows a "join" chip for a booked
+    interview.  Scheduling is an optional app, so a missing table or model must
+    never break the portal.
+    """
+    try:
+        from scheduling.models import Interview
+    except Exception:  # pragma: no cover - scheduling always installed today
+        return {}
+    try:
+        rows = (
+            Interview.objects.filter(
+                application__in=list(applications),
+                status__in=Interview.OPEN_STATUSES,
+                scheduled_start__isnull=False,
+            )
+            .select_related("stage")
+            .order_by("scheduled_start")
+        )
+        upcoming = {}
+        for interview in rows:
+            upcoming.setdefault(interview.application_id, interview)
+        return upcoming
+    except DatabaseError:  # pragma: no cover - defensive
+        return {}
+
+
 @login_required
 def candidate_home(request):
     profile = _candidate_profile(request)
@@ -836,6 +865,7 @@ def candidate_home(request):
         .prefetch_related("job__stages")
         .all()
     )
+    upcoming = _upcoming_interviews_by_application(applications)
     rows = []
     for application in applications:
         stages = list(application.job.stages.all())
@@ -848,6 +878,7 @@ def candidate_home(request):
                 "stages": stages,
                 "current_order": current_order,
                 "assessment_url": assessment_url_for(application),
+                "interview": upcoming.get(application.pk),
             }
         )
     return render(

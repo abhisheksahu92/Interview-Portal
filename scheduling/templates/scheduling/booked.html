@@ -1,31 +1,33 @@
 {% extends "base.html" %}
 {% load tz %}
 {% block title %}Interview {{ interview.get_status_display|lower }}{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-12 col-lg-6">
-    <div class="ip-card p-4 text-center">
-      {% if interview.status == 'CANCELLED' %}
-        <i class="bi bi-x-circle display-5 text-danger" aria-hidden="true"></i>
-        <h1 class="h4 mt-2">Interview cancelled</h1>
-        <p class="text-body-secondary">We have let the hiring team know.</p>
-      {% else %}
-        <i class="bi bi-check-circle display-5 text-success" aria-hidden="true"></i>
-        <h1 class="h4 mt-2">You're booked</h1>
-        <p class="text-body-secondary mb-1">
-          {{ interview.application.job.title }} at {{ interview.company.name }}
-        </p>
-        <p class="fw-semibold">
-          {% timezone tz %}{{ interview.scheduled_start|date:"D d M Y, H:i" }}–{{ interview.scheduled_end|date:"H:i" }}{% endtimezone %} ({{ tz }})
-        </p>
-        {% if interview.location_or_link %}<p class="small">{{ interview.location_or_link }}</p>{% endif %}
-        <a class="btn btn-outline-primary btn-sm"
-           href="{% url 'scheduling:book_ics' interview.booking_token %}">Add to calendar (.ics)</a>
-      {% endif %}
-      <p class="mt-3 mb-0">
-        <a href="{% url 'scheduling:book' interview.booking_token %}">Manage this interview</a>
+<div class="ip-standalone ip-standalone--narrow">
+  <div class="ip-section text-center">
+    {% if interview.status == 'CANCELLED' %}
+      <span class="ip-outcome ip-outcome--danger" aria-hidden="true"><i class="bi bi-x-lg"></i></span>
+      <h1>Interview cancelled</h1>
+      <p class="ip-muted mb-0">We have let the hiring team know.</p>
+    {% else %}
+      <span class="ip-outcome ip-outcome--success" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+      <h1>You're booked</h1>
+      <p class="ip-muted mb-3">
+        {{ interview.application.job.title }} at {{ interview.company.name }}
       </p>
-    </div>
+      <p class="h5 mb-1">
+        {% timezone tz %}{{ interview.scheduled_start|date:"D d M Y, H:i" }}–{{ interview.scheduled_end|date:"H:i" }}{% endtimezone %}
+      </p>
+      <p class="ip-muted small">({{ tz }})</p>
+      {% if interview.location_or_link %}
+        <p class="small mb-3">{{ interview.location_or_link }}</p>
+      {% endif %}
+      <a class="btn btn-outline-primary btn-sm"
+         href="{% url 'scheduling:book_ics' interview.booking_token %}">Add to calendar (.ics)</a>
+    {% endif %}
+    <p class="mt-4 mb-0">
+      <a href="{% url 'scheduling:book' interview.booking_token %}">Manage this interview</a>
+    </p>
   </div>
 </div>
 {% endblock %}

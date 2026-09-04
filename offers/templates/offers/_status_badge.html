@@ -1,7 +1,7 @@
-{% if offer.status == "ACCEPTED" %}<span class="badge text-bg-success">Accepted</span>
-{% elif offer.status == "DECLINED" %}<span class="badge text-bg-danger">Declined</span>
-{% elif offer.status == "SENT" %}<span class="badge text-bg-primary">Sent</span>
-{% elif offer.status == "VIEWED" %}<span class="badge text-bg-info">Viewed</span>
-{% elif offer.status == "WITHDRAWN" %}<span class="badge text-bg-secondary">Withdrawn</span>
-{% elif offer.status == "EXPIRED" %}<span class="badge text-bg-warning">Expired</span>
-{% else %}<span class="badge text-bg-light border">Draft</span>{% endif %}
+{% if offer.status == "ACCEPTED" %}<span class="ip-badge ip-badge--success">Accepted</span>
+{% elif offer.status == "DECLINED" %}<span class="ip-badge ip-badge--danger">Declined</span>
+{% elif offer.status == "SENT" %}<span class="ip-badge ip-badge--accent">Sent</span>
+{% elif offer.status == "VIEWED" %}<span class="ip-badge ip-badge--info">Viewed</span>
+{% elif offer.status == "WITHDRAWN" %}<span class="ip-badge ip-badge--neutral">Withdrawn</span>
+{% elif offer.status == "EXPIRED" %}<span class="ip-badge ip-badge--warning">Expired</span>
+{% else %}<span class="ip-badge ip-badge--light">Draft</span>{% endif %}

@@ -1,110 +1,100 @@
 {% extends "base.html" %}
 {% block title %}Offer #{{ offer.pk }} · Interview Portal{% endblock %}
 {% block page_header %}
-<div class="ip-page-head d-flex flex-wrap gap-3 align-items-end">
+<div class="ip-page-head">
   <div>
-    <p class="mb-1"><a href="{% url 'offers:index' %}">← All offers</a></p>
-    <h1 class="mb-1">
+    <p class="ip-muted small mb-1"><a href="{% url 'offers:index' %}">← All offers</a></p>
+    <h1>
       {{ offer.application.candidate.user.get_full_name|default:offer.application.candidate.user.email }}
       {% include "offers/_status_badge.html" %}
     </h1>
-    <p class="mb-0 text-muted">{{ offer.application.job.title }} · {{ offer.company.name }}</p>
+    <p>{{ offer.application.job.title }} · {{ offer.company.name }}</p>
   </div>
-  <div class="ms-auto d-flex flex-wrap gap-2">
+  <div class="ip-page-head__actions">
     {% if offer.status == "DRAFT" or offer.status == "WITHDRAWN" or offer.status == "EXPIRED" %}
       <form method="post" action="{% url 'offers:send' offer.pk %}">{% csrf_token %}
-        <button class="btn btn-primary"><i class="bi bi-send me-1" aria-hidden="true"></i>Send offer</button>
+        <button class="btn btn-sm btn-primary"><i class="bi bi-send me-1" aria-hidden="true"></i>Send offer</button>
       </form>
     {% endif %}
     {% if offer.is_open %}
       <form method="post" action="{% url 'offers:resend' offer.pk %}">{% csrf_token %}
-        <button class="btn btn-outline-secondary">Resend email</button>
+        <button class="btn btn-sm btn-outline-secondary">Resend email</button>
       </form>
     {% endif %}
-    {% if offer.status != "ACCEPTED" and offer.status != "DECLINED" and offer.status != "WITHDRAWN" %}
-      <form method="post" action="{% url 'offers:withdraw' offer.pk %}">{% csrf_token %}
-        <button class="btn btn-outline-danger">Withdraw</button>
-      </form>
-    {% endif %}
-    <a class="btn btn-outline-secondary" href="{% url 'offers:pdf' offer.pk %}">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'offers:pdf' offer.pk %}">
       <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
       {% if offer.signed_at %}Signed PDF{% else %}PDF{% endif %}
     </a>
+    {% if offer.status != "ACCEPTED" and offer.status != "DECLINED" and offer.status != "WITHDRAWN" %}
+      <form method="post" action="{% url 'offers:withdraw' offer.pk %}">{% csrf_token %}
+        <button class="btn btn-sm btn-outline-danger">Withdraw</button>
+      </form>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
 {% block content %}
 <div class="row g-4">
   <div class="col-lg-7">
-    <div class="card mb-4">
-      <div class="card-header py-2"><strong>Offer letter</strong></div>
-      <div class="card-body">{{ offer.body_rendered|safe }}</div>
-    </div>
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Offer letter</h2></div>
+      <div class="ip-preview">{{ offer.body_rendered|safe }}</div>
+    </section>
     {% if offer.signed_at and offer.status == "ACCEPTED" %}
-      <div class="alert alert-success">
+      <div class="alert alert-success mt-4">
         <strong>Signed by {{ offer.signed_name }}</strong><br>
         {{ offer.signed_at|date:"d M Y, H:i" }} · IP {{ offer.signed_ip|default:"unknown" }}<br>
         <span class="small text-break">{{ offer.signed_user_agent }}</span>
       </div>
     {% elif offer.status == "DECLINED" %}
-      <div class="alert alert-danger">
+      <div class="alert alert-danger mt-4">
         <strong>Declined</strong> {{ offer.signed_at|date:"d M Y, H:i" }}<br>
         {{ offer.decline_reason|default:"No reason given." }}
       </div>
     {% endif %}
   </div>
   <div class="col-lg-5">
-    <div class="card mb-4">
-      <div class="card-header py-2"><strong>Terms</strong></div>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item d-flex justify-content-between"><span>Salary</span>
-          <strong>{{ offer.currency }} {{ offer.salary|floatformat:0 }}</strong></li>
-        <li class="list-group-item d-flex justify-content-between"><span>Joining date</span>
-          <span>{{ offer.joining_date|date:"d M Y"|default:"—" }}</span></li>
-        <li class="list-group-item d-flex justify-content-between"><span>Expires</span>
-          <span>{{ offer.expires_at|date:"d M Y, H:i"|default:"—" }}</span></li>
-        <li class="list-group-item d-flex justify-content-between"><span>Template</span>
-          <span>{{ offer.template.name|default:"—" }}</span></li>
-      </ul>
-      {% if offer.custom_fields %}
-      <ul class="list-group list-group-flush border-top">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Terms</h2></div>
+      <dl class="ip-kv">
+        <dt>Salary</dt><dd><strong>{{ offer.currency }} {{ offer.salary|floatformat:0 }}</strong></dd>
+        <dt>Joining date</dt><dd>{{ offer.joining_date|date:"d M Y"|default:"—" }}</dd>
+        <dt>Expires</dt><dd>{{ offer.expires_at|date:"d M Y, H:i"|default:"—" }}</dd>
+        <dt>Template</dt><dd>{{ offer.template.name|default:"—" }}</dd>
         {% for key, value in offer.custom_fields.items %}
-          <li class="list-group-item d-flex justify-content-between small">
-            <span class="text-muted">{{ key }}</span><span>{{ value }}</span>
-          </li>
+          <dt>{{ key }}</dt><dd>{{ value }}</dd>
         {% endfor %}
-      </ul>
+      </dl>
+    </section>
+
+    <section class="ip-section mt-4">
+      <div class="ip-section__head"><h2>Signing link</h2></div>
+      <input class="form-control form-control-sm" readonly value="{{ sign_url }}"
+             aria-label="Candidate signing link">
+      <p class="ip-muted small mt-3 mb-0">
+        {% if esign_configured %}External e-sign is connected.
+        {% else %}Built-in click-to-sign (no external e-sign provider connected).{% endif %}
+      </p>
+    </section>
+
+    <section class="ip-section mt-4">
+      <div class="ip-section__head"><h2>Audit trail</h2></div>
+      {% if events %}
+        <ol class="ip-timeline">
+          {% for event in events %}
+            <li class="is-done">
+              <div class="ip-timeline__title">
+                <span>{{ event.get_kind_display }}</span>
+                <span class="ip-timeline__when">{{ event.at|date:"d M Y, H:i" }}</span>
+              </div>
+              {% if event.meta %}<p class="ip-timeline__body">{{ event.meta }}</p>{% endif %}
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="ip-muted small mb-0">Nothing recorded yet.</p>
       {% endif %}
-    </div>
-
-    <div class="card mb-4">
-      <div class="card-header py-2"><strong>Signing link</strong></div>
-      <div class="card-body">
-        <input class="form-control form-control-sm" readonly value="{{ sign_url }}"
-               aria-label="Candidate signing link">
-        <p class="small text-muted mt-2 mb-0">
-          {% if esign_configured %}External e-sign is connected.
-          {% else %}Built-in click-to-sign (no external e-sign provider connected).{% endif %}
-        </p>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header py-2"><strong>Audit trail</strong></div>
-      <ul class="list-group list-group-flush small">
-        {% for event in events %}
-          <li class="list-group-item">
-            <div class="d-flex justify-content-between">
-              <strong>{{ event.get_kind_display }}</strong>
-              <span class="text-muted">{{ event.at|date:"d M Y, H:i" }}</span>
-            </div>
-            {% if event.meta %}<div class="text-muted text-break">{{ event.meta }}</div>{% endif %}
-          </li>
-        {% empty %}
-          <li class="list-group-item text-muted">Nothing recorded yet.</li>
-        {% endfor %}
-      </ul>
-    </div>
+    </section>
   </div>
 </div>
 {% endblock %}

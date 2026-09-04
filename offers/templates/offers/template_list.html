@@ -1,36 +1,56 @@
 {% extends "base.html" %}
 {% block title %}Offer templates · Interview Portal{% endblock %}
 {% block page_header %}
-<div class="ip-page-head d-flex flex-wrap gap-3 align-items-end">
+<div class="ip-page-head">
   <div>
-    <p class="mb-1"><a href="{% url 'offers:index' %}">← All offers</a></p>
+    <p class="ip-muted small mb-1"><a href="{% url 'offers:index' %}">← All offers</a></p>
     <h1>Offer templates</h1>
-    <p class="mb-0 text-muted">Reusable letter bodies with safe placeholders.</p>
+    <p>Reusable letter bodies with safe placeholders.</p>
   </div>
-  <a class="btn btn-primary ms-auto" href="{% url 'offers:template_create' %}">New template</a>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-primary" href="{% url 'offers:template_create' %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New template</a>
+  </div>
 </div>
 {% endblock %}
 {% block content %}
 <div class="row g-4">
   <div class="col-lg-8">
-    <div class="list-group">
-      {% for template in templates %}
-        <div class="list-group-item d-flex align-items-center gap-3">
-          <div class="flex-grow-1">
-            <a class="fw-semibold" href="{% url 'offers:template_edit' template.pk %}">{{ template.name }}</a>
-            {% if template.is_default %}<span class="badge text-bg-success ms-1">Default</span>{% endif %}
-            <div class="small text-muted">{{ template.subject }}</div>
-          </div>
-          <form method="post" action="{% url 'offers:template_delete' template.pk %}"
-                onsubmit="return confirm('Delete this template?')">
-            {% csrf_token %}
-            <button class="btn btn-sm btn-outline-danger">Delete</button>
-          </form>
+    <section>
+      {% if templates %}
+        <div class="ip-table-wrap">
+          <table class="ip-table">
+            <caption class="visually-hidden">Offer letter templates</caption>
+            <thead><tr><th scope="col">Template</th><th scope="col">Subject</th><th scope="col"></th></tr></thead>
+            <tbody>
+              {% for template in templates %}
+                <tr>
+                  <td>
+                    <a href="{% url 'offers:template_edit' template.pk %}">{{ template.name }}</a>
+                    {% if template.is_default %}<span class="ip-badge ip-badge--success ms-1">Default</span>{% endif %}
+                  </td>
+                  <td class="ip-muted">{{ template.subject }}</td>
+                  <td class="text-end">
+                    <form method="post" action="{% url 'offers:template_delete' template.pk %}"
+                          onsubmit="return confirm('Delete this template?')">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-      {% empty %}
-        <div class="list-group-item text-muted">No templates yet.</div>
-      {% endfor %}
-    </div>
+      {% else %}
+        <div class="ip-empty">
+          <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+          <div class="ip-empty__title">No templates yet.</div>
+          <p>Write the letter once with placeholders, then every offer starts from it.</p>
+          <a class="btn btn-primary" href="{% url 'offers:template_create' %}">New template</a>
+        </div>
+      {% endif %}
+    </section>
   </div>
   <div class="col-lg-4">{% include "offers/_placeholders.html" %}</div>
 </div>

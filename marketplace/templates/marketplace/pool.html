@@ -10,36 +10,54 @@
 </div>
 {% endblock %}
 {% block content %}
-<form class="row g-2 mb-4" method="get">
-  <div class="col-sm-5"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Headline contains…"></div>
-  <div class="col-sm-3"><input class="form-control" type="search" name="skill" value="{{ skill }}" placeholder="Skill"></div>
-  <div class="col-sm-2"><input class="form-control" type="number" step="0.5" min="0" name="min_experience" value="{{ min_experience }}" placeholder="Min yrs"></div>
-  <div class="col-auto"><button class="btn btn-primary" type="submit">Search</button></div>
+<form class="ip-toolbar" method="get" role="search">
+  <div class="ip-toolbar__field ip-toolbar__field--grow">
+    <label for="pool-q">Headline contains…</label>
+    <input class="form-control form-control-sm" type="search" id="pool-q" name="q" value="{{ q }}" placeholder="Headline contains…">
+  </div>
+  <div class="ip-toolbar__field">
+    <label for="pool-skill">Skill</label>
+    <input class="form-control form-control-sm" type="search" id="pool-skill" name="skill" value="{{ skill }}" placeholder="Skill">
+  </div>
+  <div class="ip-toolbar__field ip-toolbar__field--narrow">
+    <label for="pool-min">Min yrs</label>
+    <input class="form-control form-control-sm" type="number" step="0.5" min="0" id="pool-min"
+           name="min_experience" value="{{ min_experience }}" placeholder="Min yrs">
+  </div>
+  <div class="ip-toolbar__actions">
+    <button class="btn btn-sm btn-primary" type="submit">Search</button>
+  </div>
 </form>
 
-<div class="row g-3">
-  {% for card in cards %}
-    <div class="col-md-6 col-xl-4">
-      <div class="card h-100 p-3">
-        <div class="d-flex justify-content-between align-items-start">
-          <h2 class="h6 mb-1">{{ card.headline }}</h2>
-          <span class="badge text-bg-secondary">{{ card.reference }}</span>
-        </div>
-        <div class="text-muted small mb-2">
-          {{ card.experience_years }} yrs experience
-          {% if card.best_score %}· best score {{ card.best_score }}%{% endif %}
-        </div>
-        <div class="mb-3">
-          {% for skill in card.skills %}<span class="badge text-bg-light me-1">{{ skill }}</span>{% endfor %}
-        </div>
-        <form method="post" action="{% url 'marketplace:pool_invite' card.profile_id %}" class="mt-auto m-0">
-          {% csrf_token %}
-          <button class="btn btn-sm btn-outline-primary" type="submit">Invite to apply</button>
-        </form>
+{% if cards %}
+  <div class="row g-4">
+    {% for card in cards %}
+      <div class="col-md-6 col-xl-4">
+        <section class="ip-section h-100 d-flex flex-column">
+          <div class="ip-section__head">
+            <h2>{{ card.headline }}</h2>
+            <span class="ip-badge ip-badge--light">{{ card.reference }}</span>
+          </div>
+          <p class="ip-eyebrow mb-3">
+            {{ card.experience_years }} yrs experience
+            {% if card.best_score %}· best score {{ card.best_score }}%{% endif %}
+          </p>
+          <div class="ip-chips mb-4">
+            {% for skill in card.skills %}<span class="ip-badge ip-badge--neutral">{{ skill }}</span>{% endfor %}
+          </div>
+          <form method="post" action="{% url 'marketplace:pool_invite' card.profile_id %}" class="mt-auto m-0">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-primary" type="submit">Invite to apply</button>
+          </form>
+        </section>
       </div>
-    </div>
-  {% empty %}
-    <div class="col-12"><div class="alert alert-info mb-0">No verified candidates match your search.</div></div>
-  {% endfor %}
-</div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+    <div class="ip-empty__title">No verified candidates match your search.</div>
+    <p>Loosen the filters — only candidates who opted in and passed an assessment appear here.</p>
+  </div>
+{% endif %}
 {% endblock %}

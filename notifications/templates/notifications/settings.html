@@ -1,21 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Notifications · Interview Portal{% endblock %}
 {% block page_header %}
-<div class="ip-page-head d-flex flex-wrap justify-content-between align-items-start gap-3">
+<div class="ip-page-head">
   <div>
     <h1>Notifications</h1>
-    <p class="mb-0">Choose which channel each event goes out on.</p>
+    <p>Choose which channel each event goes out on.</p>
   </div>
-  <a class="btn btn-outline-secondary" href="{% url 'notifications:outbox' %}">Delivery log</a>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'notifications:outbox' %}">Delivery log</a>
+  </div>
 </div>
 {% endblock %}
 {% block content %}
 <div class="row g-4">
   <div class="col-lg-8">
-    <div class="card">
-      <div class="card-header">Events and channels</div>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle mb-0">
+    <section>
+      <div class="ip-section__head"><h2>Events and channels</h2></div>
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Notification channel per event</caption>
           <thead>
             <tr>
               <th scope="col">Event</th>
@@ -27,42 +30,39 @@
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   </div>
 
   <div class="col-lg-4">
-    <div class="card mb-4">
-      <div class="card-header">WhatsApp connection</div>
-      <div class="card-body">
-        {% if whatsapp.configured %}
-          <p class="mb-2"><span class="badge text-bg-success">Configured</span></p>
-          <p class="small text-body-secondary mb-2">Phone number ID <code>{{ whatsapp.phone_id }}</code></p>
-        {% else %}
-          <p class="mb-2"><span class="badge text-bg-secondary">Not configured</span></p>
-          <p class="small text-body-secondary mb-2">
-            Set <code>WHATSAPP_TOKEN</code> and <code>WHATSAPP_PHONE_ID</code> to enable WhatsApp delivery.
-          </p>
-        {% endif %}
-        {% if not whatsapp.entitled %}
-          <p class="small text-warning-emphasis mb-2">Your plan does not include WhatsApp messaging.</p>
-        {% endif %}
-        <p class="small text-body-secondary mb-0">
-          Webhook URL: <code class="text-break">{{ whatsapp.webhook_url }}</code>
+    <section class="ip-section mb-4">
+      <div class="ip-section__head"><h2>WhatsApp connection</h2></div>
+      {% if whatsapp.configured %}
+        <p class="mb-2"><span class="ip-badge ip-badge--success">Configured</span></p>
+        <p class="ip-muted small mb-3">Phone number ID <code>{{ whatsapp.phone_id }}</code></p>
+      {% else %}
+        <p class="mb-2"><span class="ip-badge ip-badge--neutral">Not configured</span></p>
+        <p class="ip-muted small mb-3">
+          Set <code>WHATSAPP_TOKEN</code> and <code>WHATSAPP_PHONE_ID</code> to enable WhatsApp delivery.
         </p>
-      </div>
-    </div>
+      {% endif %}
+      {% if not whatsapp.entitled %}
+        <p class="small mb-3" style="color:var(--ip-amber-600)">Your plan does not include WhatsApp messaging.</p>
+      {% endif %}
+      <p class="ip-muted small mb-1">Webhook URL:</p>
+      <pre class="ip-code ip-code--wrap mb-0"><code>{{ whatsapp.webhook_url }}</code></pre>
+    </section>
 
-    <div class="card">
-      <div class="card-header">Send a test</div>
-      <form class="card-body" method="post" action="{% url 'notifications:test_send' %}">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Send a test</h2></div>
+      <form method="post" action="{% url 'notifications:test_send' %}">
         {% csrf_token %}
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label" for="test-event">Event</label>
           <select class="form-select" id="test-event" name="event">
             {% for row in rows %}<option value="{{ row.event.name }}">{{ row.event.label }}</option>{% endfor %}
           </select>
         </div>
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label" for="test-channel">Channel</label>
           <select class="form-select" id="test-channel" name="channel">
             {% for channel in channels %}<option value="{{ channel.key }}">{{ channel.label }}</option>{% endfor %}
@@ -74,7 +74,7 @@
         </div>
         <button class="btn btn-primary w-100" type="submit">Send test</button>
       </form>
-    </div>
+    </section>
   </div>
 </div>
 {% endblock %}

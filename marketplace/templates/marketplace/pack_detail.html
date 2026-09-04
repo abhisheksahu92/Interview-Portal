@@ -9,11 +9,11 @@
   </div>
   <div class="ip-page-head__actions">
     {% if purchase %}
-      <span class="badge text-bg-success">Installed</span>
+      <span class="ip-badge ip-badge--success">Installed</span>
     {% else %}
       <form method="post" action="{% url 'marketplace:pack_install' pack.slug %}" class="m-0">
         {% csrf_token %}
-        <button class="btn btn-primary" type="submit">
+        <button class="btn btn-sm btn-primary" type="submit">
           {% if pack.is_free %}Install free pack{% else %}Buy for ₹{{ pack.price_inr }}{% endif %}
         </button>
       </form>
@@ -22,25 +22,37 @@
 </div>
 {% endblock %}
 {% block content %}
-<p>{{ pack.description }}</p>
-<h2 class="h6 mt-4">Preview</h2>
-<ol class="list-group list-group-numbered mb-0">
-  {% for question in preview %}
-    <li class="list-group-item">
-      <div>{{ question.text }}</div>
-      {% if question.options %}
-        <ul class="small text-muted mb-0">
-          {% for option in question.options %}<li>{{ option }}</li>{% endfor %}
-        </ul>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <section class="ip-section">
+      <p class="mb-0">{{ pack.description }}</p>
+    </section>
+    <section class="ip-section mt-4">
+      <div class="ip-section__head"><h2>Preview</h2></div>
+      {% if preview %}
+        <ol class="ip-list">
+          {% for question in preview %}
+            <li>
+              <div class="ip-list__main">
+                <div>{{ question.text }}</div>
+                {% if question.options %}
+                  <ul class="ip-muted small mb-0 mt-2">
+                    {% for option in question.options %}<li>{{ option }}</li>{% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="ip-muted small mb-0">No preview available.</p>
       {% endif %}
-    </li>
-  {% empty %}
-    <li class="list-group-item text-muted">No preview available.</li>
-  {% endfor %}
-</ol>
-{% if purchase %}
-  <p class="text-muted small mt-3">
-    {{ purchase.questions_created }} questions were copied into your question bank.
-  </p>
-{% endif %}
+      {% if purchase %}
+        <p class="ip-muted small mt-4 mb-0">
+          {{ purchase.questions_created }} questions were copied into your question bank.
+        </p>
+      {% endif %}
+    </section>
+  </div>
+</div>
 {% endblock %}

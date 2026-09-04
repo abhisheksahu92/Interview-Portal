@@ -5,65 +5,75 @@
   <div>
     <h1>{{ application.candidate.user.email }}</h1>
     <p>{{ application.job.title }} · {{ invite.screen.title }} ·
-      <span class="badge text-bg-light">{{ invite.get_status_display }}</span></p>
+      <span class="ip-badge ip-badge--light">{{ invite.get_status_display }}</span></p>
   </div>
-  <a class="btn btn-outline-secondary" href="{% url 'video:invite_list' %}">Back to invites</a>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'video:invite_list' %}">Back to invites</a>
+  </div>
 </div>
 {% endblock %}
 {% block content %}
 <div class="row g-4">
   <div class="col-lg-8">
     {% for response in responses %}
-      <div class="card mb-3">
-        <div class="card-header fw-semibold">{{ forloop.counter }}. {{ response.question.text }}</div>
-        <div class="card-body">
-          <video class="w-100 rounded mb-3" controls preload="metadata"
-                 src="{% url 'video:response_stream' response.pk %}"></video>
-          <dl class="row mb-0 small">
-            <dt class="col-sm-3">Length</dt><dd class="col-sm-9">{{ response.duration_seconds }}s</dd>
-            <dt class="col-sm-3">AI score</dt>
-            <dd class="col-sm-9">{% if response.ai_score is not None %}{{ response.ai_score }}/100{% else %}<span class="text-body-secondary">not scored</span>{% endif %}</dd>
-            <dt class="col-sm-3">AI summary</dt>
-            <dd class="col-sm-9">{{ response.ai_summary|default:"—"|linebreaksbr }}</dd>
-            <dt class="col-sm-3">Transcript</dt>
-            <dd class="col-sm-9">{{ response.transcript|default:"—"|linebreaksbr }}</dd>
-          </dl>
+      <section class="ip-section {% if not forloop.first %}mt-4{% endif %}">
+        <div class="ip-section__head"><h2>{{ forloop.counter }}. {{ response.question.text }}</h2></div>
+        <div class="ip-split">
+          <div class="ip-split__media">
+            <video controls preload="metadata"
+                   src="{% url 'video:response_stream' response.pk %}"></video>
+          </div>
+          <div class="ip-split__aside">
+            <dl class="ip-kv">
+              <dt>Length</dt><dd>{{ response.duration_seconds }}s</dd>
+              <dt>AI score</dt>
+              <dd>{% if response.ai_score is not None %}{{ response.ai_score }}/100{% else %}<span class="ip-muted">not scored</span>{% endif %}</dd>
+              <dt>AI summary</dt>
+              <dd>{{ response.ai_summary|default:"—"|linebreaksbr }}</dd>
+            </dl>
+            <div class="ip-eyebrow mt-4 mb-2">Transcript</div>
+            <div class="ip-transcript">{{ response.transcript|default:"—"|linebreaksbr }}</div>
+          </div>
         </div>
-      </div>
+      </section>
     {% empty %}
-      <div class="alert alert-info">No recordings uploaded yet.</div>
+      <div class="ip-empty">
+        <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-camera-video-off"></i></span>
+        <div class="ip-empty__title">No recordings uploaded yet.</div>
+        <p>The candidate has not finished the screen — answers appear here as soon as each one is uploaded.</p>
+      </div>
     {% endfor %}
   </div>
   <div class="col-lg-4">
-    <div class="card">
-      <div class="card-header fw-semibold">Quick review</div>
-      <div class="card-body">
-        {% if stage %}
-          <form method="post" novalidate>
-            {% csrf_token %}
-            <p class="small text-body-secondary">Stage: {{ stage.name }}</p>
-            <div class="mb-3">
-              <span class="form-label d-block">Decision</span>
-              {% for choice in form.decision %}
-                <div class="form-check">{{ choice.tag }}<label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
-              {% endfor %}
-              {% for error in form.decision.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.rating.id_for_label }}">Rating</label>
-              {{ form.rating }}
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.feedback.id_for_label }}">Feedback</label>
-              {{ form.feedback }}
-            </div>
-            <button class="btn btn-primary w-100" type="submit">Record review</button>
-          </form>
-        {% else %}
-          <p class="text-body-secondary mb-0">This application has no current stage to review.</p>
-        {% endif %}
-      </div>
-    </div>
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Quick review</h2></div>
+      {% if stage %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <p class="ip-muted small">Stage: {{ stage.name }}</p>
+          <div class="mb-3">
+            <span class="form-label d-block">Decision</span>
+            {% for choice in form.decision %}
+              <div class="form-check">{{ choice.tag }}<label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
+            {% endfor %}
+            {% for error in form.decision.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.rating.id_for_label }}">Rating</label>
+            {{ form.rating }}
+            {% for error in form.rating.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.feedback.id_for_label }}">Feedback</label>
+            {{ form.feedback }}
+            {% for error in form.feedback.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Record review</button>
+        </form>
+      {% else %}
+        <p class="ip-muted mb-0">This application has no current stage to review.</p>
+      {% endif %}
+    </section>
   </div>
 </div>
 {% endblock %}
