@@ -67,6 +67,7 @@ Django 5 + DRF + HTMX/Bootstrap 5. See `ARCHITECTURE.md` for the full design.
 | `offers` | Offer templates, rendered offer letters + PDF, click-to-sign with audit trail |
 | `partners` | Resellers, referrals, commission ledger, white-label branding, self-hosted licence keys |
 | `marketplace` | Paid question packs and the opt-in cross-company verified talent pool |
+| `integrations` | Signed outbound webhooks with retries, HRMS/background-check connectors, per-company API keys |
 
 ## Quick start
 ```bash
@@ -129,6 +130,8 @@ at `/accounts/signup/`.
 | `/partners/` | White-label and reseller settings, licence-key verification |
 | `/partners/<code>/dashboard/` | Reseller dashboard (token login); `?ref=CODE` via `/partners/r/<code>/` |
 | `/marketplace/` | Question packs and the verified talent pool |
+| `/integrations/` | Webhooks (owner-only); delivery log, connectors and API keys under it |
+| `/api/v1/exports/hires.csv` | Streaming hires export for payroll (`?from=&to=`) |
 | `/settings/members/` | Members and invitations |
 | `/healthz/` | Liveness probe (`ok`, no auth, no DB) |
 | `/admin/` | Django admin |
@@ -166,6 +169,7 @@ Copy `.env.example` to `.env`; everything is read from the environment.
 | `VIDEO_TRANSCRIBE_URL` / `VIDEO_TRANSCRIBE_API_KEY` | empty | transcription adapter for video answers; unset = transcript stays blank |
 | `ESIGN_API_BASE` / `ESIGN_ACCOUNT_ID` / `ESIGN_API_KEY` | empty | external e-sign provider; unset = built-in click-to-sign |
 | `LINKEDIN_JOBS_TOKEN` / `NAUKRI_API_KEY` | empty | job-board distribution; unset = "connect account" prompt (the Indeed feed needs no key) |
+| `INTEGRATIONS_ENCRYPTION_KEY` | empty | optional override: urlsafe-base64 Fernet key encrypting connector credentials. Blank derives one from `SECRET_KEY` — set it explicitly if you ever rotate `SECRET_KEY` |
 | `LICENSE_SIGNING_KEY` | empty | **vendor only** — base64 Ed25519 private key used by `issue_license`; see [Self-hosted licence keys](#self-hosted-licence-keys) |
 
 ## Tests and checks
@@ -219,7 +223,7 @@ is priced at 10× monthly (two months free). Every new company starts on a
 | AI credits / month | 0 | 50 | 500 | 2,000 |
 | Analytics | — | ✓ | ✓ | ✓ |
 | Scheduling, careers page, offers, WhatsApp | — | — | ✓ | ✓ |
-| Client portal, video screening, API, talent pool, marketplace, white-label | — | — | — | ✓ |
+| Client portal, video screening, API, talent pool, marketplace, white-label, integrations | — | — | — | ✓ |
 
 Gating is centralised: `billing.entitlements.has_feature(company, "video")` and
 the `@require_feature("video")` decorator/mixin, with
@@ -490,10 +494,158 @@ opt-in per candidate (`CandidateProfile.share_in_pool`) and searches candidates
 who have passed an assessment across companies — gated on
 `talent_pool_search` (Agency).
 
+## Integrations (Agency)
+
+`integrations/` at `/integrations/`, owner-only and gated on the `integrations`
+feature flag. Three things live here: outbound webhooks, HRMS/background-check
+connectors, and per-company API keys.
+
+### Outbound webhooks
+
+Create an endpoint at **Integrations ▸ Webhooks**, tick the events you want (or
+none, which means *all* events), and we POST a signed JSON body to it. Events:
+
+| Event | Fires when |
+| --- | --- |
+| `application.created` | a candidate applies |
+| `application.stage_changed` | an application moves to another pipeline stage |
+| `application.rejected` | an application is rejected |
+| `application.hired` | an application reaches HIRED |
+| `offer.accepted` | a candidate signs an offer |
+| `interview.confirmed` | an interview becomes CONFIRMED |
+| `assessment.submitted` | a candidate submits an assessment attempt |
+
+The body is always the same envelope:
+
+```json
+{
+  "event": "application.hired",
+  "occurred_at": "2026-04-01T10:15:00+00:00",
+  "company": "acme-staffing",
+  "data": { "id": 42, "status": "HIRED", "job": {"id": 3, "title": "Python Developer"}, "candidate": {"email": "asha@example.com"} }
+}
+```
+
+and carries four headers:
+
+| Header | Meaning |
+| --- | --- |
+| `X-IP-Event` | the event name |
+| `X-IP-Delivery-Id` | delivery row id — use it to make your handler idempotent |
+| `X-IP-Timestamp` | unix seconds |
+| `X-IP-Signature` | hex HMAC-SHA256 of `"<timestamp>.<raw body>"`, keyed by the webhook secret |
+
+Verify it against the **raw** body, before any JSON parsing or re-serialising:
+
+```python
+import hashlib
+import hmac
+import time
+
+MAX_AGE_SECONDS = 300
+
+
+def verify(secret: str, request_body: bytes, headers) -> bool:
+    timestamp = headers["X-IP-Timestamp"]
+    signature = headers["X-IP-Signature"]
+    if abs(time.time() - float(timestamp)) > MAX_AGE_SECONDS:
+        return False  # replay
+    expected = hmac.new(
+        secret.encode(), timestamp.encode() + b"." + request_body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
+```
+
+The same check ships as `integrations.verify_signature(secret, timestamp, body,
+signature, max_age_seconds=None)` if you are running the platform yourself.
+
+**Delivery and retries.** The first attempt is synchronous, with a 5-second
+timeout, so a slow or dead receiver never blocks the hiring action that produced
+the event. Anything that does not return 2xx is retried by
+`manage.py deliver_webhooks` (part of `run_periodic`) after **1 m, 5 m, 30 m,
+2 h, 12 h** — five attempts in total, after which the delivery is marked FAILED.
+The delivery log at `/integrations/deliveries/` shows every attempt, its
+response code and next retry time, with a **Redeliver** button that resets the
+counter and tries immediately. **Send test event** on a webhook posts a
+synthetic `{"test": true}` payload so you can wire up your receiver before any
+real event exists.
+
+Rotating the secret takes effect on the next delivery — update your receiver
+first.
+
+### Connectors
+
+Per-company adapters at `/integrations/connectors/`. Settings (`api_key`,
+subdomain/domain/data centre, …) are stored **encrypted at rest** with Fernet:
+the key comes from `INTEGRATIONS_ENCRYPTION_KEY`, or is derived from
+`SECRET_KEY` with HKDF-SHA256 when that is blank. Secrets are write-only in the
+UI — the form shows a mask, and submitting the field blank keeps the stored
+value.
+
+| Connector | Kind | Needs | Does |
+| --- | --- | --- | --- |
+| Keka HRMS | `KEKA` | `api_key`, `subdomain` | `POST /employees` on hire |
+| Zoho People | `ZOHO_PEOPLE` | `api_key` (OAuth token), `data_center` | `insertRecord` into the employee form |
+| greytHR | `GREYTHR` | `api_key`, `domain` | `POST /employee/v2/employees` |
+| Background check | `BACKGROUND_CHECK` | `api_key`, `base_url` | `POST /v1/checks` for a candidate |
+
+An adapter with missing credentials reports itself *not configured* and performs
+no I/O; **Test connection** returns either that state or the vendor's response.
+When an application reaches HIRED, every **active** HRMS connector receives a
+`push_hire` with the new-employee record, and each result — ok, skipped or
+error — is logged as a `ConnectorRun`. A vendor being down never blocks the
+hire.
+
+### API keys
+
+`/integrations/api-keys/` issues one token **per company**, not per person: the
+key belongs to a service account `api@<slug>.local` holding a RECRUITER
+membership and an unusable password, so it cannot be used to sign in and a
+departing employee never breaks the customer's integration. Issuing again
+rotates; the plaintext key is shown exactly once. Individual users can still
+mint a personal token with `POST /api/v1/auth/token/`.
+
+```bash
+curl -H "Authorization: Token <key>" -H "X-Company: acme-staffing" \
+     https://app.example.com/api/v1/interviews/
+```
+
+`X-Company` picks the tenant (token clients have no session); it is validated
+against the caller's memberships.
+
+### Phase-3 API endpoints
+
+All of these require the `api` feature — without it they return 403 with a clear
+upgrade message — and are scoped to the resolved company.
+
+| Endpoint | Methods |
+| --- | --- |
+| `/api/v1/interviews/` | list, retrieve |
+| `/api/v1/offers/` | list, retrieve, **POST** (creates a DRAFT — sending stays a human action) |
+| `/api/v1/submissions/` | list, retrieve |
+| `/api/v1/video-invites/` | list, retrieve (candidate tokens are never exposed) |
+| `/api/v1/talent/` | list, retrieve, POST |
+| `/api/v1/webhooks/` | full CRUD, plus `POST /{id}/test/`; the secret is returned only on create |
+| `/api/v1/exports/hires.csv?from=&to=` | streaming CSV for payroll |
+
+The hires export streams one row per HIRED application in the window
+(`from`/`to` are inclusive `YYYY-MM-DD` dates against the application's last
+update) with the accepted offer's salary and joining date:
+
+```bash
+curl -H "Authorization: Token <key>" -H "X-Company: acme-staffing" \
+     "https://app.example.com/api/v1/exports/hires.csv?from=2026-04-01&to=2026-04-30" \
+     -o hires.csv
+```
+
+Columns: `application_id, candidate_name, candidate_email, candidate_phone,
+job_title, job_location, employment_type, client, hired_on, offer_status,
+salary, currency, joining_date`.
+
 ## Periodic tasks
 
-Eight maintenance commands keep subscriptions, reminders, offers and video
-processing moving. Run them all with **one** entry point, which executes them in
+Nine maintenance commands keep subscriptions, reminders, offers, video
+processing and webhook deliveries moving. Run them all with **one** entry point, which executes them in
 dependency order and logs a failure instead of letting it stop the rest:
 
 ```bash
@@ -513,6 +665,7 @@ dependency order and logs a failure instead of letting it stop the rest:
 | 6 | `process_video_responses` | Transcribes + AI-summarises uploaded answers |
 | 7 | `compute_commissions` | Turns paid invoices into reseller commission entries |
 | 8 | `expire_video_invites` | Closes video invites past their deadline |
+| 9 | `deliver_webhooks` | Retries due webhook deliveries (1 m, 5 m, 30 m, 2 h, 12 h) |
 
 Every command is idempotent, so a missed or repeated run is harmless. Quarter-hourly
 is a good cadence:

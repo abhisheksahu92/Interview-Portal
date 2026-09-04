@@ -1,0 +1,62 @@
+{% comment %}
+Shared table of tokenised access links (core.tokens.TokenMixin rows).
+
+Used by web/settings_members.html (pending team invitations) and
+clients/client_detail.html (client-portal links) so both read the same.
+
+  rows             iterable of TokenMixin instances
+  purpose_label    header for the second column ("Role" / "Purpose")
+  caption          visually-hidden table caption
+  resend_url_name  named URL for the resend/rotate POST (optional)
+  revoke_url_name  named URL for the revoke POST (optional)
+  url_arg          extra first URL argument, when the routes are nested
+  can_manage       show the action buttons at all
+  confirm_noun     wording for the revoke confirm() prompt
+{% endcomment %}
+<div class="ip-table-wrap table-responsive ip-access-links">
+  <table class="ip-table table table-sm align-middle mb-0">
+    <caption class="visually-hidden">{{ caption|default:"Access links" }}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Email</th>
+        <th scope="col">{{ purpose_label|default:"Purpose" }}</th>
+        <th scope="col">Created</th>
+        <th scope="col">Expires</th>
+        <th scope="col">Last used</th>
+        <th scope="col">Status</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.email }}</td>
+          <td><span class="ip-badge ip-badge--neutral">{{ row.link_purpose }}</span></td>
+          <td class="ip-muted small text-nowrap">{{ row.created_at|date:"j M Y" }}</td>
+          <td class="ip-muted small text-nowrap">{{ row.expires_at|date:"j M Y"|default:"Never" }}</td>
+          <td class="ip-muted small text-nowrap">{{ row.last_used_at|date:"j M Y H:i"|default:"—" }}</td>
+          <td class="text-nowrap">
+            <span class="ip-badge ip-badge--{{ row.token_status_kind }}">{{ row.token_status_label }}</span>
+          </td>
+          <td class="text-end text-nowrap">
+            {% if can_manage %}
+              {% if resend_url_name %}
+                <form method="post" class="d-inline" action="{% if url_arg %}{% url resend_url_name url_arg row.pk %}{% else %}{% url resend_url_name row.pk %}{% endif %}">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Resend</button>
+                </form>
+              {% endif %}
+              {% if revoke_url_name and not row.is_revoked %}
+                <form method="post" class="d-inline" action="{% if url_arg %}{% url revoke_url_name url_arg row.pk %}{% else %}{% url revoke_url_name row.pk %}{% endif %}"
+                      onsubmit="return confirm('Revoke the {{ confirm_noun|default:"link" }} for {{ row.email }}?')">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

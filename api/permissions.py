@@ -74,3 +74,26 @@ class IsCandidateOwner(BasePermission):
             candidate = getattr(obj, "candidate", None)
             owner = getattr(candidate, "user", None)
         return owner is not None and owner == user
+
+
+class HasApiFeature(BasePermission):
+    """Gate the phase-3 endpoints behind the ``api`` plan feature.
+
+    Phase-1/2 endpoints stay available on every plan (the web UI itself uses
+    them); the phase-3 set — interviews, offers, submissions, video invites,
+    talent, webhooks, the hires export — is a paid capability. Denying here
+    rather than in each viewset keeps the message identical everywhere.
+    """
+
+    message = (
+        "Your plan does not include API access. Upgrade to the Agency plan to use "
+        "the v1 integration endpoints."
+    )
+
+    def has_permission(self, request, view):
+        from billing.entitlements import has_feature
+
+        company = _company(request, view)
+        if company is None:
+            return False
+        return has_feature(company, "api")

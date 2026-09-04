@@ -52,6 +52,7 @@ env = environ.Env(
     COMPANY_GSTIN=(str, ""),
     COMPANY_STATE_CODE=(str, ""),
     SITE_URL=(str, "http://127.0.0.1:8000"),
+    INTEGRATIONS_ENCRYPTION_KEY=(str, ""),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -99,6 +100,7 @@ LOCAL_APPS = [
     "offers",
     "partners",
     "marketplace",
+    "integrations",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -275,6 +277,13 @@ SPECTACULAR_SETTINGS = {
     "ENUM_NAME_OVERRIDES": {
         "PipelineStageKindEnum": "jobs.models.PipelineStage.KIND_CHOICES",
         "QuestionKindEnum": "assessments.models.Question.KIND_CHOICES",
+        # ``status`` is the most reused field name in the schema; every phase-3
+        # model has its own state machine, so each needs an explicit name.
+        "ApplicationStatusEnum": "jobs.models.Application.STATUS_CHOICES",
+        "InterviewStatusEnum": "scheduling.models.Interview.STATUS_CHOICES",
+        "OfferStatusEnum": "offers.models.Offer.STATUS_CHOICES",
+        "SubmissionStatusEnum": "clients.models.Submission.STATUS_CHOICES",
+        "VideoInviteStatusEnum": "video.models.VideoInvite.STATUS_CHOICES",
     },
 }
 
@@ -291,6 +300,12 @@ STRIPE_PRICE_ID_PRO = env("STRIPE_PRICE_ID_PRO")
 RAZORPAY_KEY_ID = env("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = env("RAZORPAY_KEY_SECRET")
 RAZORPAY_WEBHOOK_SECRET = env("RAZORPAY_WEBHOOK_SECRET")
+
+# --- Integrations tier ----------------------------------------------------
+# Fernet key (urlsafe-base64, 32 bytes) encrypting ConnectorConfig.settings.
+# Blank derives one from SECRET_KEY; set it explicitly to rotate SECRET_KEY
+# without losing stored connector credentials.
+INTEGRATIONS_ENCRYPTION_KEY = env("INTEGRATIONS_ENCRYPTION_KEY")
 
 # GST details printed on invoices.
 COMPANY_GSTIN = env("COMPANY_GSTIN")

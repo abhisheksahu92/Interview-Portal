@@ -1,0 +1,20 @@
+{% with vn=request.resolver_match.view_name %}
+<ul class="nav nav-pills mb-4 gap-1">
+  <li class="nav-item">
+    <a class="nav-link {% if vn == 'integrations:index' or vn == 'integrations:webhook_create' or vn == 'integrations:webhook_edit' %}active{% endif %}"
+       href="{% url 'integrations:index' %}">Webhooks</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if vn == 'integrations:deliveries' %}active{% endif %}"
+       href="{% url 'integrations:deliveries' %}">Delivery log</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if vn == 'integrations:connectors' or vn == 'integrations:connector_edit' %}active{% endif %}"
+       href="{% url 'integrations:connectors' %}">Connectors</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if vn == 'integrations:api_keys' %}active{% endif %}"
+       href="{% url 'integrations:api_keys' %}">API keys</a>
+  </li>
+</ul>
+{% endwith %}

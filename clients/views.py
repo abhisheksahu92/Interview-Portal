@@ -28,6 +28,7 @@ from clients.forms import (
 from clients.models import Client, ClientAccess, Submission
 from core.models import Membership
 from core.permissions import role_required
+from core.tokens import resolve_token, token_invalid_response
 from jobs.models import Application, Job
 
 RECRUITER_ROLES = (Membership.OWNER, Membership.RECRUITER)
@@ -202,24 +203,40 @@ def portal_guard(view_func):
     """Resolve the URL token to a live ClientAccess or render the 404 page.
 
     The wrapped view is called as ``view(request, access, *args)`` — expired and
-    revoked links never reach it.
+    revoked links never reach it. Resolution/rendering is shared with the rest
+    of the app via :mod:`core.tokens`.
     """
 
     @wraps(view_func)
     def _wrapped(request, token, *args, **kwargs):
-        access = (
-            ClientAccess.objects.select_related("client__company")
-            .filter(token=token)
-            .first()
+        resolution = resolve_token(
+            ClientAccess, token, select_related=("client__company",)
         )
-        if access is None or not access.is_active:
-            return render(
+        if not resolution.ok:
+            access = resolution.obj
+            client = getattr(access, "client", None)
+            # Portal links answer 404 for every bad state (expired, revoked and
+            # unknown alike) so the page never confirms that a token exists.
+            return token_invalid_response(
                 request,
-                "clients/portal/invalid.html",
-                {"access": access, "client": getattr(access, "client", None)},
+                resolution,
                 status=404,
+                context={
+                    "base_template": "clients/portal/base.html",
+                    "access": access,
+                    "client": client,
+                    "brand_name": getattr(client, "name", ""),
+                    "provider_name": getattr(
+                        getattr(client, "company", None), "name", ""
+                    ),
+                    "page_title": "Link no longer valid",
+                    "contact_hint": (
+                        "Please contact your recruiting partner to have a fresh "
+                        "link sent to you."
+                    ),
+                },
             )
-        return view_func(request, access, *args, **kwargs)
+        return view_func(request, resolution.obj, *args, **kwargs)
 
     return _wrapped
 

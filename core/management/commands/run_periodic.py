@@ -27,6 +27,7 @@ PERIODIC_COMMANDS = [
     "process_video_responses",
     "compute_commissions",
     "expire_video_invites",
+    "deliver_webhooks",
 ]
 
 

@@ -144,3 +144,44 @@ that reads env keys, returns a clear "not configured" state when keys are missin
 
 ### Shared wiring (foundation agent only)
 INSTALLED_APPS + root urls for all 10 apps; sidebar links: Schedule, Clients, Talent, Video, Careers, Analytics, Offers, Marketplace, plus Settings ▸ Notifications, Branding, Partners; pyproject testpaths; requirements pins: razorpay, xhtml2pdf, google-api-python-client, google-auth-oauthlib, msal, icalendar, python-dateutil, requests. New feature agents may only APPEND to requirements.txt.
+
+## Tokens (secret-link plumbing)
+
+Every "unguessable URL" feature shares one implementation: **`core/tokens.py`**.
+
+- `generate_token(nbytes=32)` / `default_expiry(days)` — the only places a token
+  or a lifetime is produced.
+- `TokenMixin` — abstract model adding `token` (unique), `expires_at`,
+  `revoked_at`, `last_used_at` plus `is_expired` / `is_revoked` / `is_active`,
+  `token_state`, and the `revoke()` / `rotate(days=None)` / `touch()`
+  transitions. The *semantic* completion stamp stays on the subclass
+  (`Invitation.accepted_at`, `Offer.signed_at`).
+- `TokenState` (ACTIVE / EXPIRED / REVOKED / UNKNOWN) + `resolve_token(model, token)`
+  → a `TokenResolution` (`.obj`, `.state`, `.ok`, `.status_code`). Resolution
+  never raises, so each view picks its own status code.
+- `token_invalid_response(request, resolution, status=..., context=...)` renders
+  the shared `core/templates/core/token_invalid.html`, which extends whichever
+  shell the caller names via `base_template` (the app shell by default, the
+  white-label `clients/portal/base.html` for the client portal).
+
+**Status codes are deliberately not uniform** — they are pre-existing contracts:
+
+| Link | Expired | Revoked / used | Unknown |
+| --- | --- | --- | --- |
+| Team invitation (`core:invite_accept`) | 400 | 400 | 404 |
+| Client portal (`clients:portal`) | 404 | 404 | 404 |
+| `TokenState.default_status` (new code) | 410 | 410 | 404 |
+
+The portal answers 404 for every bad state on purpose: the page must not
+confirm that a token exists. New tokenised features should take the
+`TokenState.default_status` defaults (410 Gone for a link that has expired or
+been revoked).
+
+Adopters: `core.Invitation`, `clients.ClientAccess`.
+
+**TODO** — `scheduling.Interview` (`booking_token` / `token_expires_at`) and
+`offers.Offer` (`sign_token`) still roll their own. Adopting the mixin there
+needs field *renames* (`booking_token` → `token`, `token_expires_at` →
+`expires_at`, `sign_token` → `token`) and so would change public model API and
+every caller — not the additive-only migration this refactor was scoped to.
+Fold them in when those apps next take a breaking change.

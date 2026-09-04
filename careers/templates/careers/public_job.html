@@ -1,4 +1,5 @@
 {% extends "careers/public_base.html" %}
+{% load web_money %}
 
 {% block title %}{{ job.title }} · {{ company.name }}{% endblock %}
 {% block meta_description %}{{ job.title }} at {{ company.name }}{% if job.location %} — {{ job.location }}{% endif %}{% endblock %}
@@ -12,6 +13,9 @@
 {% block hero %}
   <h1 class="h2">{{ job.title }}</h1>
   <p class="mb-0 opacity-75">{{ job.location|default:"Remote" }} · {{ job.get_employment_type_display }}</p>
+  {% if job.salary_published %}
+    <p class="mb-0 mt-2">{% include "web/partials/salary_line.html" %}</p>
+  {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -26,6 +30,9 @@
       <dl class="mb-0 small">
         <dt class="cx-muted fw-normal">Location</dt><dd>{{ job.location|default:"Remote" }}</dd>
         <dt class="cx-muted fw-normal">Employment type</dt><dd>{{ job.get_employment_type_display }}</dd>
+        {% if job.salary_published %}
+          <dt class="cx-muted fw-normal">Salary</dt><dd>{% salary_range job %}</dd>
+        {% endif %}
         {% if job.closes_at %}<dt class="cx-muted fw-normal">Applications close</dt><dd>{{ job.closes_at }}</dd>{% endif %}
         {% if job.skills.all %}
           <dt class="cx-muted fw-normal">Skills</dt>

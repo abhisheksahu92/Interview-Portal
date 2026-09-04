@@ -43,40 +43,12 @@
     <section class="ip-section mt-3">
       <div class="ip-section__head"><h2>Pending invitations</h2></div>
       {% if invitations %}
-        <div class="ip-table-wrap">
-          <table class="ip-table">
-            <caption class="visually-hidden">Pending invitations for {{ company.name }}</caption>
-            <thead><tr><th scope="col">Email</th><th scope="col">Role</th>
-              <th scope="col">Status</th><th scope="col"></th></tr></thead>
-            <tbody>
-              {% for inv in invitations %}
-                <tr>
-                  <td>{{ inv.email }}</td>
-                  <td><span class="ip-badge ip-badge--neutral">{{ inv.get_role_display }}</span></td>
-                  <td class="ip-muted text-nowrap">
-                    {% if inv.is_expired %}
-                      <span class="ip-badge ip-badge--danger">Expired</span>
-                    {% else %}
-                      Invited &middot; expires {{ inv.expires_at|date:"j M Y" }}
-                    {% endif %}
-                  </td>
-                  <td class="text-end text-nowrap">
-                    {% if current_role == "OWNER" %}
-                      <form method="post" action="{% url 'web:invite_resend' inv.pk %}" class="d-inline">
-                        {% csrf_token %}
-                        <button class="btn btn-sm btn-outline-secondary" type="submit">Resend</button>
-                      </form>
-                      <form method="post" action="{% url 'web:invite_revoke' inv.pk %}" class="d-inline" onsubmit="return confirm('Revoke the invitation for {{ inv.email }}?')">
-                        {% csrf_token %}
-                        <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
-                      </form>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+        {# Same component the client portal-links table uses — core/_access_links_table.html #}
+        {% if current_role == "OWNER" %}
+          {% include "core/_access_links_table.html" with rows=invitations purpose_label="Role" caption="Pending invitations" resend_url_name="web:invite_resend" revoke_url_name="web:invite_revoke" can_manage=True confirm_noun="invitation" %}
+        {% else %}
+          {% include "core/_access_links_table.html" with rows=invitations purpose_label="Role" caption="Pending invitations" %}
+        {% endif %}
       {% else %}
         <div class="ip-empty ip-empty--sm">
           <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-envelope"></i></span>

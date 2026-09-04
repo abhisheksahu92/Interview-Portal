@@ -80,7 +80,32 @@ def job_posting_dict(job, site):
     skills = ", ".join(s.name for s in job.skills.all())
     if skills:
         data["skills"] = skills
+    base_salary = base_salary_dict(job)
+    if base_salary is not None:
+        data["baseSalary"] = base_salary
     return data
+
+
+def base_salary_dict(job):
+    """schema.org ``MonetaryAmount`` for a job, or None when not published.
+
+    Only ``show_salary`` jobs carry a range: an unpublished salary must never
+    leak into structured data, which is as public as the page itself.
+    """
+    if not job.salary_published:
+        return None
+    value = {"@type": "QuantitativeValue", "unitText": job.salary_unit_text}
+    if job.salary_min is not None:
+        value["minValue"] = float(job.salary_min)
+    if job.salary_max is not None:
+        value["maxValue"] = float(job.salary_max)
+    if job.salary_min is not None and job.salary_min == job.salary_max:
+        value["value"] = float(job.salary_min)
+    return {
+        "@type": "MonetaryAmount",
+        "currency": job.salary_currency or "INR",
+        "value": value,
+    }
 
 
 def job_posting_json(job, site):

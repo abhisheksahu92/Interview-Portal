@@ -1,0 +1,28 @@
+{% for d in deliveries %}
+  <tr>
+    <td><code>{{ d.event }}</code></td>
+    {% if show_webhook %}<td class="text-truncate" style="max-width:14rem">{{ d.webhook.name }}</td>{% endif %}
+    <td>
+      {% if d.status == "SENT" %}<span class="badge text-bg-success">Sent</span>
+      {% elif d.status == "FAILED" %}<span class="badge text-bg-danger">Failed</span>
+      {% else %}<span class="badge text-bg-warning">Pending</span>{% endif %}
+    </td>
+    <td class="small">{{ d.attempts }}/{{ d.MAX_ATTEMPTS }}</td>
+    <td class="small">{{ d.response_code|default:"—" }}</td>
+    <td class="small text-muted">{{ d.created_at|date:"d M Y H:i" }}</td>
+    <td class="small text-muted">
+      {% if d.status == "PENDING" and d.next_attempt_at %}retry {{ d.next_attempt_at|date:"d M H:i" }}
+      {% elif d.last_error %}{{ d.last_error|truncatechars:60 }}
+      {% else %}—{% endif %}
+    </td>
+    <td class="text-end">
+      <form method="post" action="{% url 'integrations:delivery_redeliver' d.pk %}" class="d-inline">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn btn-sm btn-outline-secondary" type="submit">Redeliver</button>
+      </form>
+    </td>
+  </tr>
+{% empty %}
+  <tr><td colspan="{% if show_webhook %}8{% else %}7{% endif %}" class="text-muted small">No deliveries yet.</td></tr>
+{% endfor %}

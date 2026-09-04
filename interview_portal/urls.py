@@ -30,6 +30,7 @@ urlpatterns = [
     path("offers/", include("offers.urls")),
     path("partners/", include("partners.urls")),
     path("marketplace/", include("marketplace.urls")),
+    path("integrations/", include("integrations.urls")),
     path("robots.txt", core_views.robots_txt, name="robots_txt"),
     path("sitemap.xml", core_views.sitemap_xml, name="sitemap_xml"),
     path("", include("web.urls")),

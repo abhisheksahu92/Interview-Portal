@@ -18,6 +18,7 @@ testpaths = [
     "offers",
     "partners",
     "marketplace",
+    "integrations",
 ]
 # ``-n auto`` runs the suite across every CPU (pytest-xdist); pytest-django
 # gives each worker its own test database (``test_<db>_gwN``), so the SQLite

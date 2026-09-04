@@ -71,37 +71,13 @@
     <section class="ip-section">
       <div class="ip-section__head"><h2>Portal access links</h2></div>
       {% if accesses %}
-        <ul class="list-group list-group-flush mb-3">
+        {# Same component the team-members invitations table uses #}
+        {% include "core/_access_links_table.html" with rows=accesses purpose_label="Purpose" caption="Portal access links for "|add:client.name resend_url_name="clients:access_resend" revoke_url_name="clients:access_revoke" url_arg=client.pk can_manage=True confirm_noun="portal link" %}
+        <ul class="list-unstyled small mt-2">
           {% for access in accesses %}
-            <li class="list-group-item px-0">
-              <div class="d-flex justify-content-between align-items-center">
-                <span>
-                  {{ access.email }}
-                  {% if access.revoked %}<span class="badge text-bg-secondary">Revoked</span>
-                  {% elif access.is_expired %}<span class="badge text-bg-warning">Expired</span>
-                  {% else %}<span class="badge text-bg-success">Active</span>{% endif %}
-                </span>
-                <span class="d-flex gap-1">
-                  <form method="post" action="{% url 'clients:access_resend' client.pk access.pk %}">
-                    {% csrf_token %}
-                    <button class="btn btn-sm btn-outline-secondary" type="submit">Resend</button>
-                  </form>
-                  {% if not access.revoked %}
-                    <form method="post" action="{% url 'clients:access_revoke' client.pk access.pk %}">
-                      {% csrf_token %}
-                      <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
-                    </form>
-                  {% endif %}
-                </span>
-              </div>
-              <div class="ip-muted small">
-                {% if access.expires_at %}Expires {{ access.expires_at|date:"d M Y" }}{% endif %}
-                {% if access.last_used_at %}<span class="ip-meta-dot"></span>last opened {{ access.last_used_at|date:"d M Y H:i" }}{% endif %}
-              </div>
-              {% if access.is_active %}
-                <code class="small d-block text-truncate">{% url 'clients:portal' access.token %}</code>
-              {% endif %}
-            </li>
+            {% if access.is_active %}
+              <li><code class="d-block text-truncate">{% url 'clients:portal' access.token %}</code></li>
+            {% endif %}
           {% endfor %}
         </ul>
       {% else %}

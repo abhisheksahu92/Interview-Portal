@@ -1,7 +1,10 @@
 <article class="ip-card" id="app-card-{{ application.pk }}">
   <div class="d-flex justify-content-between align-items-start gap-2">
     <div style="min-width:0">
-      <div class="ip-card__name">{{ application.candidate.user.email }}</div>
+      <div class="ip-card__name">
+        <a class="text-reset" href="{% url 'web:candidate_detail' application.candidate_id %}"
+           title="Open {{ application.candidate.user.email }}'s profile">{{ application.candidate.display_name }}</a>
+      </div>
       {% if application.candidate.headline %}
         <div class="ip-card__meta">{{ application.candidate.headline }}</div>
       {% endif %}

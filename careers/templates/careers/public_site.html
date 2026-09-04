@@ -1,4 +1,5 @@
 {% extends "careers/public_base.html" %}
+{% load web_money %}
 
 {% block content %}
 {% if about_html %}<section class="mb-4 mb-lg-5" style="max-width:52rem">{{ about_html }}</section>{% endif %}
@@ -33,6 +34,9 @@
         <p class="cx-muted small mb-2">
           {{ job.location|default:"Remote" }} · {{ job.get_employment_type_display }}
         </p>
+        {% if job.salary_published %}
+          <p class="cx-muted small mb-2">{% salary_range job %}</p>
+        {% endif %}
         <div class="d-flex flex-wrap gap-1 mb-3">
           {% for skill in job.skills.all %}<span class="cx-chip">{{ skill.name }}</span>{% endfor %}
         </div>

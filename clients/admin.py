@@ -14,8 +14,8 @@ class ClientAdmin(admin.ModelAdmin):
 
 @admin.register(ClientAccess)
 class ClientAccessAdmin(admin.ModelAdmin):
-    list_display = ("email", "client", "expires_at", "revoked", "last_used_at")
-    list_filter = ("revoked", "client__company")
+    list_display = ("email", "client", "expires_at", "revoked_at", "last_used_at")
+    list_filter = ("client__company",)
     search_fields = ("email", "client__name")
     readonly_fields = ("token", "last_used_at")
 

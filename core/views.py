@@ -3,8 +3,8 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import Http404, HttpResponse
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
@@ -17,6 +17,7 @@ from core.forms import (
 )
 from core.middleware import set_active_company
 from core.models import Company, Invitation, Membership
+from core.tokens import TokenState, resolve_token, token_invalid_response
 
 
 class EmailLoginView(LoginView):
@@ -87,12 +88,24 @@ def account_home(request):
     return render(request, "core/account_home.html", {})
 
 
-def _invite_error(request, invitation, reason):
-    return render(
+def _invite_error(request, invitation, reason, state=TokenState.REVOKED):
+    """Render the shared token-invalid page inside the app shell.
+
+    Invitations answer **400** rather than the 404/410 that
+    :class:`core.tokens.TokenState` would pick — that is the contract the
+    invite links have always had (see ARCHITECTURE.md, "Tokens").
+    """
+    return token_invalid_response(
         request,
-        "core/invite_invalid.html",
-        {"invitation": invitation, "reason": reason},
+        state,
         status=400,
+        context={
+            "invitation": invitation,
+            "reason": reason,
+            "page_title": "Invitation unavailable",
+            "contact_hint": "Ask the company owner to send you a new invitation.",
+            "show_auth_links": True,
+        },
     )
 
 
@@ -103,18 +116,24 @@ def invite_accept(request, token):
     Logged in with the invited email -> join immediately. Anonymous -> offer a
     prefilled signup form (or a link to sign in) that comes back here.
     """
-    invitation = get_object_or_404(Invitation, token=token)
+    resolution = resolve_token(Invitation, token, select_related=("company",))
+    if resolution.state is TokenState.UNKNOWN:
+        raise Http404("No such invitation.")
+    invitation = resolution.obj
 
     if invitation.is_accepted:
         return _invite_error(
             request, invitation, "This invitation has already been used."
         )
-    if invitation.is_expired:
+    if resolution.state is TokenState.EXPIRED:
         return _invite_error(
             request,
             invitation,
             "This invitation has expired. Ask the company owner to send a new one.",
+            state=TokenState.EXPIRED,
         )
+    if resolution.state is TokenState.REVOKED:
+        return _invite_error(request, invitation, "This invitation was revoked.")
 
     if request.user.is_authenticated:
         if request.user.email.lower() != invitation.email.lower():

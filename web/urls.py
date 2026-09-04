@@ -29,6 +29,16 @@ urlpatterns = [
         views.application_review,
         name="application_review",
     ),
+    path(
+        "workspace/candidates/<int:pk>/",
+        views.candidate_detail,
+        name="candidate_detail",
+    ),
+    path(
+        "workspace/candidates/<int:pk>/resume/",
+        views.candidate_resume,
+        name="candidate_resume",
+    ),
     # interviewer
     path("queue/", views.interviewer_queue, name="interviewer_queue"),
     # company settings

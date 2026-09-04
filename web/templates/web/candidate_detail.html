@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% load web_money %}
+{% block title %}{{ profile.display_name }} · Candidate{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-muted small mb-1">
+      <a href="{% url 'web:dashboard' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Workspace</a>
+    </p>
+    <h1>{{ profile.display_name }}</h1>
+    <p>
+      {{ candidate_user.email }}{% if profile.phone %}<span class="ip-meta-dot"></span>{{ profile.phone }}{% endif %}<span class="ip-meta-dot"></span>{{ profile.experience_years }} yrs experience
+    </p>
+    {% if read_only %}
+      <span class="ip-badge ip-badge--neutral">Read-only — you are an interviewer on this candidate</span>
+    {% endif %}
+  </div>
+  <div class="ip-page-head__actions">
+    {% if profile.resume %}
+      <a class="btn btn-outline-primary" href="{% url 'web:candidate_resume' profile.pk %}">
+        <i class="bi bi-file-earmark-arrow-down me-1" aria-hidden="true"></i>Download résumé</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <section class="ip-section" id="identity">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Identity</h2></div>
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Name</dt><dd class="col-sm-8">{{ profile.display_name }}</dd>
+        <dt class="col-sm-4">Email</dt><dd class="col-sm-8">{{ candidate_user.email }}</dd>
+        <dt class="col-sm-4">Phone</dt><dd class="col-sm-8">{{ profile.phone|default:"—" }}</dd>
+        <dt class="col-sm-4">Headline</dt><dd class="col-sm-8">{{ profile.headline|default:"—" }}</dd>
+        <dt class="col-sm-4">Experience</dt><dd class="col-sm-8">{{ profile.experience_years }} years</dd>
+        <dt class="col-sm-4">Notice period</dt><dd class="col-sm-8">{{ profile.notice_period_days }} days</dd>
+        <dt class="col-sm-4">Skills</dt>
+        <dd class="col-sm-8">
+          {% for skill in profile.skills.all %}<span class="ip-badge ip-badge--neutral">{{ skill.name }}</span>
+          {% empty %}—{% endfor %}
+        </dd>
+        <dt class="col-sm-4">Résumé</dt>
+        <dd class="col-sm-8">
+          {% if profile.resume %}
+            <a href="{% url 'web:candidate_resume' profile.pk %}">Download</a>
+          {% else %}—{% endif %}
+        </dd>
+      </dl>
+    </section>
+
+    <section class="ip-section mt-3" id="applications">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Applications at {{ company.name }}</h2></div>
+      {% for row in rows %}
+        <article class="border-top pt-3 mt-3">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div>
+              <h3 class="h6 mb-1">
+                {% if not read_only %}
+                  <a href="{% url 'web:job_detail' row.application.job_id %}">{{ row.application.job.title }}</a>
+                {% else %}{{ row.application.job.title }}{% endif %}
+              </h3>
+              <p class="ip-muted small mb-2">
+                {{ row.application.get_status_display }}<span class="ip-meta-dot"></span>applied {{ row.application.created_at|date:"j M Y" }}
+                {% if row.application.job.salary_published %}<span class="ip-meta-dot"></span>{% salary_range row.application.job %}{% endif %}
+              </p>
+            </div>
+            {% if row.application.ai_fit_score is not None %}
+              <span class="ip-fit ip-fit--{% if row.application.ai_fit_score >= 70 %}high{% elif row.application.ai_fit_score >= 40 %}mid{% else %}low{% endif %}"
+                    title="AI fit score">{{ row.application.ai_fit_score }}</span>
+            {% endif %}
+          </div>
+          <ol class="ip-stepper list-unstyled d-flex flex-wrap gap-2 small mb-2">
+            {% for step in row.steps %}
+              <li class="ip-badge ip-badge--{% if step.is_current %}success{% elif step.is_done %}neutral{% else %}light{% endif %}">
+                {{ step.stage.name }}{% if step.is_current %} (now){% endif %}
+              </li>
+            {% empty %}<li class="ip-muted">No pipeline stages</li>{% endfor %}
+          </ol>
+          {% if row.application.ai_summary %}
+            <div class="ip-muted small mb-2"><strong>AI summary:</strong> {{ row.application.ai_summary }}</div>
+          {% endif %}
+          {% if row.reviews %}
+            <h4 class="ip-eyebrow">Stage reviews</h4>
+            <ul class="small mb-0">
+              {% for review in row.reviews %}
+                <li>
+                  {{ review.stage.name }} — <strong>{{ review.get_decision_display }}</strong>{% if review.rating %} · {{ review.rating }}/5{% endif %}
+                  by {{ review.reviewer.email }} on {{ review.created_at|date:"j M Y" }}
+                  {% if review.feedback %}<div class="ip-muted">{{ review.feedback }}</div>{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </article>
+      {% empty %}
+        <p class="ip-muted small mb-0">No applications.</p>
+      {% endfor %}
+    </section>
+
+    <section class="ip-section mt-3" id="assessments">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Assessment attempts</h2></div>
+      {% for attempt in attempts %}
+        <div class="small border-top pt-2 mt-2">
+          {{ attempt.assessment.title }}<span class="ip-meta-dot"></span>{{ attempt.application.job.title }}
+          <span class="ip-meta-dot"></span>
+          {% if attempt.score_percent is not None %}{{ attempt.score_percent }}%{% else %}not graded{% endif %}
+          {% if attempt.passed is not None %}
+            <span class="ip-badge ip-badge--{% if attempt.passed %}success{% else %}danger{% endif %}">
+              {% if attempt.passed %}Passed{% else %}Failed{% endif %}</span>
+          {% endif %}
+        </div>
+      {% empty %}
+        <p class="ip-muted small mb-0">No attempts yet.</p>
+      {% endfor %}
+    </section>
+
+    {% if interviews is not None %}
+      <section class="ip-section mt-3" id="interviews">
+        <div class="ip-section__head"><h2 class="h6 mb-0">Interviews</h2></div>
+        {% for interview in interviews %}
+          <div class="small border-top pt-2 mt-2">
+            {{ interview.scheduled_start|date:"D j M Y, H:i"|default:"unscheduled" }}
+            <span class="ip-meta-dot"></span>{{ interview.get_status_display }}
+            {% if interview.stage %}<span class="ip-meta-dot"></span>{{ interview.stage.name }}{% endif %}
+            <div class="ip-muted">
+              {% for person in interview.interviewers.all %}{{ person.email }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </div>
+          </div>
+        {% empty %}
+          <p class="ip-muted small mb-0">No interviews scheduled.</p>
+        {% endfor %}
+      </section>
+    {% endif %}
+
+    {% if offers is not None %}
+      <section class="ip-section mt-3" id="offers">
+        <div class="ip-section__head"><h2 class="h6 mb-0">Offers</h2></div>
+        {% for offer in offers %}
+          <div class="small border-top pt-2 mt-2">
+            {{ offer.application.job.title }}<span class="ip-meta-dot"></span>{{ offer.get_status_display }}
+            <span class="ip-meta-dot"></span>{{ offer.currency|currency_symbol }}{{ offer.salary|inr }}
+            {% if offer.joining_date %}<span class="ip-meta-dot"></span>joins {{ offer.joining_date|date:"j M Y" }}{% endif %}
+          </div>
+        {% empty %}
+          <p class="ip-muted small mb-0">No offers.</p>
+        {% endfor %}
+      </section>
+    {% endif %}
+
+    {% if submissions is not None %}
+      <section class="ip-section mt-3" id="submissions">
+        <div class="ip-section__head"><h2 class="h6 mb-0">Client submissions</h2></div>
+        {% for submission in submissions %}
+          <div class="small border-top pt-2 mt-2">
+            {{ submission.client.name }}<span class="ip-meta-dot"></span>{{ submission.get_status_display }}
+            {% if submission.client_feedback %}<div class="ip-muted">{{ submission.client_feedback }}</div>{% endif %}
+          </div>
+        {% empty %}
+          <p class="ip-muted small mb-0">Not submitted to any client.</p>
+        {% endfor %}
+      </section>
+    {% endif %}
+
+    {% if video_invites is not None %}
+      <section class="ip-section mt-3" id="video">
+        <div class="ip-section__head"><h2 class="h6 mb-0">Video screens</h2></div>
+        {% for invite in video_invites %}
+          <div class="small border-top pt-2 mt-2">
+            {{ invite.screen.title }}<span class="ip-meta-dot"></span>{{ invite.get_status_display }}
+            <span class="ip-meta-dot"></span>{{ invite.application.job.title }}
+          </div>
+        {% empty %}
+          <p class="ip-muted small mb-0">No video invites.</p>
+        {% endfor %}
+      </section>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-5">
+    <section class="ip-section" id="talent">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Talent CRM</h2></div>
+      {% if talent_profile %}
+        <p class="small mb-2">
+          <a href="{% url 'talent:profile_detail' talent_profile.pk %}">{{ talent_profile.display_name }}</a>
+          in the talent pool
+        </p>
+        <div class="mb-2">
+          {% for tag in talent_profile.tags %}<span class="ip-badge ip-badge--neutral">{{ tag }}</span>
+          {% empty %}<span class="ip-muted small">No tags</span>{% endfor %}
+        </div>
+        {% if note_form %}
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <label class="form-label small" for="{{ note_form.notes.id_for_label }}">Recruiter notes</label>
+            {{ note_form.notes }}
+            {% for e in note_form.notes.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            <button class="btn btn-sm btn-primary mt-2" type="submit">Save notes</button>
+          </form>
+        {% else %}
+          <p class="small mb-0">{{ talent_profile.notes|linebreaksbr|default:"No notes." }}</p>
+        {% endif %}
+      {% else %}
+        <p class="ip-muted small mb-0">This candidate is not linked to a talent-pool profile.</p>
+      {% endif %}
+    </section>
+
+    <section class="ip-section mt-3" id="timeline">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Timeline</h2></div>
+      <ul class="list-unstyled mb-0 small">
+        {% for event in timeline %}
+          <li class="d-flex gap-2 border-top py-2">
+            <i class="bi {{ event.icon }}" aria-hidden="true"></i>
+            <span>
+              <strong>{{ event.label }}</strong>
+              {% if event.detail %}<span class="ip-muted"> — {{ event.detail }}</span>{% endif %}
+              <div class="ip-muted">{{ event.when|date:"j M Y, H:i" }}</div>
+            </span>
+          </li>
+        {% empty %}
+          <li class="ip-muted">Nothing has happened yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+{% endblock %}

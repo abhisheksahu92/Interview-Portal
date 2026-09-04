@@ -1,0 +1,50 @@
+{% extends base_template|default:"base.html" %}
+{% comment %}
+Shared "this secret link can no longer be used" page (see core/tokens.py).
+
+It renders inside whichever shell the caller asks for, so the same markup
+serves the logged-in invite flow and the white-label client portal:
+
+  base_template   parent template ("base.html" by default; the client portal
+                  passes "clients/portal/base.html")
+  token_state     "expired" | "revoked" | "unknown"
+  reason          sentence explaining the state (defaulted per state)
+  page_title      heading, e.g. "Invitation unavailable"
+  contact_hint    who the reader should ask for a new link
+  show_auth_links show the sign-in / workspace buttons (app shell only)
+{% endcomment %}
+{% block title %}{{ page_title|default:"Link no longer valid" }} · Interview Portal{% endblock %}
+{% block main_class %}container py-5{% endblock %}
+{% block page_header %}
+<div class="ip-page-head"><div><h1>{{ page_title|default:"Link no longer valid" }}</h1>
+  <p>This link can no longer be used.</p></div></div>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-sm-10 col-md-7 col-lg-5">
+    {% if show_auth_links and not current_company %}
+      <div class="text-center mb-4">
+        <a class="ip-brand justify-content-center" href="/">
+          <span class="ip-brand__mark" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+          <span>Interview&nbsp;Portal</span>
+        </a>
+      </div>
+    {% endif %}
+    <div class="ip-section cp-card p-4" data-token-state="{{ token_state|default:'unknown' }}">
+      <div class="ip-empty ip-empty--sm">
+        <span class="ip-empty__icon" aria-hidden="true" style="color:var(--ip-danger)"><i class="bi bi-exclamation-triangle"></i></span>
+        <div class="ip-empty__title">This link is no longer valid</div>
+        <p>{{ reason }}</p>
+        {% if contact_hint %}<p class="ip-muted cp-muted small mb-3">{{ contact_hint }}</p>{% endif %}
+        {% if show_auth_links %}
+          {% if user.is_authenticated %}
+            <a class="btn btn-outline-secondary" href="/">Back to my workspace</a>
+          {% else %}
+            <a class="btn btn-outline-secondary" href="{% url 'core:login' %}">Go to sign in</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

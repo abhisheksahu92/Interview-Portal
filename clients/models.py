@@ -1,16 +1,20 @@
 """Client-portal models: staffing clients, tokenised access links, submissions."""
 
-import secrets
-from datetime import timedelta
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+from core.tokens import TokenMixin
+from core.tokens import generate_token as _generate_token
+
 
 def generate_token() -> str:
-    """A URL-safe, unguessable access token for a client portal link."""
-    return secrets.token_urlsafe(32)
+    """A URL-safe, unguessable access token for a client portal link.
+
+    Kept as a module-level name because old migrations reference it; the
+    implementation now lives in :mod:`core.tokens`.
+    """
+    return _generate_token(32)
 
 
 class ClientQuerySet(models.QuerySet):
@@ -49,17 +53,19 @@ class Client(models.Model):
         return [access for access in self.accesses.all() if access.is_active]
 
 
-class ClientAccess(models.Model):
-    """A magic-link grant letting one client contact open the portal."""
+class ClientAccess(TokenMixin, models.Model):
+    """A magic-link grant letting one client contact open the portal.
+
+    Token plumbing (token / expires_at / revoked_at / last_used_at and the
+    is_expired / is_active / revoke / rotate / touch behaviour) comes from
+    :class:`core.tokens.TokenMixin`.
+    """
 
     DEFAULT_VALID_DAYS = 30
+    EXPIRY_DAYS = DEFAULT_VALID_DAYS
 
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="accesses")
     email = models.EmailField()
-    token = models.CharField(max_length=64, unique=True, default=generate_token)
-    expires_at = models.DateTimeField(null=True, blank=True)
-    last_used_at = models.DateTimeField(null=True, blank=True)
-    revoked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -74,28 +80,13 @@ class ClientAccess(models.Model):
         return self.client.company
 
     @property
-    def is_expired(self):
-        return self.expires_at is not None and self.expires_at <= timezone.now()
+    def revoked(self):
+        """Back-compat alias for the old boolean column."""
+        return self.is_revoked
 
     @property
-    def is_active(self):
-        return not self.revoked and not self.is_expired
-
-    def touch(self):
-        self.last_used_at = timezone.now()
-        self.save(update_fields=["last_used_at"])
-
-    def revoke(self):
-        self.revoked = True
-        self.save(update_fields=["revoked"])
-
-    def rotate(self, days=None):
-        """Issue a fresh token/expiry on the same row (used by "resend link")."""
-        self.token = generate_token()
-        self.revoked = False
-        self.expires_at = timezone.now() + timedelta(days=days or self.DEFAULT_VALID_DAYS)
-        self.save(update_fields=["token", "revoked", "expires_at"])
-        return self
+    def link_purpose(self):
+        return "Portal access"
 
 
 class Submission(models.Model):

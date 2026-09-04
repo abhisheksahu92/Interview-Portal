@@ -64,6 +64,15 @@ class Job(models.Model):
         (CLOSED, "Closed"),
     ]
 
+    YEAR = "YEAR"
+    MONTH = "MONTH"
+    SALARY_PERIOD_CHOICES = [
+        (YEAR, "per year"),
+        (MONTH, "per month"),
+    ]
+    #: schema.org / Indeed unitText for each period.
+    SALARY_UNIT_TEXT = {YEAR: "YEAR", MONTH: "MONTH"}
+
     company = models.ForeignKey(
         "core.Company", on_delete=models.CASCADE, related_name="jobs"
     )
@@ -93,6 +102,22 @@ class Job(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     closes_at = models.DateField(null=True, blank=True)
+    # Compensation. Kept optional and hidden by default: a range is only ever
+    # published when the recruiter explicitly ticks ``show_salary``.
+    salary_min = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
+    salary_max = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
+    salary_currency = models.CharField(max_length=8, default="INR", blank=True)
+    salary_period = models.CharField(
+        max_length=10, choices=SALARY_PERIOD_CHOICES, default=YEAR, blank=True
+    )
+    show_salary = models.BooleanField(
+        default=False,
+        help_text="Publish the salary range on the public job and careers pages.",
+    )
 
     DEFAULT_STAGES = [
         ("Screening", "SCREENING", False),
@@ -141,6 +166,20 @@ class Job(models.Model):
     @property
     def is_open(self):
         return self.status == self.OPEN
+
+    @property
+    def has_salary(self):
+        """True when a range exists at all (regardless of publication)."""
+        return self.salary_min is not None or self.salary_max is not None
+
+    @property
+    def salary_published(self):
+        """True when the range may be shown to the public."""
+        return bool(self.show_salary) and self.has_salary
+
+    @property
+    def salary_unit_text(self):
+        return self.SALARY_UNIT_TEXT.get(self.salary_period, "YEAR")
 
 
 class PipelineStage(models.Model):
@@ -227,6 +266,17 @@ class CandidateProfile(models.Model):
                 self.resume.storage.delete(old_file)
             except Exception:  # pragma: no cover - storage cleanup is best-effort
                 pass
+
+    @property
+    def display_name(self):
+        """Best available human name: the user's full name, else their email.
+
+        ``CandidateProfile`` carries no name of its own, so the only names we
+        ever have come from ``core.User.first_name/last_name`` — which are
+        optional, hence the email fallback.
+        """
+        full = (self.user.get_full_name() or "").strip()
+        return full or self.user.email
 
 
 class Application(models.Model):

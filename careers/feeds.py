@@ -17,6 +17,20 @@ def _text(parent, tag, value):
     return node
 
 
+def indeed_salary_text(job):
+    """Indeed's free-text ``<salary>`` value, e.g. ``INR 1200000 - 1800000 per year``."""
+    low, high = job.salary_min, job.salary_max
+    amounts = [a for a in (low, high) if a is not None]
+    if not amounts:
+        return ""
+    unique = sorted(set(amounts))
+    body = " - ".join(
+        f"{int(a)}" if a == a.to_integral() else f"{a}" for a in unique
+    )
+    period = job.get_salary_period_display()
+    return f"{job.salary_currency or 'INR'} {body} {period}"
+
+
 def indeed_feed_xml():
     """Indeed's required source/job envelope as a bytes payload."""
     root = Element("source")
@@ -47,6 +61,8 @@ def indeed_feed_xml():
             if job.requirements:
                 description = f"{description}\n\nRequirements:\n{job.requirements}"
             _text(node, "description", description)
+            if job.salary_published:
+                _text(node, "salary", indeed_salary_text(job))
             if job.closes_at:
                 _text(node, "validThrough", job.closes_at.isoformat())
     body = tostring(root, encoding="unicode")

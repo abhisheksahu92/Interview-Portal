@@ -186,3 +186,31 @@ def test_job_client_form_rejects_foreign_client(company, other_company, make_job
     foreign = make_client_row(other_company, "Foreign Co")
     form = JobClientForm({"client": foreign.pk}, company=company, job=job)
     assert not form.is_valid()
+
+
+def test_detail_renders_the_shared_access_links_table(client, owner, client_row, access):
+    """The portal-links table is core/_access_links_table.html, same as the
+    team-invitations table on the members page."""
+    access.touch()
+    client.force_login(owner)
+    response = client.get(reverse("clients:detail", args=[client_row.pk]))
+    body = response.content.decode()
+    assert "ip-access-links" in body
+    assert access.email in body
+    assert "Portal access" in body  # link_purpose column
+    assert "Active" in body  # status badge
+    assert "Last used" in body
+    assert reverse("clients:access_revoke", args=[client_row.pk, access.pk]) in body
+    assert reverse("clients:access_resend", args=[client_row.pk, access.pk]) in body
+    assert "confirm(" in body  # revoke asks first
+
+
+def test_detail_marks_a_revoked_link_and_drops_its_revoke_button(
+    client, owner, client_row, access
+):
+    access.revoke()
+    client.force_login(owner)
+    body = client.get(reverse("clients:detail", args=[client_row.pk])).content.decode()
+    assert "Revoked" in body
+    assert reverse("clients:access_revoke", args=[client_row.pk, access.pk]) not in body
+    assert reverse("clients:access_resend", args=[client_row.pk, access.pk]) in body

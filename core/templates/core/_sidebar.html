@@ -90,6 +90,9 @@
             <i class="bi bi-bell" aria-hidden="true"></i> Notifications
           </a>
         </li>
+        {% url 'integrations:index' as ip_href %}
+        {% feature_enabled "integrations" as ip_ok %}
+        {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="integrations" label="Integrations" icon="bi-plug" active_prefix="integrations:" %}
         <li>
           <a class="ip-nav__link {% if vn|slice:":9" == "partners:" %}is-active{% endif %}" href="{% url 'partners:settings' %}">
             <i class="bi bi-palette" aria-hidden="true"></i> Branding

@@ -1,10 +1,9 @@
-import secrets
-from datetime import timedelta
-
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+
+from core.tokens import TokenMixin, TokenState
 
 
 class Company(models.Model):
@@ -142,8 +141,12 @@ class Membership(models.Model):
         return f"{self.user.email} @ {self.company.name} ({self.role})"
 
 
-class Invitation(models.Model):
-    """A pending invitation for an email address to join a company."""
+class Invitation(TokenMixin, models.Model):
+    """A pending invitation for an email address to join a company.
+
+    Token plumbing lives in :class:`core.tokens.TokenMixin`; the
+    invitation-specific bit is ``accepted_at``.
+    """
 
     TOKEN_BYTES = 32
     EXPIRY_DAYS = 7
@@ -155,7 +158,6 @@ class Invitation(models.Model):
     role = models.CharField(
         max_length=20, choices=Membership.ROLE_CHOICES, default=Membership.RECRUITER
     )
-    token = models.CharField(max_length=100, unique=True)
     invited_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -164,7 +166,6 @@ class Invitation(models.Model):
         related_name="sent_invitations",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
     accepted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -182,25 +183,31 @@ class Invitation(models.Model):
             self.expires_at = self.default_expiry()
         super().save(*args, **kwargs)
 
-    @staticmethod
-    def new_token():
-        return secrets.token_urlsafe(Invitation.TOKEN_BYTES)
-
-    @classmethod
-    def default_expiry(cls):
-        return timezone.now() + timedelta(days=cls.EXPIRY_DAYS)
-
     @property
     def is_accepted(self):
         return self.accepted_at is not None
 
     @property
-    def is_expired(self):
-        return timezone.now() >= self.expires_at
+    def is_pending(self):
+        """Still usable: not accepted, not expired, not revoked."""
+        return not self.is_accepted and self.is_active
 
     @property
-    def is_pending(self):
-        return not self.is_accepted and not self.is_expired
+    def token_state(self):
+        """An accepted invitation is spent — treat it like a revoked link."""
+        if self.is_accepted:
+            return TokenState.REVOKED
+        return super().token_state
+
+    @property
+    def token_status_label(self):
+        if self.is_accepted:
+            return "Accepted"
+        return super().token_status_label
+
+    @property
+    def link_purpose(self):
+        return self.get_role_display()
 
     def accept_url(self, request=None):
         from django.urls import reverse
@@ -210,10 +217,9 @@ class Invitation(models.Model):
 
     def refresh_token(self):
         """Issue a new token and push the expiry out (used by "resend")."""
-        self.token = self.new_token()
-        self.expires_at = self.default_expiry()
+        self.rotate()
         self.accepted_at = None
-        self.save(update_fields=["token", "expires_at", "accepted_at"])
+        self.save(update_fields=["accepted_at"])
         return self
 
     def accept(self, user):

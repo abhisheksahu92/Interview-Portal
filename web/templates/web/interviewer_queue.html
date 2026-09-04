@@ -19,7 +19,9 @@
       <div class="col-lg-6">
         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
           <div style="min-width:0">
-            <h2 class="h6 mb-1">{{ row.application.candidate.user.email }}</h2>
+            <h2 class="h6 mb-1">
+              <a href="{% url 'web:candidate_detail' row.application.candidate_id %}">{{ row.application.candidate.display_name }}</a>
+            </h2>
             <p class="ip-muted small mb-0">
               {{ row.application.job.title }}<span class="ip-meta-dot"></span>{{ row.application.current_stage.name }}<span class="ip-meta-dot"></span>{{ row.application.candidate.experience_years }} yrs experience
             </p>
@@ -34,7 +36,7 @@
         {% endif %}
         <div class="d-flex flex-wrap gap-2">
           {% if row.application.candidate.resume %}
-            <a class="btn btn-sm btn-outline-secondary" href="{{ row.application.candidate.resume.url }}">
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'web:candidate_resume' row.application.candidate_id %}">
               <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>Résumé</a>
           {% endif %}
           {% if can_open_board %}

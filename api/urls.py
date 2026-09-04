@@ -20,10 +20,22 @@ router.register("reviews", views.StageReviewViewSet, basename="stagereview")
 router.register("questions", views.QuestionViewSet, basename="question")
 router.register("assessments", views.AssessmentViewSet, basename="assessment")
 router.register("attempts", views.AttemptViewSet, basename="attempt")
+# --- Phase 3 (feature "api") ---
+router.register("interviews", views.InterviewViewSet, basename="interview")
+router.register("offers", views.OfferViewSet, basename="offer")
+router.register("submissions", views.SubmissionViewSet, basename="submission")
+router.register("video-invites", views.VideoInviteViewSet, basename="videoinvite")
+router.register("talent", views.TalentProfileViewSet, basename="talentprofile")
+router.register("webhooks", views.OutboundWebhookViewSet, basename="outboundwebhook")
 
 urlpatterns = [
     path("v1/", include(router.urls)),
     path("v1/auth/token/", views.AuthTokenView.as_view(), name="auth-token"),
+    path(
+        "v1/exports/hires.csv",
+        views.HiresExportView.as_view(),
+        name="export-hires",
+    ),
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "docs/",

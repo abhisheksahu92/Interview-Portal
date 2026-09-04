@@ -38,11 +38,25 @@ class JobForm(BootstrapMixin, forms.ModelForm):
             "requirements",
             "skills",
             "closes_at",
+            "salary_min",
+            "salary_max",
+            "salary_currency",
+            "salary_period",
+            "show_salary",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 5}),
             "requirements": forms.Textarea(attrs={"rows": 5}),
             "closes_at": forms.DateInput(attrs={"type": "date"}),
+            "salary_min": forms.NumberInput(attrs={"step": "1", "min": "0"}),
+            "salary_max": forms.NumberInput(attrs={"step": "1", "min": "0"}),
+        }
+        labels = {
+            "salary_min": "Salary from",
+            "salary_max": "Salary to",
+            "salary_currency": "Currency",
+            "salary_period": "Period",
+            "show_salary": "Show the salary publicly",
         }
 
     def __init__(self, *args, company=None, **kwargs):
@@ -50,6 +64,31 @@ class JobForm(BootstrapMixin, forms.ModelForm):
         self.company = company
         self.fields["skills"].queryset = Skill.objects.filter(company=company)
         self.fields["skills"].required = False
+        # Currency and period always have a sensible default, so the form never
+        # forces a recruiter to pick them just to save a job with no salary.
+        self.fields["salary_currency"].required = False
+        self.fields["salary_period"].required = False
+
+    def clean_salary_currency(self):
+        return (self.cleaned_data.get("salary_currency") or "INR").upper()
+
+    def clean_salary_period(self):
+        return self.cleaned_data.get("salary_period") or Job.YEAR
+
+    def clean(self):
+        """A published range must be a real range: min <= max, and non-empty."""
+        cleaned = super().clean()
+        low, high = cleaned.get("salary_min"), cleaned.get("salary_max")
+        if low is not None and high is not None and low > high:
+            self.add_error(
+                "salary_max", "The upper salary must be at least the lower salary."
+            )
+        if cleaned.get("show_salary") and low is None and high is None:
+            self.add_error(
+                "show_salary",
+                "Enter a salary before publishing it on the job page.",
+            )
+        return cleaned
 
     def save(self, commit=True):
         job = super().save(commit=False)

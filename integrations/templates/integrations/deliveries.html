@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Delivery log · Integrations{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div><h1>Delivery log</h1><p>Every webhook attempt, with its retry schedule.</p></div>
+</div>
+{% endblock %}
+{% block content %}
+{% include "integrations/_nav.html" %}
+<form class="row g-2 mb-3" method="get">
+  <div class="col-auto">
+    <select class="form-select form-select-sm" name="status">
+      <option value="">All statuses</option>
+      {% for value, label in statuses %}
+        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <select class="form-select form-select-sm" name="webhook">
+      <option value="">All webhooks</option>
+      {% for hook in webhooks %}
+        <option value="{{ hook.pk }}" {% if selected_webhook == hook.pk|stringformat:"s" %}selected{% endif %}>{{ hook.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto"><button class="btn btn-sm btn-primary" type="submit">Filter</button></div>
+</form>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Event</th><th>Webhook</th><th>Status</th><th>Attempts</th><th>Code</th><th>Created</th><th>Detail</th><th></th></tr></thead>
+      <tbody>{% include "integrations/_delivery_rows.html" with show_webhook=1 %}</tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

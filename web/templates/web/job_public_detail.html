@@ -10,6 +10,9 @@
     <p>
       {{ job.company.name }}<span class="ip-meta-dot"></span>{{ job.location|default:"Remote / unspecified" }}<span class="ip-meta-dot"></span>{{ job.get_employment_type_display }}{% if job.closes_at %}<span class="ip-meta-dot"></span>closes {{ job.closes_at|date:"j M Y" }}{% endif %}
     </p>
+    {% if job.salary_published %}
+      <p class="mb-0">{% include "web/partials/salary_line.html" %}</p>
+    {% endif %}
   </div>
 </div>
 

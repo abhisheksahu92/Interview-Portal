@@ -37,6 +37,7 @@ FEATURES = (
     "analytics",
     "marketplace",
     "white_label",
+    "integrations",
 )
 
 

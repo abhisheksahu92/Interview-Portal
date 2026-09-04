@@ -1,7 +1,14 @@
 """ViewSets for the v1 API. Everything is scoped to the resolved company."""
 
+import csv
+from datetime import datetime, time
+
 from django.db.models import Q
+from django.http import StreamingHttpResponse
 from django.utils import timezone
+from django.utils.dateparse import parse_date
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
@@ -11,6 +18,7 @@ from rest_framework.views import APIView
 
 from api.mixins import CompanyScopedViewSetMixin
 from api.permissions import (
+    HasApiFeature,
     IsCompanyMember,
     IsInterviewer,
     IsRecruiterOrOwner,
@@ -25,15 +33,23 @@ from api.serializers import (
     AuthTokenSerializer,
     CandidateProfileSerializer,
     CompanySerializer,
+    InterviewSerializer,
     JobSerializer,
     MembershipSerializer,
+    OfferSerializer,
+    OutboundWebhookSerializer,
     PipelineStageSerializer,
     QuestionSerializer,
     SkillSerializer,
     StageReviewSerializer,
+    SubmissionSerializer,
+    TalentProfileSerializer,
+    VideoInviteSerializer,
 )
 from assessments.models import Assessment, Attempt, Question
+from clients.models import Submission
 from core.models import Company, Membership
+from integrations.models import OutboundWebhook
 from jobs.models import (
     Application,
     CandidateProfile,
@@ -42,6 +58,10 @@ from jobs.models import (
     Skill,
     StageReview,
 )
+from offers.models import Offer
+from scheduling.models import Interview
+from talent.models import TalentProfile
+from video.models import VideoInvite
 
 
 class AuthTokenView(APIView):
@@ -352,3 +372,316 @@ class AttemptViewSet(
         attempt.grade()
         attempt.refresh_from_db()
         return Response(AttemptSerializer(attempt).data)
+
+
+# --- Phase 3 endpoints ---------------------------------------------------
+# Every viewset below is gated by ``HasApiFeature`` in addition to the usual
+# role permission, so the whole integration surface switches off in one place
+# for companies without the ``api`` entitlement.
+
+
+class Phase3ViewSetMixin(CompanyScopedViewSetMixin):
+    """Company scoping plus the ``api`` entitlement gate."""
+
+    permission_classes = [HasApiFeature, IsRecruiterOrOwner]
+
+
+class InterviewViewSet(
+    Phase3ViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Read-only interview feed for calendar/BI integrations."""
+
+    serializer_class = InterviewSerializer
+    queryset = Interview.objects.select_related(
+        "application__job", "application__candidate__user", "stage"
+    ).prefetch_related("interviewers")
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        interview_status = self.request.query_params.get("status")
+        if interview_status:
+            qs = qs.filter(status=interview_status)
+        application = self.request.query_params.get("application")
+        if application and application.isdigit():
+            qs = qs.filter(application_id=int(application))
+        return qs
+
+
+class OfferViewSet(
+    Phase3ViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """List/retrieve offers, and stage a DRAFT offer for a human to send."""
+
+    serializer_class = OfferSerializer
+    queryset = Offer.objects.select_related(
+        "application__job", "application__candidate__user", "template"
+    )
+    company_field = "application__job__company"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        offer_status = self.request.query_params.get("status")
+        if offer_status:
+            qs = qs.filter(status=offer_status)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+
+class SubmissionViewSet(
+    Phase3ViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Read-only client submissions (staffing firms' shortlists)."""
+
+    serializer_class = SubmissionSerializer
+    queryset = Submission.objects.select_related(
+        "client", "application__job", "application__candidate__user"
+    )
+    company_field = "client__company"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        client = self.request.query_params.get("client")
+        if client and client.isdigit():
+            qs = qs.filter(client_id=int(client))
+        submission_status = self.request.query_params.get("status")
+        if submission_status:
+            qs = qs.filter(status=submission_status)
+        return qs
+
+
+class VideoInviteViewSet(
+    Phase3ViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Read-only one-way video screening invites.
+
+    Tokens are deliberately absent from the payload: they are candidate-facing
+    credentials, and an API consumer has no reason to impersonate a candidate.
+    """
+
+    serializer_class = VideoInviteSerializer
+    queryset = VideoInvite.objects.select_related(
+        "screen", "application__job", "application__candidate__user"
+    )
+    company_field = "application__job__company"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        invite_status = self.request.query_params.get("status")
+        if invite_status:
+            qs = qs.filter(status=invite_status)
+        return qs
+
+
+class TalentProfileViewSet(
+    Phase3ViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Talent CRM: read the pool, and push new candidates into it."""
+
+    serializer_class = TalentProfileSerializer
+    queryset = TalentProfile.objects.prefetch_related("skills")
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        query = self.request.query_params.get("q")
+        if query:
+            qs = qs.filter(
+                Q(name__icontains=query)
+                | Q(email__icontains=query)
+                | Q(headline__icontains=query)
+            )
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+
+class OutboundWebhookViewSet(Phase3ViewSetMixin, viewsets.ModelViewSet):
+    """Full CRUD over the company's outbound webhooks.
+
+    The plaintext signing secret is returned exactly once, in the create
+    response; every later read shows a masked hint.
+    """
+
+    serializer_class = OutboundWebhookSerializer
+    queryset = OutboundWebhook.objects.select_related("company")
+
+    def perform_create(self, serializer):
+        serializer._reveal_secret = True
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=["post"], url_path="test")
+    def send_test(self, request, pk=None):
+        """Deliver a synthetic payload so a receiver can be verified."""
+        from integrations.delivery import send_test_event
+
+        webhook = self.get_object()
+        delivery = send_test_event(webhook)
+        return Response(
+            {
+                "delivery_id": delivery.pk,
+                "status": delivery.status,
+                "response_code": delivery.response_code,
+                "error": delivery.last_error or None,
+            }
+        )
+
+
+@extend_schema(
+    summary="Hires export (CSV)",
+    description=(
+        "One row per hired application in the window, with the accepted offer's "
+        "salary and joining date. Streamed as text/csv for payroll import."
+    ),
+    parameters=[
+        OpenApiParameter(
+            "from",
+            OpenApiTypes.DATE,
+            description="Only hires updated on or after this date (YYYY-MM-DD).",
+        ),
+        OpenApiParameter(
+            "to",
+            OpenApiTypes.DATE,
+            description="Only hires updated on or before this date, inclusive.",
+        ),
+    ],
+    responses={(200, "text/csv"): OpenApiTypes.STR},
+)
+class HiresExportView(APIView):
+    """``GET /api/v1/exports/hires.csv?from=&to=`` — streaming payroll export.
+
+    One row per hired application in the window, with the accepted offer's
+    salary and joining date where there is one, so payroll can be reconciled
+    without a database dump. Streamed row-by-row: a busy agency's full history
+    must not be buffered in memory.
+
+    ``from``/``to`` are ``YYYY-MM-DD`` dates compared against the application's
+    last update (the moment it became HIRED); ``to`` is inclusive.
+    """
+
+    permission_classes = [HasApiFeature, IsRecruiterOrOwner]
+    #: an APIView has no queryset, but the scoping mixin's company resolution
+    #: is exactly what we need, so borrow it via composition.
+    company_field = "job__company"
+
+    HEADER = [
+        "application_id",
+        "candidate_name",
+        "candidate_email",
+        "candidate_phone",
+        "job_title",
+        "job_location",
+        "employment_type",
+        "client",
+        "hired_on",
+        "offer_status",
+        "salary",
+        "currency",
+        "joining_date",
+    ]
+
+    @property
+    def company(self):
+        if not hasattr(self, "_company"):
+            self._company = self._resolve_company()
+        return self._company
+
+    def _resolve_company(self):
+        helper = CompanyScopedViewSetMixin()
+        helper.request = self.request
+        return helper.resolve_company()
+
+    def _parse_date(self, raw, end=False):
+        if not raw:
+            return None
+        parsed = parse_date(raw.strip())
+        if parsed is None:
+            raise ValidationError(
+                {"detail": f"Invalid date '{raw}'. Use YYYY-MM-DD."}
+            )
+        moment = datetime.combine(
+            parsed, time.max if end else time.min
+        )
+        return timezone.make_aware(moment) if timezone.is_naive(moment) else moment
+
+    def get_queryset(self):
+        company = self.company
+        if company is None:
+            return Application.objects.none()
+        qs = (
+            Application.objects.filter(
+                job__company=company, status=Application.HIRED
+            )
+            .select_related("job", "job__client", "candidate__user")
+            .prefetch_related("offers")
+            .order_by("updated_at", "pk")
+        )
+        start = self._parse_date(self.request.query_params.get("from"))
+        end = self._parse_date(self.request.query_params.get("to"), end=True)
+        if start:
+            qs = qs.filter(updated_at__gte=start)
+        if end:
+            qs = qs.filter(updated_at__lte=end)
+        return qs
+
+    def rows(self, queryset):
+        writer = csv.writer(Echo())
+        yield writer.writerow(self.HEADER)
+        for application in queryset.iterator(chunk_size=200):
+            yield writer.writerow(self.row_for(application))
+
+    @staticmethod
+    def row_for(application):
+        user = getattr(application.candidate, "user", None)
+        offer = next(
+            (o for o in application.offers.all() if o.status == "ACCEPTED"),
+            None,
+        )
+        client = getattr(application.job, "client", None)
+        return [
+            application.pk,
+            (user.get_full_name() if user else "") or "",
+            getattr(user, "email", "") or "",
+            application.candidate.phone or "",
+            application.job.title,
+            application.job.location or "",
+            application.job.employment_type,
+            getattr(client, "name", "") or "",
+            application.updated_at.date().isoformat(),
+            offer.status if offer else "",
+            str(offer.salary) if offer else "",
+            offer.currency if offer else "",
+            offer.joining_date.isoformat() if offer and offer.joining_date else "",
+        ]
+
+    def get(self, request):
+        response = StreamingHttpResponse(
+            self.rows(self.get_queryset()), content_type="text/csv"
+        )
+        response["Content-Disposition"] = 'attachment; filename="hires.csv"'
+        return response
+
+
+class Echo:
+    """A write-only file-like object handing each written row straight back."""
+
+    def write(self, value):
+        return value

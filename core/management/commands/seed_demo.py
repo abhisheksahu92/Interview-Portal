@@ -317,7 +317,6 @@ class Command(BaseCommand):
                 + timedelta(days=ClientAccess.DEFAULT_VALID_DAYS),
             )
         elif not access.is_active:
-            access.revoked = False
             access.rotate()
         submission, created = Submission.objects.get_or_create(
             application=application,

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{% if webhook %}{{ webhook.name }}{% else %}New webhook{% endif %} · Integrations{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>{% if webhook %}{{ webhook.name }}{% else %}New webhook{% endif %}</h1>
+    <p>We POST a signed JSON body to your endpoint each time a subscribed event happens.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'integrations:index' %}">Back</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <form method="post" class="card p-3">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.name.id_for_label }}">Name</label>
+        {{ form.name }}{{ form.name.errors }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.url.id_for_label }}">Endpoint URL</label>
+        {{ form.url }}{{ form.url.errors }}
+      </div>
+      <fieldset class="mb-3">
+        <legend class="form-label">Events</legend>
+        {% for choice in form.events %}
+          <div class="form-check">{{ choice.tag }}<label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
+        {% endfor %}
+        <div class="form-text">{{ form.events.help_text }}</div>
+        {{ form.events.errors }}
+      </fieldset>
+      <div class="form-check mb-3">
+        {{ form.active }}<label class="form-check-label" for="{{ form.active.id_for_label }}">Active</label>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">{% if webhook %}Save{% else %}Create webhook{% endif %}</button>
+      </div>
+    </form>
+  </div>
+  {% if webhook %}
+    <div class="col-lg-5">
+      <div class="card p-3 mb-3">
+        <h2 class="h6">Signing secret</h2>
+        <p class="small text-muted mb-2">
+          Every request carries <code>X-IP-Signature</code>, an HMAC-SHA256 of
+          <code>timestamp + "." + body</code> keyed by this secret.
+        </p>
+        <pre class="small mb-2"><code>{{ webhook.secret }}</code></pre>
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'integrations:webhook_test' webhook.pk %}">
+            {% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">Send test event</button>
+          </form>
+          <form method="post" action="{% url 'integrations:webhook_rotate' webhook.pk %}"
+                onsubmit="return confirm('Rotate the secret? Existing receivers will reject deliveries until updated.')">
+            {% csrf_token %}<button class="btn btn-sm btn-outline-warning" type="submit">Rotate</button>
+          </form>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header py-2 small fw-semibold">Recent deliveries</div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Event</th><th>Status</th><th>Attempts</th><th>Code</th><th>Created</th><th>Detail</th><th></th></tr></thead>
+            <tbody>{% include "integrations/_delivery_rows.html" %}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

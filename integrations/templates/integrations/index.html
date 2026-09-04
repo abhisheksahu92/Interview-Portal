@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Integrations · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Integrations</h1>
+    <p>Send hiring events to your own systems, connect an HRMS, and manage API keys.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-primary btn-sm" href="{% url 'integrations:webhook_create' %}">New webhook</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% include "integrations/_nav.html" %}
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-4"><div class="card p-3"><div class="text-muted small">Webhooks</div><div class="h4 mb-0">{{ webhooks|length }}</div></div></div>
+  <div class="col-sm-4"><div class="card p-3"><div class="text-muted small">Pending deliveries</div><div class="h4 mb-0">{{ pending_count }}</div></div></div>
+  <div class="col-sm-4"><div class="card p-3"><div class="text-muted small">Exhausted</div><div class="h4 mb-0">{{ failed_count }}</div></div></div>
+</div>
+
+<div class="card mb-4">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Name</th><th>Endpoint</th><th>Events</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for hook in webhooks %}
+          <tr>
+            <td><a href="{% url 'integrations:webhook_edit' hook.pk %}">{{ hook.name }}</a></td>
+            <td class="small text-truncate" style="max-width:20rem"><code>{{ hook.url }}</code></td>
+            <td class="small">{% for label in hook.event_labels %}<span class="badge text-bg-light">{{ label }}</span> {% endfor %}</td>
+            <td>{% if hook.active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Paused</span>{% endif %}</td>
+            <td class="text-end">
+              <form method="post" action="{% url 'integrations:webhook_test' hook.pk %}" class="d-inline">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Send test event</button>
+              </form>
+              <form method="post" action="{% url 'integrations:webhook_delete' hook.pk %}" class="d-inline"
+                    onsubmit="return confirm('Delete {{ hook.name|escapejs }}?')">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted small">
+            No webhooks yet. <a href="{% url 'integrations:webhook_create' %}">Add one</a> to start receiving events.
+          </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<h2 class="h6">Recent deliveries</h2>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Event</th><th>Webhook</th><th>Status</th><th>Attempts</th><th>Code</th><th>Created</th><th>Detail</th><th></th></tr></thead>
+      <tbody>{% include "integrations/_delivery_rows.html" with deliveries=recent_deliveries show_webhook=1 %}</tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,10 +1,14 @@
 """Web UI views: landing, recruiter dashboard, interviewer queue, candidate portal."""
 
+import mimetypes
+import os
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Avg, Count, Max, Q
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -19,6 +23,7 @@ from jobs.models import (
     Job,
     PipelineStage,
     Skill,
+    StageReview,
 )
 from jobs.services import (
     advance_application,
@@ -927,3 +932,319 @@ def job_apply(request, pk):
     else:
         messages.info(request, "You have already applied to this job.")
     return redirect("web:candidate_home")
+
+
+# --- recruiter candidate profile -----------------------------------------
+
+
+def _candidate_applications(company, profile):
+    """Every application this candidate has to ``company``'s jobs.
+
+    This is the whole tenant boundary of the profile page: a candidate with no
+    application here is simply not visible (404), however real their profile is
+    to another tenant.
+    """
+    return (
+        Application.objects.filter(job__company=company, candidate=profile)
+        .select_related("job", "current_stage")
+        .prefetch_related("job__stages", "reviews__reviewer", "reviews__stage")
+        .order_by("-created_at")
+    )
+
+
+def _interviewer_may_see(user, company, applications):
+    """True when an interviewer has a stake in one of these applications.
+
+    Interviewers get read-only access to the candidates they were actually
+    asked about: someone they reviewed, or someone they are on an interview
+    for. Everyone else on the interviewer role gets a 403.
+    """
+    if StageReview.objects.filter(
+        application__in=applications, reviewer=user
+    ).exists():
+        return True
+    from billing.entitlements import has_feature
+
+    if has_feature(company, "scheduling"):
+        from scheduling.models import Interview
+
+        return Interview.objects.filter(
+            application__in=applications, interviewers=user
+        ).exists()
+    return False
+
+
+def _candidate_page_access(request, pk):
+    """(company, profile, applications, read_only) for the profile page, or raise.
+
+    Raises ``Http404`` when the profile has nothing to do with this tenant and
+    ``PermissionDenied`` when the viewer's role does not reach it.
+    """
+    company = _require_member(request)
+    profile = get_object_or_404(
+        CandidateProfile.objects.select_related("user").prefetch_related("skills"),
+        pk=pk,
+    )
+    applications = _candidate_applications(company, profile)
+    if not applications.exists():
+        raise Http404("No such candidate in this workspace.")
+    role = request.user.role_in(company)
+    if role in STAFF_ROLES:
+        return company, profile, applications, False
+    if role == Membership.INTERVIEWER and _interviewer_may_see(
+        request.user, company, applications
+    ):
+        return company, profile, applications, True
+    raise PermissionDenied("You do not have access to this candidate.")
+
+
+def _stage_steps(application):
+    """The job's stages plus a done/current flag, for the stepper."""
+    current_order = (
+        application.current_stage.order if application.current_stage else 0
+    )
+    steps = []
+    for stage in application.job.stages.all():
+        steps.append(
+            {
+                "stage": stage,
+                "is_current": application.current_stage_id == stage.pk,
+                "is_done": stage.order < current_order
+                or application.status == Application.HIRED,
+            }
+        )
+    return steps
+
+
+def _candidate_attempts(applications):
+    from assessments.models import Attempt
+
+    return list(
+        Attempt.objects.filter(application__in=applications)
+        .select_related("assessment", "application__job")
+        .order_by("-started_at")
+    )
+
+
+def _candidate_interviews(company, applications):
+    from billing.entitlements import has_feature
+
+    if not has_feature(company, "scheduling"):
+        return None
+    from scheduling.models import Interview
+
+    return list(
+        Interview.objects.filter(application__in=applications)
+        .select_related("stage", "application__job")
+        .prefetch_related("interviewers")
+        .order_by("-scheduled_start")
+    )
+
+
+def _candidate_offers(company, applications):
+    from billing.entitlements import has_feature
+
+    if not has_feature(company, "offers"):
+        return None
+    from offers.models import Offer
+
+    return list(
+        Offer.objects.filter(application__in=applications)
+        .select_related("application__job")
+        .order_by("-created_at")
+    )
+
+
+def _candidate_submissions(company, applications):
+    from billing.entitlements import has_feature
+
+    if not has_feature(company, "client_portal"):
+        return None
+    from clients.models import Submission
+
+    return list(
+        Submission.objects.filter(application__in=applications)
+        .select_related("client", "application__job")
+        .order_by("-created_at")
+    )
+
+
+def _candidate_video_invites(company, applications):
+    from billing.entitlements import has_feature
+
+    if not has_feature(company, "video"):
+        return None
+    from video.models import VideoInvite
+
+    return list(
+        VideoInvite.objects.filter(application__in=applications)
+        .select_related("screen", "application__job")
+        .order_by("-created_at")
+    )
+
+
+def _talent_profile_for(company, profile):
+    from talent.models import TalentProfile
+
+    return (
+        TalentProfile.objects.filter(company=company, linked_candidate=profile)
+        .prefetch_related("skills")
+        .first()
+    )
+
+
+def _timeline(applications, attempts, interviews, offers, submissions, invites):
+    """One time-ordered stream (newest first) of everything on this candidate."""
+    events = []
+
+    def add(when, kind, label, detail="", icon="bi-dot"):
+        if when is None:
+            return
+        events.append(
+            {"when": when, "kind": kind, "label": label, "detail": detail, "icon": icon}
+        )
+
+    for application in applications:
+        add(
+            application.created_at,
+            "application",
+            f"Applied to {application.job.title}",
+            application.get_status_display(),
+            "bi-send",
+        )
+        for review in application.reviews.all():
+            add(
+                review.created_at,
+                "review",
+                f"{review.stage.name}: {review.get_decision_display()}",
+                f"by {review.reviewer.email}",
+                "bi-chat-left-text",
+            )
+    for attempt in attempts:
+        add(
+            attempt.submitted_at or attempt.started_at,
+            "attempt",
+            f"Assessment: {attempt.assessment.title}",
+            "" if attempt.score_percent is None else f"{attempt.score_percent}%",
+            "bi-clipboard-check",
+        )
+    for interview in interviews or []:
+        add(
+            interview.scheduled_start or interview.created_at,
+            "interview",
+            f"Interview · {interview.get_status_display()}",
+            interview.stage.name if interview.stage else "",
+            "bi-calendar2-check",
+        )
+    for offer in offers or []:
+        add(
+            offer.sent_at or offer.created_at,
+            "offer",
+            f"Offer {offer.get_status_display()}",
+            offer.application.job.title,
+            "bi-file-earmark-text",
+        )
+    for submission in submissions or []:
+        add(
+            submission.created_at,
+            "submission",
+            f"Submitted to {submission.client.name}",
+            submission.get_status_display(),
+            "bi-briefcase",
+        )
+    for invite in invites or []:
+        add(
+            invite.created_at,
+            "video",
+            f"Video screen · {invite.get_status_display()}",
+            invite.screen.title if invite.screen else "",
+            "bi-camera-video",
+        )
+    events.sort(key=lambda e: e["when"], reverse=True)
+    return events
+
+
+@login_required
+def candidate_detail(request, pk):
+    """Recruiter-facing candidate profile: everything this tenant knows.
+
+    Interviewers reach it read-only for candidates they reviewed or are
+    scheduled with; every paid-feature block is skipped entirely (no query at
+    all) when the tenant's plan does not include it.
+    """
+    company, profile, applications, read_only = _candidate_page_access(request, pk)
+    applications = list(applications)
+    talent_profile = _talent_profile_for(company, profile)
+    note_form = None
+    if talent_profile is not None and not read_only:
+        from talent.forms import NoteForm
+
+        note_form = NoteForm(instance=talent_profile)
+        if request.method == "POST":
+            note_form = NoteForm(request.POST, instance=talent_profile)
+            if note_form.is_valid():
+                note_form.save()
+                messages.success(request, "Notes saved.")
+                return redirect("web:candidate_detail", pk=profile.pk)
+    elif request.method == "POST":
+        raise PermissionDenied("Notes cannot be edited here.")
+
+    attempts = _candidate_attempts(applications)
+    interviews = _candidate_interviews(company, applications)
+    offers = _candidate_offers(company, applications)
+    submissions = _candidate_submissions(company, applications)
+    invites = _candidate_video_invites(company, applications)
+    rows = [
+        {
+            "application": application,
+            "steps": _stage_steps(application),
+            "reviews": list(application.reviews.all()),
+        }
+        for application in applications
+    ]
+    return render(
+        request,
+        "web/candidate_detail.html",
+        {
+            "company": company,
+            "profile": profile,
+            "candidate_user": profile.user,
+            "rows": rows,
+            "read_only": read_only,
+            "attempts": attempts,
+            "interviews": interviews,
+            "offers": offers,
+            "submissions": submissions,
+            "video_invites": invites,
+            "talent_profile": talent_profile,
+            "note_form": note_form,
+            "timeline": _timeline(
+                applications, attempts, interviews, offers, submissions, invites
+            ),
+        },
+    )
+
+
+@login_required
+def candidate_resume(request, pk):
+    """Stream a candidate's résumé through the same permission check as the page.
+
+    The file is served by this view rather than linked at its ``/media`` URL so
+    that a résumé is never readable by anyone who happens to guess the path.
+    """
+    _company, profile, _applications, _read_only = _candidate_page_access(request, pk)
+    resume = profile.resume
+    if not resume:
+        raise Http404("No résumé on file for this candidate.")
+    content_type = mimetypes.guess_type(resume.name)[0] or "application/octet-stream"
+    try:
+        handle = resume.open("rb")
+    except (FileNotFoundError, OSError) as exc:  # storage lost the file
+        raise Http404("Résumé file is unavailable.") from exc
+    extension = os.path.splitext(resume.name)[1] or ".pdf"
+    return FileResponse(
+        handle,
+        as_attachment=True,
+        filename=f"resume-{profile.pk}{extension}",
+        content_type=content_type,
+    )

@@ -12,6 +12,11 @@
   <div class="d-flex gap-2">
     <a class="btn btn-outline-secondary" href="{% url 'talent:index' %}">Back to pool</a>
     <a class="btn btn-outline-secondary" href="{% url 'talent:profile_edit' profile.pk %}">Edit</a>
+    {% if profile.linked_candidate_id %}
+      <a class="btn btn-outline-secondary" href="{% url 'web:candidate_detail' profile.linked_candidate_id %}">
+        <i class="bi bi-person-badge" aria-hidden="true"></i> Candidate profile
+      </a>
+    {% endif %}
     {% if profile.resume %}
       <a class="btn btn-outline-primary" href="{% url 'talent:profile_resume' profile.pk %}" target="_blank" rel="noopener">
         <i class="bi bi-file-earmark-text" aria-hidden="true"></i> View resume

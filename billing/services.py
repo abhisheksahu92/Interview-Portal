@@ -68,6 +68,7 @@ PLAN_SPECS = {
             "marketplace": True,
             "white_label": True,
             "ai_extraction": True,
+            "integrations": True,
         },
     },
 }

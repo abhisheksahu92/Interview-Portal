@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Connectors · Integrations{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Connectors</h1>
+    <p>Push new hires straight into your HRMS, and start background checks from the pipeline.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% include "integrations/_nav.html" %}
+<div class="row g-3 mb-4">
+  {% for row in rows %}
+    <div class="col-md-6">
+      <div class="card h-100 p-3">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <h2 class="h6 mb-1">{{ row.label }}</h2>
+          {% if row.config.active and row.configured %}
+            <span class="badge text-bg-success">Connected</span>
+          {% elif row.configured %}
+            <span class="badge text-bg-secondary">Disabled</span>
+          {% else %}
+            <span class="badge text-bg-light">Not configured</span>
+          {% endif %}
+        </div>
+        <p class="small text-muted mb-3">
+          {% if row.is_hrms %}Receives a new-employee record when an application is marked hired.
+          {% else %}Starts a verification case for a candidate.{% endif %}
+        </p>
+        <div class="mt-auto">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'integrations:connector_edit' row.config.kind %}">Settings</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+<h2 class="h6">Recent connector activity</h2>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Connector</th><th>Status</th><th>Detail</th><th>When</th></tr></thead>
+      <tbody>
+        {% for run in runs %}
+          <tr>
+            <td class="small">{{ run.get_kind_display }}</td>
+            <td>
+              {% if run.status == "OK" %}<span class="badge text-bg-success">Ok</span>
+              {% elif run.status == "ERROR" %}<span class="badge text-bg-danger">Error</span>
+              {% else %}<span class="badge text-bg-secondary">Skipped</span>{% endif %}
+            </td>
+            <td class="small">{{ run.detail|default:"—" }}</td>
+            <td class="small text-muted">{{ run.created_at|date:"d M Y H:i" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="text-muted small">Nothing yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
