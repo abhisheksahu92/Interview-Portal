@@ -2098,6 +2098,7 @@ a.ip-joinchip:hover { background: var(--ip-rail-raised); color: var(--ip-rail-fg
 .ip-meter__name { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
 .ip-meter__value { font-variant-numeric: tabular-nums; color: var(--ip-ink-500); white-space: nowrap; }
 .ip-meter {
+  display: block; width: 100%;
   height: 6px;
   background: var(--ip-paper-300);
   border-radius: var(--ip-r-sm);

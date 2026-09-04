@@ -43,3 +43,11 @@ def feature_enabled(context, name, company=None):
 def has_feature(company, name):
     """Filter form: ``{% if company|has_feature:"offers" %}``."""
     return _has_feature(company, name)
+
+
+@register.filter(name="feature_label")
+def feature_label_filter(name):
+    """``{{ "careers_page"|feature_label }}`` -> ``Careers page``."""
+    from billing.entitlements import feature_label
+
+    return feature_label(name)

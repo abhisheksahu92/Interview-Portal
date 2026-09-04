@@ -40,6 +40,29 @@ FEATURES = (
     "integrations",
 )
 
+#: Human-readable names for the flags above, for plan cards and gate messages.
+FEATURE_LABELS = {
+    "scheduling": "Interview scheduling",
+    "careers_page": "Careers page",
+    "client_portal": "Client portal",
+    "whatsapp": "WhatsApp updates",
+    "video": "Video screening",
+    "api": "REST API access",
+    "talent_pool_search": "Verified talent pool",
+    "ai_extraction": "AI résumé extraction",
+    "offers": "Offer letters and e-sign",
+    "analytics": "Analytics",
+    "marketplace": "Question marketplace",
+    "white_label": "White-label branding",
+    "integrations": "Webhooks and integrations",
+}
+
+
+def feature_label(name):
+    """A human-readable name for a feature flag."""
+    key = str(name or "").strip()
+    return FEATURE_LABELS.get(key, key.replace("_", " ").capitalize())
+
 
 class FeatureNotAvailable(PermissionDenied):
     """The current company's plan does not include the requested feature."""

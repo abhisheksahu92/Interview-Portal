@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load features web_money %}
 {% block title %}Billing — Interview Portal{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -34,7 +35,7 @@
   <div class="ip-bento__tile ip-bento__tile--wide ip-kpi">
     <div class="ip-kpi__label">Subscription</div>
     <div class="ip-kpi__value">
-      {% if plan.price_monthly_inr %}₹{{ plan.price_monthly_inr|floatformat:0 }}{% else %}Free{% endif %}
+      {% if plan.price_monthly_inr %}₹{{ plan.price_monthly_inr|inr }}{% else %}Free{% endif %}
     </div>
     <div class="ip-kpi__trend">
       {% if plan.price_monthly_inr %}per month ({{ subscription.get_interval_display|lower }} billing){% else %}no card required{% endif %}
@@ -111,9 +112,9 @@
         </div>
         <div class="ip-plan__price">
           {% if interval == 'YEARLY' %}
-            ₹{{ p.price_yearly_inr|floatformat:0 }} <span>/ year</span>
+            ₹{{ p.price_yearly_inr|inr }} <span>/ year</span>
           {% else %}
-            ₹{{ p.price_monthly_inr|floatformat:0 }} <span>/ month</span>
+            ₹{{ p.price_monthly_inr|inr }} <span>/ month</span>
           {% endif %}
         </div>
         <ul class="ip-plan__list">
@@ -121,7 +122,7 @@
           <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_seats }} seats</li>
           <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.ai_credits_monthly }} AI credits / month</li>
           {% for name, on in p.features.items %}
-            {% if on %}<li><i class="bi bi-check2" aria-hidden="true"></i> {{ name|cut:"_"|title }}</li>{% endif %}
+            {% if on %}<li><i class="bi bi-check2" aria-hidden="true"></i> {{ name|feature_label }}</li>{% endif %}
           {% endfor %}
         </ul>
         <div class="ip-plan__cta">
@@ -171,7 +172,7 @@
                 <tr>
                   <td class="text-nowrap">{{ inv.number }}</td>
                   <td class="ip-muted text-nowrap">{{ inv.issued_at|date:"j M Y" }}</td>
-                  <td class="text-end">₹{{ inv.total|floatformat:2 }}</td>
+                  <td class="text-end">₹{{ inv.total|inr }}</td>
                   <td class="ip-muted text-nowrap">
                     {% if inv.is_intra_state %}CGST+SGST{% else %}IGST{% endif %} {{ inv.gst_rate|floatformat:0 }}%
                   </td>
@@ -244,7 +245,7 @@
             <tr>
               <td class="text-nowrap">{{ fee.created_at|date:"j M Y" }}</td>
               <td>{{ fee.application.job.title }}</td>
-              <td class="text-end">₹{{ fee.amount|floatformat:2 }}</td>
+              <td class="text-end">₹{{ fee.amount|inr }}</td>
               <td class="ip-muted">{{ fee.get_status_display }}</td>
             </tr>
           {% endfor %}
@@ -265,8 +266,7 @@
       </form>
     {% endif %}
     <p class="ip-muted small mb-0 ms-auto">
-      Payments are processed by
-      {% if provider == 'RAZORPAY' %}Razorpay{% elif provider == 'STRIPE' %}Stripe{% else %}no configured provider{% endif %}.
+      {% if provider == 'RAZORPAY' %}Payments are processed by Razorpay.{% elif provider == 'STRIPE' %}Payments are processed by Stripe.{% else %}No payment provider is connected yet.{% endif %}
     </p>
   </div>
 </div>

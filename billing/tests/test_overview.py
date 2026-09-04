@@ -57,15 +57,16 @@ def test_overview_lists_the_three_tiers_with_inr_prices(client, owner):
     response = client.get(reverse("billing:overview"))
     codes = [p.code for p in response.context["plans"]]
     assert codes == [Plan.STARTER, Plan.GROWTH, Plan.AGENCY]
-    assert b"1499" in response.content
-    assert b"12999" in response.content
+    # Prices render with Indian digit grouping (see web_money.inr).
+    assert b"1,499" in response.content
+    assert b"12,999" in response.content
 
 
 def test_yearly_toggle_switches_the_prices(client, owner):
     client.force_login(owner)
     response = client.get(reverse("billing:overview") + "?interval=YEARLY")
     assert response.context["interval"] == Subscription.YEARLY
-    assert b"129990" in response.content
+    assert b"1,29,990" in response.content
 
 
 def test_overview_shows_the_trial_banner(client, db, trial_company):
