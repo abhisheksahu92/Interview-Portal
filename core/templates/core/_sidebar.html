@@ -52,6 +52,9 @@
         {% url 'offers:index' as ip_href %}
         {% feature_enabled "offers" as ip_ok %}
         {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="offers" label="Offers" icon="bi-file-earmark-check" active_prefix="offers:" %}
+      {% url 'exchange:index' as ip_href %}
+      {% feature_enabled "exchange" as ip_ok %}
+      {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="exchange" label="Exchange" icon="bi-arrow-left-right" active_prefix="exchange:" %}
 
         <li class="ip-nav__label" aria-hidden="true">Grow</li>
         {% url 'careers:index' as ip_href %}
@@ -93,6 +96,9 @@
         {% url 'integrations:index' as ip_href %}
         {% feature_enabled "integrations" as ip_ok %}
         {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="integrations" label="Integrations" icon="bi-plug" active_prefix="integrations:" %}
+      {% url 'contracting:index' as ip_href %}
+      {% feature_enabled "contracting" as ip_ok %}
+      {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="contracting" label="Contracting" icon="bi-briefcase" active_prefix="contracting:" %}
         <li>
           <a class="ip-nav__link {% if vn|slice:":9" == "partners:" %}is-active{% endif %}" href="{% url 'partners:settings' %}">
             <i class="bi bi-palette" aria-hidden="true"></i> Branding

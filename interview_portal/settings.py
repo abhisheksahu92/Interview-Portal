@@ -101,6 +101,8 @@ LOCAL_APPS = [
     "partners",
     "marketplace",
     "integrations",
+    "contracting",
+    "exchange",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
