@@ -1,0 +1,9 @@
+Hello,
+
+{{ contractor_name }} submitted a timesheet for {{ period }}{% if client_name %} on the {{ client_name }} engagement{% endif %}.
+
+Total hours: {{ total_hours }}
+
+Open your portal link to approve or reject it.
+
+— {{ site_name }}

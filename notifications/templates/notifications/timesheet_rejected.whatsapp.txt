@@ -1,0 +1,1 @@
+Your timesheet for {{ period }} was rejected.{% if note %} Note: {{ note }}{% endif %} Please correct and resubmit.

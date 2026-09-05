@@ -1,0 +1,91 @@
+{% extends "base.html" %}{% load web_money %}
+{% block title %}Verification · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Verification</h1>
+    <p>Background checks on your candidates. You are charged only when a candidate consents.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    {% if not is_live %}<span class="ip-badge ip-badge--neutral">Demo provider</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% if margin %}
+  <div class="ip-bento mb-4">
+    <div class="ip-bento__tile ip-kpi">
+      <div class="ip-kpi__label">Billed to this tenant</div>
+      <div class="ip-kpi__value">₹{{ margin.revenue|inr }}</div>
+      <div class="ip-kpi__trend">{{ margin.count }} charged order{{ margin.count|pluralize }}</div>
+    </div>
+    <div class="ip-bento__tile ip-kpi ip-bento__tile--mint">
+      <div class="ip-kpi__label">Platform margin</div>
+      <div class="ip-kpi__value">₹{{ margin.margin|inr }}</div>
+      <div class="ip-kpi__trend">{{ margin.margin_percent|floatformat:1 }}% · <a href="{% url 'bgv:admin_margin' %}">all tenants</a></div>
+    </div>
+  </div>
+{% endif %}
+
+<section class="ip-section ip-section--tight mb-4">
+  <form method="get" class="d-flex flex-wrap gap-2 align-items-end">
+    <div>
+      <label class="form-label small" for="{{ form.status.id_for_label }}">Status</label>
+      {{ form.status }}
+    </div>
+    <button class="btn btn-sm btn-outline-secondary" type="submit">Filter</button>
+  </form>
+</section>
+
+{% if orders %}
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Verification orders</caption>
+      <thead>
+        <tr>
+          <th scope="col">Candidate</th><th scope="col">Role</th><th scope="col">Package</th>
+          <th scope="col" class="text-end">Price</th><th scope="col">Ordered</th><th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td><a href="{% url 'bgv:order_detail' order.pk %}">{{ order.candidate_name }}</a></td>
+            <td class="ip-muted">{{ order.job_title|default:"—" }}</td>
+            <td class="ip-muted">{{ order.package.name|default:"—" }}</td>
+            <td class="text-end ip-num">₹{{ order.price_inr|inr }}</td>
+            <td class="ip-muted text-nowrap">{{ order.ordered_at|date:"d M Y" }}</td>
+            <td><span class="ip-badge ip-badge--{{ order.status_kind }}">{{ order.get_status_display }}</span></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-patch-check"></i></span>
+    <div class="ip-empty__title">No verification orders yet</div>
+    <p class="ip-muted">Order a check from a candidate's application to get started.</p>
+  </div>
+{% endif %}
+
+<section class="ip-section ip-section--flush mt-4">
+  <div class="ip-section__head"><h2 class="h6 mb-0">Packages</h2></div>
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Available verification packages</caption>
+      <thead><tr><th scope="col">Package</th><th scope="col">Checks</th><th scope="col">Turnaround</th><th scope="col" class="text-end">Price</th></tr></thead>
+      <tbody>
+        {% for package in packages %}
+          <tr>
+            <td><strong>{{ package.name }}</strong><br><span class="ip-muted">{{ package.description }}</span></td>
+            <td class="ip-muted">{{ package.check_labels|join:", " }}</td>
+            <td class="ip-muted text-nowrap">{{ package.turnaround_days }} day{{ package.turnaround_days|pluralize }}</td>
+            <td class="text-end ip-num">₹{{ package.price_inr|inr }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

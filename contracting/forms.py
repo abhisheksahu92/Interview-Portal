@@ -162,6 +162,8 @@ class ClientBillingProfileForm(forms.ModelForm):
             field.required = False
             field.widget.attrs.setdefault("class", "form-control")
         self.fields["payment_terms_days"].required = True
+        # Django would title-case this to "Gstin".
+        self.fields["gstin"].label = "GSTIN"
 
     def clean_state_code(self):
         code = (self.cleaned_data.get("state_code") or "").strip()
@@ -176,8 +178,12 @@ class ClientBillingProfileForm(forms.ModelForm):
 class PeriodForm(forms.Form):
     """A month picker shared by the invoice run and the payroll run."""
 
+    # ``type="month"`` only accepts a "YYYY-MM" value; rendering the default
+    # "YYYY-MM-DD" leaves the picker empty and the form unsubmittable.
     month = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "month", "class": "form-control"}),
+        widget=forms.DateInput(
+            attrs={"type": "month", "class": "form-control"}, format="%Y-%m"
+        ),
         input_formats=["%Y-%m-%d", "%Y-%m"],
     )
 

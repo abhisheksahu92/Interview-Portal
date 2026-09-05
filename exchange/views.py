@@ -15,6 +15,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from billing.entitlements import require_feature
 from core.models import Membership
 from core.permissions import role_required
 from exchange import services
@@ -102,16 +103,15 @@ def index(request):
 
 
 @role_required(*STAFF_ROLES)
+@require_feature(services.FEATURE)
 def publish(request):
-    """Publish a job to the exchange (paid feature)."""
+    """Publish a job to the exchange (paid feature).
+
+    ``require_feature`` raises ``FeatureNotAvailable``, so an un-entitled
+    company gets the plan-aware 403 page (with an Upgrade link) rather than a
+    bare "access denied".
+    """
     company = _company(request)
-    if not services.can_publish(company):
-        return render(
-            request,
-            "exchange/publish_locked.html",
-            {"company": company},
-            status=403,
-        )
     initial = {}
     job_id = request.GET.get("job")
     if job_id and str(job_id).isdigit():
@@ -300,6 +300,11 @@ def submission_reveal(request, pk):
 def submission_hire(request, pk):
     company = _company(request)
     submission = _own_submission(request, pk)
+    if not submission.is_revealed:
+        messages.error(
+            request, "Reveal the candidate's details before recording a placement."
+        )
+        return redirect("exchange:requirement_detail", pk=submission.requirement_id)
     form = HireForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Enter the placement fee that was agreed.")

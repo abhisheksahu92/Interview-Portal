@@ -33,17 +33,21 @@
             <th scope="row" class="fw-normal">
               <label for="hours-{{ day.iso }}">{{ day.date|date:"D d M" }}</label>
             </th>
-            <td style="max-width:9rem">
-              <input class="form-control form-control-sm" type="number" min="0" max="24" step="0.25"
-                     id="hours-{{ day.iso }}" name="hours-{{ day.iso }}" value="{{ day.hours }}"
-                     {% if not timesheet.is_editable %}disabled{% endif %}>
-            </td>
-            <td>
-              <input class="form-control form-control-sm" type="text" maxlength="200"
-                     aria-label="Note for {{ day.date|date:'D d M' }}"
-                     name="note-{{ day.iso }}" value="{{ day.note }}"
-                     {% if not timesheet.is_editable %}disabled{% endif %}>
-            </td>
+            {% if timesheet.is_editable %}
+              <td style="max-width:9rem">
+                <input class="form-control form-control-sm" type="number" min="0" max="24" step="0.25"
+                       id="hours-{{ day.iso }}" name="hours-{{ day.iso }}" value="{{ day.hours }}">
+              </td>
+              <td>
+                <input class="form-control form-control-sm" type="text" maxlength="200"
+                       aria-label="Note for {{ day.date|date:'D d M' }}"
+                       name="note-{{ day.iso }}" value="{{ day.note }}">
+              </td>
+            {% else %}
+              {# Submitted and later: read it as a record, not as dead form controls. #}
+              <td class="ip-num" style="max-width:9rem">{% if day.hours %}{{ day.hours }}{% else %}—{% endif %}</td>
+              <td>{{ day.note|default:"" }}</td>
+            {% endif %}
           </tr>
           {% endfor %}
         </tbody>

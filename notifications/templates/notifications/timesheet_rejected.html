@@ -1,0 +1,8 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p>Hello {{ contractor_name }},</p>
+  <p>Your timesheet for <strong>{{ period }}</strong> was sent back for changes.</p>
+  {% if note %}<p style="padding:10px 14px;background:#f3f4f6;border-radius:6px">{{ note }}</p>{% endif %}
+  <p>Open your timesheet link to correct and resubmit it.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">&mdash; {{ site_name }}</p>
+</div>

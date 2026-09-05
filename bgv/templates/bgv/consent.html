@@ -1,0 +1,57 @@
+{% extends "base.html" %}{% load web_money %}
+{% block title %}Background check consent · {{ order.company.name }}{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-standalone">
+  <div class="ip-page-head">
+    <div>
+      <p class="ip-eyebrow mb-2">Background check</p>
+      <h1>{{ order.company.name }} would like to verify your details</h1>
+      <p>
+        {% if order.job_title %}For the {{ order.job_title }} role. {% endif %}
+        Nothing happens until you authorise it below.
+      </p>
+    </div>
+  </div>
+
+  {% if already %}
+    <div class="alert alert-success" role="status">
+      <strong>Thank you — your consent is recorded.</strong>
+      <div>Authorised {{ order.consent_given_at|date:"d M Y, H:i" }} as “{{ order.consent_name }}”. You can close this page.</div>
+    </div>
+  {% endif %}
+
+  <section class="ip-card mb-4">
+    <h2 class="h6">What will be checked</h2>
+    <ul class="mb-2">
+      {% for row in order.result_rows %}<li>{{ row.label }}</li>{% endfor %}
+    </ul>
+    <p class="ip-muted mb-0">
+      Carried out by {{ order.company.name }}'s verification partner, usually within
+      {{ order.package.turnaround_days|default:5 }} working days. The result is shared with
+      {{ order.company.name }} only. You may decline by simply closing this page.
+    </p>
+  </section>
+
+  {% if not already %}
+    <form method="post" class="ip-card">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="mb-3 form-check">
+        <input type="checkbox" name="agree" id="id_agree" class="form-check-input"
+               {% if form.agree.value %}checked{% endif %} required>
+        <label class="form-check-label" for="id_agree">{{ form.agree.label }}</label>
+        {% if form.agree.errors %}<div class="invalid-feedback d-block">{{ form.agree.errors|striptags }}</div>{% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="id_full_name">{{ form.full_name.label }}</label>
+        <input type="text" name="full_name" id="id_full_name" class="form-control"
+               value="{{ form.full_name.value|default:'' }}" autocomplete="name" required>
+        {% if form.full_name.errors %}<div class="invalid-feedback d-block">{{ form.full_name.errors|striptags }}</div>{% endif %}
+        <div class="form-text">Typing your name here is your electronic signature. We record the time and your IP address.</div>
+      </div>
+      <button class="btn btn-primary" type="submit">Give consent</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -107,7 +107,7 @@ def test_publish_is_gated_for_a_free_plan_but_the_feed_is_not(client, responder_
     locked = client.get(reverse("exchange:publish"))
 
     assert locked.status_code == 403
-    assert b"free on every plan" in locked.content
+    assert b"Not included in your plan" in locked.content  # plan-aware 403, not a role error
     assert client.get(reverse("exchange:index")).status_code == 200
 
 
@@ -199,6 +199,8 @@ def test_hire_records_a_deal_and_the_ledger_shows_both_shares(
     client, requester_owner, responder_owner, submission
 ):
     client.force_login(requester_owner)
+    # A placement can only be recorded once the candidate has been revealed.
+    client.post(reverse("exchange:submission_reveal", args=[submission.pk]))
     client.post(
         reverse("exchange:submission_hire", args=[submission.pk]),
         {"placement_fee_inr": "200000"},
@@ -210,7 +212,7 @@ def test_hire_records_a_deal_and_the_ledger_shows_both_shares(
         client.force_login(user)
         response = client.get(reverse("exchange:deals"))
         assert response.status_code == 200
-        assert b"88000.00" in response.content
+        assert b"88,000" in response.content  # Indian-grouped via the inr filter
 
 
 def test_deals_of_other_companies_are_invisible(client, outsider_owner, requester, submission):

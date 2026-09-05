@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}My submissions · Exchange{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -27,7 +28,7 @@
             <td>{{ row.submission.requirement.company.name }}</td>
             <td><span class="ip-badge ip-badge--{% if row.submission.status == 'HIRED' %}success{% elif row.submission.status == 'REJECTED' %}danger{% else %}neutral{% endif %}">{{ row.submission.get_status_display }}</span></td>
             <td>{{ row.submission.revealed_at|date:"d M Y"|default:"Not yet" }}</td>
-            <td class="ip-num">{% if row.deal %}₹{{ row.deal.responder_share }}{% else %}—{% endif %}</td>
+            <td class="ip-num">{% if row.deal %}₹{{ row.deal.responder_share|inr }}{% else %}—{% endif %}</td>
           </tr>
         {% empty %}
           <tr><td colspan="6"><div class="ip-empty ip-empty--sm"><div class="ip-empty__title">Nothing submitted yet</div></div></td></tr>

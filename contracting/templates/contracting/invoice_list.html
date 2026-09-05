@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}Client invoices · Interview Portal{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
   <div>
     <h1>Client invoices</h1>
-    <p>₹{{ receivables.open|floatformat:0 }} outstanding{% if dso is not None %} · DSO {{ dso }} days{% endif %}.</p>
+    <p>₹{{ receivables.open|floatformat:0|inr }} outstanding{% if dso is not None %} · DSO {{ dso }} days{% endif %}.</p>
   </div>
 </div>
 {% endblock %}
@@ -34,8 +35,8 @@
           <td><a href="{% url 'contracting:invoice_detail' invoice.pk %}">{{ invoice.number }}</a></td>
           <td class="ip-muted">{{ invoice.client.name }}</td>
           <td class="ip-muted text-nowrap">{{ invoice.period_start|date:"d M" }} – {{ invoice.period_end|date:"d M Y" }}</td>
-          <td class="text-end ip-num">₹{{ invoice.subtotal|floatformat:2 }}</td>
-          <td class="text-end ip-num">₹{{ invoice.total|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ invoice.subtotal|floatformat:2|inr }}</td>
+          <td class="text-end ip-num">₹{{ invoice.total|floatformat:2|inr }}</td>
           <td class="ip-muted text-nowrap">{{ invoice.due_at|date:"d M Y"|default:"—" }}</td>
           <td><span class="ip-badge ip-badge--{{ invoice.status_kind }}">{{ invoice.get_status_display }}</span></td>
         </tr>

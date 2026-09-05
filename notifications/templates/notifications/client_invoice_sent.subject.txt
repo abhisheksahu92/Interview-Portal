@@ -1,0 +1,1 @@
+Invoice {{ invoice_number }}{% if client_name %} for {{ client_name }}{% endif %}

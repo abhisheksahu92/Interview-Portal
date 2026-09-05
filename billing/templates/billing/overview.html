@@ -98,8 +98,8 @@
               <tr>
                 <td>{{ line.label }}</td>
                 <td class="text-end ip-muted">{{ line.qty }}</td>
-                <td class="text-end ip-muted">₹{{ line.unit_inr }}</td>
-                <td class="text-end">₹{{ line.total_inr }}</td>
+                <td class="text-end ip-muted">₹{{ line.unit_inr|inr }}</td>
+                <td class="text-end">₹{{ line.total_inr|inr }}</td>
               </tr>
             {% endfor %}
           </tbody>

@@ -1,0 +1,1 @@
+Your timesheet for {{ period }} was approved.{% if note %} Note: {{ note }}{% endif %}

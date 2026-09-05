@@ -33,7 +33,9 @@ def _on_plan(company, code, **fields):
         defaults={
             "plan": plan,
             "status": Subscription.ACTIVE,
-            "trial_ends_at": timezone.now() - timedelta(days=1),
+            # Trial ended well before this billing period, so the plan line is
+            # a full month (proration only applies in the month a trial ends).
+            "trial_ends_at": timezone.now() - timedelta(days=60),
             **fields,
         },
     )
@@ -213,7 +215,8 @@ def test_ai_overage_is_billed_on_the_monthly_invoice(company, owner):
     now = timezone.now()
     invoice = invoicing.build_monthly_invoice(company, now.year, now.month)
     line = _lines(invoice)["AI_OVERAGE"]
-    assert line["qty"] == 1  # a single ledger charge for the period
+    assert line["qty"] == 10  # billed as units × unit price, not one lump sum
+    assert Decimal(line["unit_inr"]) == Decimal("5.00")
     assert Decimal(line["total_inr"]) == Decimal("50.00")  # 10 x ₹5
 
 
@@ -393,3 +396,21 @@ def test_exchange_is_agency_only(company):
     for code in (Plan.GROWTH, Plan.STARTER):
         _on_plan(company, code)
         assert has_feature(company, "exchange") is False
+
+
+def test_subscription_is_prorated_in_the_month_the_trial_ends(company, owner):
+    """A trial ending on the 1st bills (days_in_month - 1)/days_in_month of the plan."""
+    import calendar
+    from decimal import ROUND_HALF_UP
+
+    now = timezone.now()
+    trial_end = now.replace(day=1, hour=12, minute=0, second=0, microsecond=0)
+    _on_plan(company, Plan.GROWTH, trial_ends_at=trial_end)
+    invoice = invoicing.build_monthly_invoice(company, now.year, now.month)
+    line = _lines(invoice)["SUBSCRIPTION"]
+    days = calendar.monthrange(now.year, now.month)[1]
+    expected = (Decimal("4999") * Decimal(days - 1) / Decimal(days)).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_UP
+    )
+    assert Decimal(line["total_inr"]) == expected
+    assert "after trial" in line["label"]

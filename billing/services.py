@@ -60,6 +60,7 @@ PLAN_SPECS = {
             "whatsapp": True,
             "ai_extraction": True,
             "contracting": True,
+            "bgv": True,
         },
     },
     Plan.AGENCY: {
@@ -91,6 +92,7 @@ PLAN_SPECS = {
             "integrations": True,
             "contracting": True,
             "exchange": True,
+            "bgv": True,
         },
     },
 }

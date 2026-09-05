@@ -1,0 +1,7 @@
+Hello,
+
+Your candidate {{ reference }} was hired for {{ requirement }}.
+
+Your share: INR {{ share }}
+
+— {{ site_name }}

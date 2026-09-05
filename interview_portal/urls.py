@@ -33,6 +33,8 @@ urlpatterns = [
     path("contracting/", include("contracting.urls")),
     path("exchange/", include("exchange.urls")),
     path("integrations/", include("integrations.urls")),
+    path("bgv/", include("bgv.urls")),
+    path("benchmarks/", include("benchmarks.urls")),
     path("robots.txt", core_views.robots_txt, name="robots_txt"),
     path("sitemap.xml", core_views.sitemap_xml, name="sitemap_xml"),
     path("", include("web.urls")),

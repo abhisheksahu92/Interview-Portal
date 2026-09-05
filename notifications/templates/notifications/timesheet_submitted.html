@@ -1,0 +1,8 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p>Hello,</p>
+  <p><strong>{{ contractor_name }}</strong> submitted a timesheet for <strong>{{ period }}</strong>{% if client_name %} on the {{ client_name }} engagement{% endif %}.</p>
+  <p style="padding:10px 14px;background:#f3f4f6;border-radius:6px;margin:0 0 16px">Total hours: <strong>{{ total_hours }}</strong></p>
+  <p>Open your portal link to approve or reject it.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">&mdash; {{ site_name }}</p>
+</div>

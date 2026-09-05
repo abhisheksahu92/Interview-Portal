@@ -1,0 +1,7 @@
+Hello,
+
+{{ partner }} submitted a candidate ({{ reference }}) for {{ requirement }}.
+
+Contact details stay hidden until you reveal them.
+
+— {{ site_name }}

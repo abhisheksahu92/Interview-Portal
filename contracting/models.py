@@ -466,6 +466,9 @@ class ClientInvoice(models.Model):
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     gstin = models.CharField(max_length=20, blank=True)
     place_of_supply = models.CharField(max_length=2, blank=True)
+    #: Set when the tax split had to be guessed (the tenant's own GST state is
+    #: unknown, so IGST was assumed). Shown as a banner on the invoice page.
+    gst_basis_note = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default=DRAFT)
     due_at = models.DateField(null=True, blank=True)
     pdf = models.FileField(upload_to="contracting/invoices/", blank=True)

@@ -52,6 +52,9 @@
         {% url 'offers:index' as ip_href %}
         {% feature_enabled "offers" as ip_ok %}
         {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="offers" label="Offers" icon="bi-file-earmark-check" active_prefix="offers:" %}
+        {% url 'bgv:index' as ip_href %}
+        {% feature_enabled "bgv" as ip_ok %}
+        {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="bgv" label="Verification" icon="bi-patch-check" active_prefix="bgv:" %}
       {% url 'exchange:index' as ip_href %}
       {% feature_enabled "exchange" as ip_ok %}
       {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="exchange" label="Exchange" icon="bi-arrow-left-right" active_prefix="exchange:" %}
@@ -63,6 +66,9 @@
         {% url 'analytics:index' as ip_href %}
         {% feature_enabled "analytics" as ip_ok %}
         {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="analytics" label="Analytics" icon="bi-graph-up-arrow" active_prefix="analytics:" %}
+        {% url 'benchmarks:index' as ip_href %}
+        {% feature_enabled "analytics" as ip_ok %}
+        {% include "core/_nav_item.html" with href=ip_href enabled=ip_ok feature="analytics" label="Benchmarks" icon="bi-bar-chart-steps" active_prefix="benchmarks:" %}
         <li>
           <a class="ip-nav__link {% if vn|slice:":12" == "marketplace:" %}is-active{% endif %}" href="{% url 'marketplace:index' %}">
             <i class="bi bi-bag" aria-hidden="true"></i> Marketplace

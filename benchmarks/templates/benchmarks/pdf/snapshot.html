@@ -1,0 +1,95 @@
+{% comment %}xhtml2pdf renders this: plain tables, no external CSS, no web fonts.{% endcomment %}
+{% load web_money %}
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 10.5pt; color: #111; }
+    h1 { font-size: 16pt; margin: 0 0 4px; }
+    h2 { font-size: 12pt; margin: 20px 0 4px; }
+    .muted { color: #666; font-size: 9pt; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border-bottom: 1px solid #ddd; padding: 6px 4px; text-align: left; }
+    td.num, th.num { text-align: right; }
+    .foot { margin-top: 24px; font-size: 8.5pt; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Quarterly Compensation Snapshot</h1>
+  <p class="muted">
+    {{ quarter }} &middot; prepared for {{ company.name }} by {{ brand.name }}
+    &middot; generated {{ generated_at|date:"j M Y" }}
+  </p>
+  <p class="muted">
+    Annualised accepted offers from the last {{ period_months }} months.
+    {% if filters.skill %}Skill: {{ filters.skill }}. {% endif %}
+    {% if filters.city %}City: {{ filters.city }}. {% endif %}
+    {% if filters.experience_band %}Experience: {{ filters.experience_band }} years. {% endif %}
+    Bands with fewer than {{ min_n }} offers are withheld.
+  </p>
+
+  <h2>Market overall</h2>
+  <table>
+    <thead><tr><th class="num">Offers</th><th class="num">p25</th><th class="num">Median</th><th class="num">p75</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="num">{{ overall.n }}</td>
+        <td class="num">{% if overall.p25 %}{{ overall.p25|inr }}{% else %}—{% endif %}</td>
+        <td class="num">{% if overall.median %}{{ overall.median|inr }}{% else %}—{% endif %}</td>
+        <td class="num">{% if overall.p75 %}{{ overall.p75|inr }}{% else %}—{% endif %}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>By skill</h2>
+  <table>
+    <thead><tr><th>Skill</th><th class="num">Offers</th><th class="num">p25</th><th class="num">Median</th><th class="num">p75</th></tr></thead>
+    <tbody>
+      {% for row in bands %}
+        <tr>
+          <td>{{ row.skill }}</td>
+          <td class="num">{{ row.n }}</td>
+          {% if row.suppressed %}
+            <td class="num" colspan="3">withheld</td>
+          {% else %}
+            <td class="num">{{ row.p25|inr }}</td>
+            <td class="num">{{ row.median|inr }}</td>
+            <td class="num">{{ row.p75|inr }}</td>
+          {% endif %}
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">No accepted offers in this window.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Your offers vs market</h2>
+  <table>
+    <thead><tr><th>Skill</th><th class="num">Your offers</th><th class="num">Your median</th>
+      <th class="num">Market median</th><th class="num">Difference</th></tr></thead>
+    <tbody>
+      {% for row in comparison %}
+        <tr>
+          <td>{{ row.skill }}</td>
+          <td class="num">{{ row.n }}</td>
+          <td class="num">{{ row.median|inr }}</td>
+          {% if row.market_suppressed %}
+            <td class="num" colspan="2">insufficient market data</td>
+          {% else %}
+            <td class="num">{{ row.market_median|inr }}</td>
+            <td class="num">{% if row.delta_percent is not None %}{{ row.delta_percent|floatformat:1 }}%{% else %}—{% endif %}</td>
+          {% endif %}
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">No accepted offers of your own in this window.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="foot">
+    All figures are annualised in INR; monthly quotes are multiplied by twelve. Percentiles use
+    linear interpolation between ranks. Cells computed from fewer than {{ min_n }} offers are
+    withheld to protect the confidentiality of individual employers and candidates.
+  </p>
+</body>
+</html>

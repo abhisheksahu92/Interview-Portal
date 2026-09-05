@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}Payroll {{ run.label }} · Interview Portal{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
   <div>
     <p class="ip-eyebrow mb-2">Payroll</p>
     <h1>{{ run.label }}</h1>
-    <p>{{ run.headcount }} contractor(s) · gross ₹{{ run.gross_total|floatformat:2 }} · net ₹{{ run.net_total|floatformat:2 }}</p>
+    <p>{{ run.headcount }} contractor(s) · gross ₹{{ run.gross_total|floatformat:2|inr }} · net ₹{{ run.net_total|floatformat:2|inr }}</p>
   </div>
   <div class="ip-page-head__actions">
     <a class="btn btn-sm btn-primary" href="{% url 'contracting:payroll_download' run.pk %}">Download CSV</a>
@@ -28,9 +29,9 @@
         <td>{{ row.name }}</td>
         <td class="ip-muted">{{ row.pan|default:"—" }}</td>
         <td class="text-end ip-num">{{ row.days }}</td>
-        <td class="text-end ip-num">₹{{ row.gross }}</td>
-        <td class="text-end ip-num">₹{{ row.tds }}</td>
-        <td class="text-end ip-num"><strong>₹{{ row.net }}</strong></td>
+        <td class="text-end ip-num">₹{{ row.gross|inr }}</td>
+        <td class="text-end ip-num">₹{{ row.tds|inr }}</td>
+        <td class="text-end ip-num"><strong>₹{{ row.net|inr }}</strong></td>
       </tr>
       {% empty %}
       <tr><td colspan="7" class="ip-muted">No approved work in this month.</td></tr>

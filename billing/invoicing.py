@@ -85,16 +85,48 @@ def _q(value):
     return Decimal(value).quantize(TWO, rounding=ROUND_HALF_UP)
 
 
-def gst_split(amount, state_code, rate=Invoice.GST_RATE):
+def company_state_code(company):
+    """The GST state code of ``company`` as a *seller* — "" when unknown.
+
+    Read from the tenant's own ``Subscription.billing_address["state_code"]``,
+    falling back to the first two digits of its GSTIN (which encode the state).
+    """
+    if company is None:
+        return ""
+    subscription = getattr(company, "subscription", None)
+    if subscription is None:
+        from billing.models import Subscription
+
+        subscription = Subscription.objects.filter(company=company).first()
+    if subscription is None:
+        return ""
+    code = str((subscription.billing_address or {}).get("state_code") or "").strip()
+    if code:
+        return code
+    gstin = str(subscription.gstin or "").strip()
+    head = gstin[:2]
+    return head if head.isdigit() else ""
+
+
+def gst_split(amount, state_code, rate=Invoice.GST_RATE, home_state_code=None):
     """Split ``amount`` into (cgst, sgst, igst) for a customer state code.
 
-    Intra-state (customer state == ``settings.COMPANY_STATE_CODE``) is split
-    into equal CGST/SGST halves; anything else — including an unknown state —
-    is IGST.
+    Intra-state (customer state == the *seller's* state) is split into equal
+    CGST/SGST halves; anything else — including an unknown state on either
+    side — is IGST.
+
+    ``home_state_code`` is the seller's state. Platform invoices leave it
+    ``None`` and fall back to ``settings.COMPANY_STATE_CODE`` (the platform
+    operator); a tenant invoicing its own client passes *its* state code, via
+    :func:`company_state_code`, so the split follows that tenant's place of
+    supply and not the operator's.
     """
     amount = Decimal(amount or 0)
     tax = _q(amount * Decimal(rate) / Decimal(100))
-    home = str(getattr(settings, "COMPANY_STATE_CODE", "") or "").strip()
+    if home_state_code is None:
+        home = str(getattr(settings, "COMPANY_STATE_CODE", "") or "").strip()
+    else:
+        home = str(home_state_code or "").strip()
     customer = str(state_code or "").strip()
     if home and customer and customer == home:
         half = _q(tax / 2)
@@ -227,23 +259,55 @@ def _line(kind, label, qty, unit_inr):
     }
 
 
-def _subscription_line(subscription, seats):
-    """The recurring plan line: per-seat for STARTER, flat for GROWTH/AGENCY."""
+def _trial_end_date(subscription):
+    """The local date the trial ended on, or ``None``."""
+    ends_at = getattr(subscription, "trial_ends_at", None)
+    if not ends_at:
+        return None
+    return timezone.localdate(ends_at)
+
+
+def _subscription_line(subscription, seats, period_start=None, period_last=None):
+    """The recurring plan line: per-seat for STARTER, flat for GROWTH/AGENCY.
+
+    Nothing is charged while the subscription is TRIALING — the 14 days are
+    free, so a trial company's bill carries only usage and success fees. In the
+    month the trial *ends*, the plan is charged from the day after the trial
+    end, prorated by days (a grace period delays enforcement, not billing).
+    """
     plan = subscription.plan
     if plan is None or plan.code == Plan.FREE:
+        return None
+    if subscription.status == Subscription.TRIALING:
         return None
     price = Decimal(plan.price_for(Subscription.MONTHLY) or 0)
     if not price:
         return None
+
+    suffix = ""
+    if period_start is not None and period_last is not None:
+        trial_end = _trial_end_date(subscription)
+        if trial_end is not None and period_start <= trial_end <= period_last:
+            days_in_month = period_last.day
+            billable_days = (period_last - trial_end).days
+            if billable_days <= 0:
+                return None
+            price = _q(price * Decimal(billable_days) / Decimal(days_in_month))
+            if not price:
+                return None
+            suffix = f" — {billable_days}/{days_in_month} days after trial"
+
     if plan.is_seat_based:
         seats = max(1, int(seats))
         return _line(
             SUBSCRIPTION,
-            f"{plan.name} plan — {seats} recruiter seat{'' if seats == 1 else 's'}",
+            f"{plan.name} plan — {seats} recruiter seat{'' if seats == 1 else 's'}{suffix}",
             seats,
             price,
         )
-    return _line(SUBSCRIPTION, f"{plan.name} plan — monthly subscription", 1, price)
+    return _line(
+        SUBSCRIPTION, f"{plan.name} plan — monthly subscription{suffix}", 1, price
+    )
 
 
 def _success_fee_lines(fees):
@@ -289,11 +353,11 @@ def monthly_lines(company, year, month):
     from billing import ledger
     from billing.services import get_subscription
 
-    start, end, _last = month_bounds(year, month)
+    start, end, last = month_bounds(year, month)
     subscription = get_subscription(company)
     plan = subscription.plan
     lines = []
-    plan_line = _subscription_line(subscription, subscription.seats_used)
+    plan_line = _subscription_line(subscription, subscription.seats_used, start, last)
     if plan_line:
         lines.append(plan_line)
 
@@ -317,6 +381,11 @@ def monthly_lines(company, year, month):
     if overage and not any(c.kind == AI_OVERAGE for c in charges):
         lines.append(overage)
     for charge in charges:
+        if charge.kind == AI_OVERAGE and overage:
+            # The ledger row stores one lump sum; the invoice should read
+            # "2 x Rs 5", so re-use the metered line's qty and unit price.
+            lines.append(overage)
+            continue
         lines.append(_line(charge.kind, charge.label, 1, charge.amount_inr))
     return lines, fees, charges
 
@@ -352,7 +421,10 @@ def build_monthly_invoice(company, year=None, month=None, *, with_pdf=False):
 
     subscription = get_subscription(company)
     cgst, sgst, igst = gst_split(subtotal, subscription.billing_state_code)
-    issued_at = _aware(last)
+    # Dating a mid-month run at the end of the month would issue an invoice in
+    # the future; bill the current month "today" and closed months on their
+    # last day.
+    issued_at = now if (now.year, now.month) == (year, month) else _aware(last)
     with transaction.atomic():
         invoice = Invoice.objects.create(
             company=company,

@@ -17,7 +17,7 @@ from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from billing.invoicing import financial_year, gst_split
+from billing.invoicing import company_state_code, financial_year, gst_split
 from contracting import rates
 from contracting.models import (
     ClientBillingProfile,
@@ -31,6 +31,14 @@ from contracting.notify import notify
 logger = logging.getLogger(__name__)
 
 NUMBER_PREFIX = "INV"
+
+#: Recorded on an invoice raised while the tenant's own GST state is unknown —
+#: the split then defaults to IGST, which may be wrong for a client in the same
+#: state. The invoice page shows this as a warning.
+MISSING_HOME_STATE_NOTE = (
+    "Set your GSTIN in Billing to compute CGST/SGST correctly — this invoice "
+    "defaulted to IGST because your company's GST state is unknown."
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -134,8 +142,23 @@ def create_client_invoice(company, client, period_start, period_end, timesheets,
     profile = ClientBillingProfile.for_client(client)
     issued_at = issued_at or timezone.now()
     line_items = [line_item_for(ts) for ts in timesheets]
+    # The invoice period is what was actually billed, not the calendar month it
+    # was run in: a week ending 3 May invoiced in the April run still reads
+    # "06 Apr – 03 May".
+    period_start = min(ts.period_start for ts in timesheets)
+    period_end = max(ts.period_end for ts in timesheets)
     subtotal = money(sum(money(item["total_inr"]) for item in line_items))
-    cgst, sgst, igst = gst_split(subtotal, profile.state_code, rate=ClientInvoice.GST_RATE)
+    # The seller here is the *tenant*, not the platform: an agency in 27
+    # billing a client in 27 charges CGST+SGST even though the platform
+    # operator sits elsewhere.
+    home_state = company_state_code(company)
+    cgst, sgst, igst = gst_split(
+        subtotal,
+        profile.state_code,
+        rate=ClientInvoice.GST_RATE,
+        home_state_code=home_state,
+    )
+    basis_note = "" if home_state else MISSING_HOME_STATE_NOTE
     terms = profile.payment_terms_days or 30
     invoice = ClientInvoice.objects.create(
         company=company,
@@ -155,6 +178,7 @@ def create_client_invoice(company, client, period_start, period_end, timesheets,
         place_of_supply=str(profile.state_code or ""),
         issued_at=issued_at,
         due_at=issued_at.date() + timedelta(days=terms),
+        gst_basis_note=basis_note,
     )
     for timesheet in timesheets:
         services.mark_invoiced(timesheet, invoice)

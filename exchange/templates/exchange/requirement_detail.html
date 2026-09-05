@@ -60,14 +60,18 @@
             <form method="post" action="{% url 'exchange:submission_reject' s.pk %}" class="m-0">
               {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Reject</button>
             </form>
-            <form method="post" action="{% url 'exchange:submission_hire' s.pk %}" class="m-0 d-flex gap-2 align-items-end">
-              {% csrf_token %}
-              <div>
-                <label class="form-label" for="fee-{{ s.pk }}">{{ hire_form.placement_fee_inr.label }}</label>
-                <input class="form-control form-control-sm" id="fee-{{ s.pk }}" type="number" step="1000" min="1" name="placement_fee_inr">
-              </div>
-              <button class="btn btn-sm btn-outline-primary" type="submit">Record placement</button>
-            </form>
+            {% if s.is_revealed %}
+              <form method="post" action="{% url 'exchange:submission_hire' s.pk %}" class="m-0 d-flex gap-2 align-items-end">
+                {% csrf_token %}
+                <div>
+                  <label class="form-label" for="fee-{{ s.pk }}">{{ hire_form.placement_fee_inr.label }}</label>
+                  <input class="form-control form-control-sm" id="fee-{{ s.pk }}" type="number" step="1" min="1" name="placement_fee_inr">
+                </div>
+                <button class="btn btn-sm btn-outline-primary" type="submit">Record placement</button>
+              </form>
+            {% else %}
+              <span class="ip-muted small">Reveal the candidate before recording a placement.</span>
+            {% endif %}
           {% endif %}
           {% if card.deal %}
             <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:deals' %}">View deal</a>

@@ -105,8 +105,17 @@ def test_invoicing_marks_timesheets_invoiced_and_links_them(company, approved):
     assert list(invoice.timesheets.all()) == [timesheet]
 
 
-def test_intra_state_client_gets_a_cgst_sgst_split(company, client_row, approved, settings):
-    settings.COMPANY_STATE_CODE = "27"
+def _tenant_state(company, code):
+    """GST is decided by the TENANT's registered state, read from its billing details."""
+    from billing.services import get_subscription
+
+    subscription = get_subscription(company)
+    subscription.billing_address = {**(subscription.billing_address or {}), "state_code": code}
+    subscription.save(update_fields=["billing_address"])
+
+
+def test_intra_state_client_gets_a_cgst_sgst_split(company, client_row, approved):
+    _tenant_state(company, "27")
     _profile(client_row, state_code="27", gstin="27AAAAA0000A1Z5")
     approved()
     invoice = invoicing.generate_client_invoices(company, date(2026, 4, 1))[0]
@@ -117,8 +126,8 @@ def test_intra_state_client_gets_a_cgst_sgst_split(company, client_row, approved
     assert invoice.is_intra_state
 
 
-def test_inter_state_client_gets_igst(company, client_row, approved, settings):
-    settings.COMPANY_STATE_CODE = "27"
+def test_inter_state_client_gets_igst(company, client_row, approved):
+    _tenant_state(company, "27")
     _profile(client_row, state_code="29")
     approved()
     invoice = invoicing.generate_client_invoices(company, date(2026, 4, 1))[0]

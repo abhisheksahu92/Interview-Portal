@@ -907,3 +907,92 @@ Legacy v1 code lives in `legacy/` and is excluded from lint/tests. Do not import
   fragment.
 - **Error pages**: branded `400/403/404` templates extend `base.html`;
   `500.html` is deliberately standalone (no context processors, no DB, no manifest).
+
+## Background verification (BGV)
+
+Resold background checks, feature flag `bgv` (GROWTH and AGENCY). The app lives in
+`bgv/` and is mounted at `/bgv/`.
+
+**Packages** (`bgv.models.CheckPackage`, seeded by `bgv/migrations/0002_seed_packages.py`):
+
+| Package | Checks | Price | Vendor cost | Margin |
+|---|---|---|---|---|
+| Basic | identity, address | ₹799 | ₹499 | ₹300 |
+| Standard | + employment, education | ₹1,499 | ₹999 | ₹500 |
+| Comprehensive | + criminal | ₹2,999 | ₹1,999 | ₹1,000 |
+
+**The flow** — the ordering is the product:
+
+1. A recruiter opens a candidate's application and picks a package
+   (`bgv:order_create`, takes an `application_id`). The order snapshots both the
+   price *and* the vendor cost, so a later re-price never restates history.
+2. The order sits in `CONSENT_PENDING` and the candidate is emailed a tokenised
+   consent link (`bgv:consent`, `core.tokens.TokenMixin`, 14-day expiry).
+   **Nothing is billed yet** — cancelling here is free.
+3. The candidate reads what will be checked, ticks a box and types their name.
+   Consent records the name, timestamp and IP.
+4. On consent, and only then, the company is charged via
+   `billing.ledger.add_charge(company, ledger.BGV, …, ref="bgv:<order id>")`.
+   The ref is an idempotency key: a double-submitted form bills once.
+5. The order is submitted to the provider adapter; results land per check
+   (`CLEAR` / `DISCREPANCY` / `UNABLE`) and completion generates a PDF report
+   (xhtml2pdf) available from the order page.
+
+**Providers.** `bgv/gateway.py` follows the house adapter contract. With
+`BGV_API_KEY` blank — the default and every test — `MockProvider` is used: it
+accepts submissions and advances an order one step per poll, so
+`manage.py bgv_poll` walks orders `SUBMITTED → IN_PROGRESS → COMPLETED` with all
+checks clear and the whole flow is demoable with no vendor account. Add
+`bgv_poll` to `run_periodic` in production. `AuthBridgeLikeProvider` is the shape
+a real vendor takes and deliberately raises `NotConfigured` for every call until
+someone writes it against a real contract.
+
+**Webhook.** `POST /bgv/webhook/` is csrf-exempt and verifies an HMAC-SHA256 of
+the raw body (header `X-BGV-Signature`) against `BGV_API_KEY`; a bad or missing
+signature is a flat `400`, and an install with no key rejects every webhook.
+
+**Margin** (price − vendor cost) is platform-staff information: `/bgv/admin-margin/`
+is `is_staff`-only and tenant screens never render `provider_cost_inr`.
+
+**Candidate screen integration.** This app ships
+`bgv/templates/bgv/partials/candidate_checks.html` rather than editing `web/`.
+Include it from the candidate detail page with:
+
+```django
+{% include "bgv/partials/candidate_checks.html" with bgv_orders=candidate.verification_orders.all application=application %}
+```
+
+## Salary benchmarks
+
+Read-time compensation benchmarks built from accepted offers (`benchmarks/`,
+mounted at `/benchmarks/`, gated on the `analytics` feature and an
+OWNER/RECRUITER role). Nothing is stored: `benchmarks.metrics` derives every
+number from `offers.Offer` rows in `ACCEPTED` status — the only pay figure on the
+platform someone actually agreed to.
+
+- **Annualisation**: an offer is read in the period its job quotes; `MONTH` × 12,
+  `YEAR` as-is. Non-INR offers are dropped rather than converted.
+- **Percentiles**: p25/median/p75 by linear interpolation between ranks (the
+  numpy "linear" definition) — for `n` sorted values, index `p*(n-1)`.
+- **k-anonymity**: any cell computed from fewer than `MIN_N` (default 5,
+  settable with `BENCHMARKS_MIN_N`) offers is returned with `n` but no numbers,
+  so one tenant's pay cannot be read out of an aggregate. The public teaser at
+  `/benchmarks/public/` raises the bar to 20 and publishes medians only.
+- **Experience bands**: 0-2, 3-5, 6-9, 10+ from `CandidateProfile.experience_years`.
+  **City** is the text before the first comma of `Job.location`.
+
+`salary_bands(skill, city, experience_band, period_months)` returns one row per
+skill; `company_vs_market(company)` puts a tenant's own median next to the market
+median per skill (own numbers are never suppressed — they are its own data; the
+market column is). The report page offers a Chart.js spread chart (analytics
+dataviz palette, `analytics/_viz_style.html`), a CSV export and a branded
+"Quarterly Compensation Snapshot" PDF.
+
+Seed publishable data with:
+
+```bash
+python manage.py benchmarks_seed_demo          # ~48 accepted offers, 3 skills, 2 cities, 2 companies
+```
+
+It is idempotent and creates a second company so market cells are never one
+tenant's data.

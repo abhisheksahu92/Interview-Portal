@@ -1,6 +1,8 @@
 {% extends "base.html" %}
+{% load features %}
 {% block title %}My requirements · Exchange{% endblock %}
 {% block page_header %}
+{% feature_enabled "exchange" as exchange_ok %}
 <div class="ip-page-head">
   <div>
     <h1>My requirements</h1>
@@ -8,7 +10,14 @@
   </div>
   <div class="ip-page-head__actions">
     <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:index' %}">Feed</a>
-    <a class="btn btn-sm btn-primary" href="{% url 'exchange:publish' %}">Publish to exchange</a>
+    {% if exchange_ok %}
+      <a class="btn btn-sm btn-primary" href="{% url 'exchange:publish' %}">Publish to exchange</a>
+    {% else %}
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'billing:overview' %}"
+         title="Publishing to the exchange is part of the Agency plan">
+        <i class="bi bi-lock-fill" aria-hidden="true"></i> Publish to exchange <span class="ip-badge ip-badge--neutral">Pro</span>
+      </a>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

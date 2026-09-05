@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}{{ contractor.name }} · Contracting{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -93,8 +94,8 @@
             <tr>
               <td>{{ engagement.client.name }}</td>
               <td class="ip-muted">{{ engagement.role_title }}</td>
-              <td class="text-end ip-num">₹{{ engagement.bill_rate_inr|floatformat:2 }}</td>
-              <td class="text-end ip-num">₹{{ engagement.pay_rate_inr|floatformat:2 }}</td>
+              <td class="text-end ip-num">₹{{ engagement.bill_rate_inr|floatformat:2|inr }}</td>
+              <td class="text-end ip-num">₹{{ engagement.pay_rate_inr|floatformat:2|inr }}</td>
               <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:engagement_edit' engagement.pk %}">Edit</a></td>
             </tr>
             {% empty %}

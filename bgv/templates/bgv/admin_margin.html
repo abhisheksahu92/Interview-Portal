@@ -1,0 +1,76 @@
+{% extends "base.html" %}{% load web_money %}
+{% block title %}BGV margin · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-eyebrow mb-2">Platform staff</p>
+    <h1>Verification margin</h1>
+    <p>Resale revenue less vendor cost, across every tenant. Never shown to customers.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="ip-bento mb-4">
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Revenue</div>
+    <div class="ip-kpi__value">₹{{ totals.revenue|inr }}</div>
+    <div class="ip-kpi__trend">{{ totals.count }} charged order{{ totals.count|pluralize }}</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Vendor cost</div>
+    <div class="ip-kpi__value">₹{{ totals.cost|inr }}</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi ip-bento__tile--mint">
+    <div class="ip-kpi__label">Margin</div>
+    <div class="ip-kpi__value">₹{{ totals.margin|inr }}</div>
+    <div class="ip-kpi__trend">{{ totals.margin_percent|floatformat:1 }}% of revenue</div>
+  </div>
+</div>
+
+<section class="ip-section ip-section--flush mb-4">
+  <div class="ip-section__head"><h2 class="h6 mb-0">By tenant</h2></div>
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Margin per tenant</caption>
+      <thead><tr><th scope="col">Company</th><th scope="col" class="text-end">Orders</th>
+        <th scope="col" class="text-end">Revenue</th><th scope="col" class="text-end">Cost</th>
+        <th scope="col" class="text-end">Margin</th></tr></thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.company.name }}</td>
+            <td class="text-end ip-num">{{ row.count }}</td>
+            <td class="text-end ip-num">₹{{ row.revenue|inr }}</td>
+            <td class="text-end ip-num">₹{{ row.cost|inr }}</td>
+            <td class="text-end ip-num"><strong>₹{{ row.margin|inr }}</strong>
+              <span class="ip-muted">({{ row.margin_percent|floatformat:1 }}%)</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="ip-muted">No charged orders yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="ip-section ip-section--flush">
+  <div class="ip-section__head"><h2 class="h6 mb-0">Package economics</h2></div>
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Price and cost per package</caption>
+      <thead><tr><th scope="col">Package</th><th scope="col" class="text-end">Price</th>
+        <th scope="col" class="text-end">Cost</th><th scope="col" class="text-end">Margin</th></tr></thead>
+      <tbody>
+        {% for package in packages %}
+          <tr>
+            <td>{{ package.name }}{% if not package.active %} <span class="ip-badge ip-badge--neutral">Inactive</span>{% endif %}</td>
+            <td class="text-end ip-num">₹{{ package.price_inr|inr }}</td>
+            <td class="text-end ip-num">₹{{ package.provider_cost_inr|inr }}</td>
+            <td class="text-end ip-num">₹{{ package.margin_inr|inr }} <span class="ip-muted">({{ package.margin_percent|floatformat:1 }}%)</span></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

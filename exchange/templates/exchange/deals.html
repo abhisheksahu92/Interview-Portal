@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}Deals · Exchange{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -24,9 +25,9 @@
             <td>{{ row.deal.submission.requirement.title }}</td>
             <td>{{ row.counterparty.name }}</td>
             <td>{% if row.is_requester %}Requester{% else %}Responder{% endif %}</td>
-            <td class="ip-num">₹{{ row.deal.placement_fee_inr }}</td>
-            <td class="ip-num">₹{{ row.platform_fee }}</td>
-            <td class="ip-num">₹{{ row.share }}</td>
+            <td class="ip-num">₹{{ row.deal.placement_fee_inr|inr }}</td>
+            <td class="ip-num">₹{{ row.platform_fee|inr }}</td>
+            <td class="ip-num">₹{{ row.share|inr }}</td>
             <td>
               <span class="ip-badge ip-badge--{% if row.deal.status == 'SETTLED' %}success{% else %}neutral{% endif %}">{{ row.deal.get_status_display }}</span>
               {% if row.deal.disputed %}<span class="ip-badge ip-badge--danger">Disputed</span>{% endif %}

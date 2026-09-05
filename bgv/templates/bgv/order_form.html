@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load web_money %}
+{% block title %}Order a background check · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-eyebrow mb-2">Verification</p>
+    <h1>Order a check for {{ application.candidate }}</h1>
+    <p>{{ application.job.title }} · the candidate must consent before anything is charged.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" class="ip-section ip-section--tight">
+  {% csrf_token %}
+  {% if form.package.errors %}<div class="alert alert-danger">{{ form.package.errors }}</div>{% endif %}
+  <fieldset>
+    <legend class="h6">Choose a package</legend>
+    {% for package in packages %}
+      <label class="ip-choice d-flex gap-3 align-items-start py-3 border-bottom">
+        <input type="radio" name="package" value="{{ package.pk }}" class="form-check-input mt-1"
+               {% if forloop.first %}checked{% endif %}>
+        <span>
+          <strong>{{ package.name }}</strong> — ₹{{ package.price_inr|inr }}
+          <span class="ip-muted d-block">{{ package.description }}</span>
+          <span class="ip-muted d-block">{{ package.check_labels|join:", " }} · about {{ package.turnaround_days }} day{{ package.turnaround_days|pluralize }}</span>
+        </span>
+      </label>
+    {% endfor %}
+  </fieldset>
+  <div class="mt-3 d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Send consent request</button>
+    <a class="btn btn-outline-secondary" href="{% url 'bgv:index' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

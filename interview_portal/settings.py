@@ -53,6 +53,10 @@ env = environ.Env(
     COMPANY_STATE_CODE=(str, ""),
     SITE_URL=(str, "http://127.0.0.1:8000"),
     INTEGRATIONS_ENCRYPTION_KEY=(str, ""),
+    # --- Phase 4: background verification resale; blank key = mock provider.
+    BGV_PROVIDER=(str, "mock"),
+    BGV_API_KEY=(str, ""),
+    BGV_API_BASE=(str, ""),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -103,6 +107,8 @@ LOCAL_APPS = [
     "integrations",
     "contracting",
     "exchange",
+    "bgv",
+    "benchmarks",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -312,6 +318,14 @@ INTEGRATIONS_ENCRYPTION_KEY = env("INTEGRATIONS_ENCRYPTION_KEY")
 # GST details printed on invoices.
 COMPANY_GSTIN = env("COMPANY_GSTIN")
 COMPANY_STATE_CODE = env("COMPANY_STATE_CODE")
+
+# --- Background verification (BGV resale) ---------------------------------
+# Blank BGV_API_KEY selects bgv.gateway.MockProvider, which completes orders
+# deterministically through `manage.py bgv_poll` so the flow is demoable with
+# no vendor account. The key also verifies the /bgv/webhook/ HMAC signature.
+BGV_PROVIDER = env("BGV_PROVIDER")
+BGV_API_KEY = env("BGV_API_KEY")
+BGV_API_BASE = env("BGV_API_BASE")
 
 # --- Notifications (WhatsApp Business Cloud API) --------------------------
 WHATSAPP_TOKEN = env("WHATSAPP_TOKEN")

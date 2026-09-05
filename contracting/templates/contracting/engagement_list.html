@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}Engagements · Interview Portal{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -23,9 +24,9 @@
           <td class="ip-muted">{{ engagement.client.name }}</td>
           <td class="ip-muted">{{ engagement.role_title }}</td>
           <td class="ip-muted">{{ engagement.get_rate_unit_display }}</td>
-          <td class="text-end ip-num">₹{{ engagement.bill_rate_inr|floatformat:2 }}</td>
-          <td class="text-end ip-num">₹{{ engagement.pay_rate_inr|floatformat:2 }}</td>
-          <td class="text-end ip-num">₹{{ engagement.margin_per_unit|floatformat:2 }} <span class="ip-muted">({{ engagement.margin_percent|floatformat:1 }}%)</span></td>
+          <td class="text-end ip-num">₹{{ engagement.bill_rate_inr|floatformat:2|inr }}</td>
+          <td class="text-end ip-num">₹{{ engagement.pay_rate_inr|floatformat:2|inr }}</td>
+          <td class="text-end ip-num">₹{{ engagement.margin_per_unit|floatformat:2|inr }} <span class="ip-muted">({{ engagement.margin_percent|floatformat:1 }}%)</span></td>
           <td><span class="ip-badge ip-badge--{% if engagement.status == 'ACTIVE' %}success{% else %}neutral{% endif %}">{{ engagement.get_status_display }}</span></td>
           <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:engagement_edit' engagement.pk %}">Edit</a></td>
         </tr>

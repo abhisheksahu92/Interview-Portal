@@ -1,0 +1,5 @@
+Hello,
+
+Your candidate {{ reference }} was accepted for {{ requirement }} and the requester can now see their contact details.
+
+— {{ site_name }}

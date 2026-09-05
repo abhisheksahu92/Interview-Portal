@@ -219,12 +219,16 @@ class ExchangeRequirement(models.Model):
 
     @property
     def budget_label(self):
+        from web.templatetags.web_money import inr
+
         low, high = self.budget_ctc_min, self.budget_ctc_max
         if low is None and high is None:
             return "Not disclosed"
+        # Indian grouping (18,00,000), the same as every other salary figure
+        # on this platform — never 1,800,000.
         if low is not None and high is not None:
-            return f"₹{low:,.0f} – ₹{high:,.0f}"
-        return f"₹{(low or high):,.0f}"
+            return f"₹{inr(round(low))} – ₹{inr(round(high))}"
+        return f"₹{inr(round(low or high))}"
 
     # --- anti-leak -------------------------------------------------------
 

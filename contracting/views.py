@@ -296,7 +296,9 @@ def engagement_edit(request, pk):
 
 @_recruiter_view
 def timesheet_queue(request):
-    status = request.GET.get("status") or Timesheet.SUBMITTED
+    # "All statuses" posts an empty ``status``; only a *missing* parameter means
+    # "show me the default queue", so a present-but-empty value lists everything.
+    status = request.GET.get("status", Timesheet.SUBMITTED)
     timesheets = Timesheet.objects.for_company(request.company).select_related(
         "engagement__contractor", "engagement__client"
     )

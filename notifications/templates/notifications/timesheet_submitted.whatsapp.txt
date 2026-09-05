@@ -1,0 +1,1 @@
+{{ contractor_name }} submitted a timesheet for {{ period }} ({{ total_hours }} hours). Approve it in your portal.

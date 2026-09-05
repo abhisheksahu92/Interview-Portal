@@ -1,0 +1,7 @@
+Hello,
+
+A dispute was raised on exchange deal #{{ deal }}.
+
+Reason: {{ reason }}
+
+— {{ site_name }}

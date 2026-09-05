@@ -1,0 +1,5 @@
+Hello,
+
+{{ partner }} is now an exchange partner. Their requirements appear in your feed.
+
+— {{ site_name }}

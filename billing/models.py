@@ -174,9 +174,18 @@ class Subscription(models.Model):
 
     @property
     def seats_used(self):
+        """Billable seats: OWNER and RECRUITER memberships only.
+
+        A seat is a person who *works* the workspace. Interviewers (and any
+        other read-mostly role) are free, so a STARTER bill never grows because
+        a panel was widened.
+        """
         from core.models import Membership
 
-        return Membership.objects.filter(company_id=self.company_id).count()
+        return Membership.objects.filter(
+            company_id=self.company_id,
+            role__in=[Membership.OWNER, Membership.RECRUITER],
+        ).count()
 
     @property
     def effective_plan(self):

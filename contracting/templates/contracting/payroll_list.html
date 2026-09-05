@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}Payroll · Interview Portal{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -28,9 +29,9 @@
         <tr>
           <td><a href="{% url 'contracting:payroll_detail' run.pk %}">{{ run.label }}</a></td>
           <td class="text-end ip-num">{{ run.headcount }}</td>
-          <td class="text-end ip-num">₹{{ run.gross_total|floatformat:2 }}</td>
-          <td class="text-end ip-num">₹{{ run.tds_total|floatformat:2 }}</td>
-          <td class="text-end ip-num">₹{{ run.net_total|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ run.gross_total|floatformat:2|inr }}</td>
+          <td class="text-end ip-num">₹{{ run.tds_total|floatformat:2|inr }}</td>
+          <td class="text-end ip-num">₹{{ run.net_total|floatformat:2|inr }}</td>
           <td><span class="ip-badge ip-badge--{% if run.status == 'FINAL' %}success{% else %}neutral{% endif %}">{{ run.get_status_display }}</span></td>
           <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:payroll_download' run.pk %}">CSV</a></td>
         </tr>

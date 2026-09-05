@@ -1,0 +1,55 @@
+{% comment %}xhtml2pdf renders this: plain tables, no external CSS, no web fonts.{% endcomment %}
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 10.5pt; color: #111; }
+    h1 { font-size: 16pt; margin: 0 0 4px; }
+    .muted { color: #666; font-size: 9pt; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border-bottom: 1px solid #ddd; padding: 6px 4px; text-align: left; }
+    .foot { margin-top: 24px; font-size: 8.5pt; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Background verification report</h1>
+  <p class="muted">
+    Reference BGV-{{ order.pk }}
+    {% if order.provider_ref %}&middot; Provider reference {{ order.provider_ref }}{% endif %}
+    &middot; Completed {{ order.completed_at|date:"j M Y" }}
+  </p>
+
+  <p>
+    <strong>Candidate</strong><br>
+    {{ order.candidate_name }}<br>
+    {{ order.candidate_email }}
+  </p>
+  <p>
+    <strong>Requested by</strong><br>
+    {{ order.company.name }}{% if order.job_title %}<br>Role: {{ order.job_title }}{% endif %}
+  </p>
+  <p>
+    <strong>Consent</strong><br>
+    Authorised {{ order.consent_given_at|date:"j M Y, H:i" }} as “{{ order.consent_name }}”
+    {% if order.consent_ip %}from {{ order.consent_ip }}{% endif %}
+  </p>
+
+  <table>
+    <thead><tr><th>Check</th><th>Result</th><th>Notes</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.label }}</td>
+          <td>{{ row.status|default:"Pending" }}</td>
+          <td>{{ row.notes|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="foot">
+    Issued by {{ brand.name }} on behalf of {{ order.company.name }}. This report is confidential and
+    was produced with the candidate's recorded consent. It is not a credit or legal opinion.
+  </p>
+</body>
+</html>

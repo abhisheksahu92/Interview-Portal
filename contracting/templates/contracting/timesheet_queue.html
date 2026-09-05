@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}Timesheets · Interview Portal{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -34,8 +35,8 @@
           <td class="ip-muted">{{ row.timesheet.engagement.client.name }}</td>
           <td class="ip-muted text-nowrap">{{ row.timesheet.period_start|date:"d M" }} – {{ row.timesheet.period_end|date:"d M Y" }}</td>
           <td class="text-end ip-num">{{ row.totals.quantity|floatformat:2 }} {{ row.totals.unit_label }}</td>
-          <td class="text-end ip-num">₹{{ row.totals.bill|floatformat:2 }}</td>
-          <td class="text-end ip-num">₹{{ row.totals.margin|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ row.totals.bill|floatformat:2|inr }}</td>
+          <td class="text-end ip-num">₹{{ row.totals.margin|floatformat:2|inr }}</td>
           <td>{% include "contracting/_status_badge.html" with timesheet=row.timesheet %}</td>
           <td class="text-end">
             {% if row.timesheet.status == "SUBMITTED" %}

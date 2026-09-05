@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}Contracting · Interview Portal{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -9,6 +10,7 @@
   <div class="ip-page-head__actions">
     <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:timesheet_queue' %}">Timesheets</a>
     <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:invoice_list' %}">Invoices</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:payroll_list' %}">Payroll</a>
     <a class="btn btn-sm btn-primary" href="{% url 'contracting:contractor_list' %}">Contractors</a>
   </div>
 </div>
@@ -17,13 +19,13 @@
 <div class="ip-bento mb-4">
   <div class="ip-bento__tile ip-kpi">
     <div class="ip-kpi__label">Gross margin</div>
-    <div class="ip-kpi__value">₹{{ margin|floatformat:0 }}</div>
-    <div class="ip-kpi__trend">{{ margin_percent|floatformat:1 }}% of ₹{{ billed|floatformat:0 }} billed</div>
+    <div class="ip-kpi__value">₹{{ margin|floatformat:0|inr }}</div>
+    <div class="ip-kpi__trend">{{ margin_percent|floatformat:1 }}% of ₹{{ billed|floatformat:0|inr }} billed</div>
   </div>
   <div class="ip-bento__tile ip-kpi">
     <div class="ip-kpi__label">Outstanding</div>
-    <div class="ip-kpi__value">₹{{ receivables.open|floatformat:0 }}</div>
-    <div class="ip-kpi__trend">{{ receivables.count }} open · ₹{{ receivables.overdue|floatformat:0 }} overdue</div>
+    <div class="ip-kpi__value">₹{{ receivables.open|floatformat:0|inr }}</div>
+    <div class="ip-kpi__trend">{{ receivables.count }} open · ₹{{ receivables.overdue|floatformat:0|inr }} overdue</div>
   </div>
   <div class="ip-bento__tile ip-kpi">
     <div class="ip-kpi__label">DSO</div>
@@ -57,9 +59,9 @@
             <td class="ip-muted">{{ row.client }}</td>
             <td class="ip-muted">{{ row.role_title }}</td>
             <td class="text-end ip-num">{{ row.quantity|floatformat:2 }} {{ row.unit_label }}</td>
-            <td class="text-end ip-num">₹{{ row.bill|floatformat:2 }}</td>
-            <td class="text-end ip-num">₹{{ row.pay|floatformat:2 }}</td>
-            <td class="text-end ip-num"><strong>₹{{ row.margin|floatformat:2 }}</strong>
+            <td class="text-end ip-num">₹{{ row.bill|floatformat:2|inr }}</td>
+            <td class="text-end ip-num">₹{{ row.pay|floatformat:2|inr }}</td>
+            <td class="text-end ip-num"><strong>₹{{ row.margin|floatformat:2|inr }}</strong>
               <span class="ip-muted">({{ row.margin_percent|floatformat:1 }}%)</span></td>
           </tr>
           {% endfor %}

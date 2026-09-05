@@ -1,0 +1,191 @@
+{% extends "base.html" %}{% load web_money %}
+{% block title %}Salary benchmarks · Interview Portal{% endblock %}
+{% block extra_head %}
+  {% include "analytics/_viz_style.html" %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Salary benchmarks</h1>
+    <p>
+      Annualised accepted offers from the last {{ period_months }} months.
+      Any band with fewer than {{ min_n }} offers behind it stays hidden.
+    </p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'benchmarks:csv' %}?{{ request.GET.urlencode }}">CSV</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'benchmarks:pdf' %}?{{ request.GET.urlencode }}">Quarterly snapshot (PDF)</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section ip-section--tight mb-4">
+  <form method="get" class="d-flex flex-wrap gap-2 align-items-end">
+    <div>
+      <label class="form-label small" for="f-skill">Skill</label>
+      <select class="form-select form-select-sm" name="skill" id="f-skill">
+        <option value="">All skills</option>
+        {% for option in options.skills %}
+          <option value="{{ option }}" {% if option == filters.skill %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="form-label small" for="f-city">City</label>
+      <select class="form-select form-select-sm" name="city" id="f-city">
+        <option value="">All cities</option>
+        {% for option in options.cities %}
+          <option value="{{ option }}" {% if option == filters.city %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="form-label small" for="f-exp">Experience</label>
+      <select class="form-select form-select-sm" name="experience" id="f-exp">
+        <option value="">All levels</option>
+        {% for option in options.bands %}
+          <option value="{{ option }}" {% if option == filters.experience_band %}selected{% endif %}>{{ option }} years</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-sm btn-outline-secondary" type="submit">Apply</button>
+  </form>
+</section>
+
+<div class="ip-bento mb-4">
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Median offer</div>
+    <div class="ip-kpi__value">{% if overall.median %}₹{{ overall.median|inr }}{% else %}—{% endif %}</div>
+    <div class="ip-kpi__trend">{{ overall.n }} accepted offer{{ overall.n|pluralize }} in scope</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">25th percentile</div>
+    <div class="ip-kpi__value">{% if overall.p25 %}₹{{ overall.p25|inr }}{% else %}—{% endif %}</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi ip-bento__tile--mint">
+    <div class="ip-kpi__label">75th percentile</div>
+    <div class="ip-kpi__value">{% if overall.p75 %}₹{{ overall.p75|inr }}{% else %}—{% endif %}</div>
+  </div>
+</div>
+
+{% if chart.labels %}
+  <section class="ip-section ip-section--flush mb-4 viz">
+    <div class="ip-section__head"><h2 class="h6 mb-0">Spread by skill</h2></div>
+    {{ chart|json_script:"benchmark-chart-data" }}
+    <div style="position:relative;height:320px" class="p-3">
+      <canvas id="benchmark-chart" aria-label="Median and quartile annual pay by skill" role="img"></canvas>
+    </div>
+  </section>
+{% endif %}
+
+<section class="ip-section ip-section--flush mb-4">
+  <div class="ip-section__head"><h2 class="h6 mb-0">Bands by skill</h2></div>
+  {% if bands %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Annualised pay percentiles per skill</caption>
+        <thead>
+          <tr><th scope="col">Skill</th><th scope="col" class="text-end">Offers</th>
+            <th scope="col" class="text-end">p25</th><th scope="col" class="text-end">Median</th>
+            <th scope="col" class="text-end">p75</th></tr>
+        </thead>
+        <tbody>
+          {% for row in bands %}
+            <tr>
+              <td>{{ row.skill }}</td>
+              <td class="text-end ip-num">{{ row.n }}</td>
+              {% if row.suppressed %}
+                <td colspan="3" class="text-end ip-muted">Hidden — fewer than {{ min_n }} offers</td>
+              {% else %}
+                <td class="text-end ip-num">₹{{ row.p25|inr }}</td>
+                <td class="text-end ip-num"><strong>₹{{ row.median|inr }}</strong></td>
+                <td class="text-end ip-num">₹{{ row.p75|inr }}</td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty ip-empty--sm">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-bar-chart-steps"></i></span>
+      <div class="ip-empty__title">No accepted offers in this window</div>
+      <p class="ip-muted">Benchmarks appear once offers are accepted on the platform.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="ip-section ip-section--flush">
+  <div class="ip-section__head"><h2 class="h6 mb-0">Your offers vs market</h2></div>
+  {% if comparison %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Your median offer against the market median per skill</caption>
+        <thead>
+          <tr><th scope="col">Skill</th><th scope="col" class="text-end">Your offers</th>
+            <th scope="col" class="text-end">Your median</th><th scope="col" class="text-end">Market median</th>
+            <th scope="col" class="text-end">Difference</th></tr>
+        </thead>
+        <tbody>
+          {% for row in comparison %}
+            <tr>
+              <td>{{ row.skill }}</td>
+              <td class="text-end ip-num">{{ row.n }}</td>
+              <td class="text-end ip-num">₹{{ row.median|inr }}</td>
+              {% if row.market_suppressed %}
+                <td colspan="2" class="text-end ip-muted">Not enough market data yet</td>
+              {% else %}
+                <td class="text-end ip-num">₹{{ row.market_median|inr }}</td>
+                <td class="text-end ip-num">
+                  {% if row.delta_percent is not None %}{{ row.delta_percent|floatformat:1 }}%{% else %}—{% endif %}
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="ip-muted p-3 mb-0">You have no accepted offers in this window to compare.</p>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function () {
+    var node = document.getElementById("benchmark-chart-data");
+    var canvas = document.getElementById("benchmark-chart");
+    if (!node || !canvas || typeof Chart === "undefined") { return; }
+    var data = JSON.parse(node.textContent);
+    var styles = getComputedStyle(document.querySelector(".viz") || document.body);
+    var token = function (name, fallback) {
+      return (styles.getPropertyValue(name) || "").trim() || fallback;
+    };
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: data.labels,
+        datasets: [
+          { label: "p25", data: data.p25, backgroundColor: token("--series-1", "#2a78d6") },
+          { label: "Median", data: data.median, backgroundColor: token("--series-3", "#1baf7a") },
+          { label: "p75", data: data.p75, backgroundColor: token("--series-2", "#eb6834") }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { display: false }, ticks: { color: token("--viz-text-2", "#52514e") } },
+          y: {
+            grid: { color: token("--viz-grid", "#e6e5e1") },
+            ticks: { color: token("--viz-text-2", "#52514e") }
+          }
+        },
+        plugins: { legend: { labels: { color: token("--viz-text", "#0b0b0b") } } }
+      }
+    });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,5 @@
+Hello,
+
+Your candidate {{ reference }} was shortlisted for {{ requirement }}.
+
+— {{ site_name }}

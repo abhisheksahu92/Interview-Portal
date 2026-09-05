@@ -1,0 +1,9 @@
+Hello,
+
+Invoice {{ invoice_number }} for {{ period }} is attached.
+
+Amount due: INR {{ total }}{% if due_at %}, by {{ due_at }}{% endif %}
+
+Thank you for your business.
+
+— {{ site_name }}

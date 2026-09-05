@@ -1,0 +1,42 @@
+{% comment %}
+Verification orders for one candidate, for the candidate detail screen.
+
+Include it from ``web/templates/web/candidate_detail.html`` (owned by the web
+agent) with the candidate profile in context:
+
+    {% include "bgv/partials/candidate_checks.html" with bgv_orders=candidate.verification_orders.all application=application %}
+
+``bgv_orders`` may be any iterable of ``bgv.models.VerificationOrder``; pass
+``application`` to show the "Order a check" button. The partial renders nothing
+but a heading when there are no orders, so it is safe to include unconditionally.
+{% endcomment %}
+{% load web_money %}
+<section class="ip-section ip-section--flush" id="bgv-checks">
+  <div class="ip-section__head">
+    <h2 class="h6 mb-0">Background verification</h2>
+    {% if application %}
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'bgv:order_create' application.pk %}">Order a check</a>
+    {% endif %}
+  </div>
+  {% if bgv_orders %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Background checks ordered for this candidate</caption>
+        <thead><tr><th scope="col">Package</th><th scope="col">Ordered</th>
+          <th scope="col">Status</th><th scope="col" class="text-end">Price</th></tr></thead>
+        <tbody>
+          {% for order in bgv_orders %}
+            <tr>
+              <td><a href="{% url 'bgv:order_detail' order.pk %}">{{ order.package.name|default:"Background check" }}</a></td>
+              <td class="ip-muted text-nowrap">{{ order.ordered_at|date:"d M Y" }}</td>
+              <td><span class="ip-badge ip-badge--{{ order.status_kind }}">{{ order.get_status_display }}</span></td>
+              <td class="text-end ip-num">₹{{ order.price_inr|inr }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="ip-muted">No checks ordered for this candidate yet.</p>
+  {% endif %}
+</section>

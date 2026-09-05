@@ -1,0 +1,89 @@
+{% extends "base.html" %}{% load web_money %}
+{% block title %}Verification #{{ order.pk }} · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-eyebrow mb-2">Verification</p>
+    <h1>{{ order.candidate_name }}</h1>
+    <p>
+      {{ order.package.name|default:"Background check" }} · ₹{{ order.price_inr|inr }}
+      {% if order.job_title %}· {{ order.job_title }}{% endif %}
+    </p>
+  </div>
+  <div class="ip-page-head__actions">
+    <span class="ip-badge ip-badge--{{ order.status_kind }}">{{ order.get_status_display }}</span>
+    {% if order.status == "COMPLETED" %}
+      <a class="btn btn-sm btn-primary" href="{% url 'bgv:order_report' order.pk %}">Download report</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section ip-section--tight mb-4">
+  <dl class="row mb-0">
+    <dt class="col-sm-3">Ordered</dt>
+    <dd class="col-sm-9">{{ order.ordered_at|date:"d M Y, H:i" }}{% if order.ordered_by %} by {{ order.ordered_by.email }}{% endif %}</dd>
+    <dt class="col-sm-3">Consent</dt>
+    <dd class="col-sm-9">
+      {% if order.consent_given_at %}
+        Given {{ order.consent_given_at|date:"d M Y, H:i" }} by “{{ order.consent_name }}”
+        {% if order.consent_ip %}<span class="ip-muted">from {{ order.consent_ip }}</span>{% endif %}
+      {% else %}
+        <span class="ip-muted">Awaiting the candidate. Nothing has been charged.</span>
+      {% endif %}
+    </dd>
+    <dt class="col-sm-3">Billing</dt>
+    <dd class="col-sm-9">
+      {% if order.is_charged %}₹{{ order.price_inr|inr }} added to this month's bill (ref {{ order.charge_ref }}).
+      {% else %}<span class="ip-muted">Not charged.</span>{% endif %}
+    </dd>
+    {% if order.provider_ref %}
+      <dt class="col-sm-3">Provider</dt>
+      <dd class="col-sm-9 ip-muted">{{ order.provider }} · {{ order.provider_ref }}</dd>
+    {% endif %}
+    {% if show_margin %}
+      <dt class="col-sm-3">Margin</dt>
+      <dd class="col-sm-9">₹{{ order.margin_inr|inr }} <span class="ip-muted">(cost ₹{{ order.provider_cost_inr|inr }}) — platform staff only</span></dd>
+    {% endif %}
+  </dl>
+</section>
+
+{% if not order.consent_given_at and order.status != "CANCELLED" %}
+  <section class="ip-section ip-section--tight mb-4">
+    <h2 class="h6">Consent link</h2>
+    <p class="ip-muted">Emailed to {{ order.candidate_email }}. It expires {{ order.expires_at|date:"d M Y" }}.</p>
+    <code class="d-block text-break">{{ consent_link }}</code>
+    <form method="post" action="{% url 'bgv:order_cancel' order.pk %}" class="mt-3">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-outline-danger" type="submit">Cancel order (no charge)</button>
+    </form>
+  </section>
+{% endif %}
+
+<section class="ip-section ip-section--flush">
+  <div class="ip-section__head">
+    <h2 class="h6 mb-0">Checks</h2>
+    {% if order.status == "SUBMITTED" or order.status == "IN_PROGRESS" %}
+      <form method="post" action="{% url 'bgv:order_refresh' order.pk %}" class="m-0">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-outline-secondary" type="submit">Refresh status</button>
+      </form>
+    {% endif %}
+  </div>
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Result of each check in this package</caption>
+      <thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Notes</th></tr></thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.label }}</td>
+            <td>{% if row.status %}<span class="ip-badge ip-badge--{{ row.kind }}">{{ row.status|title }}</span>{% else %}<span class="ip-muted">Pending</span>{% endif %}</td>
+            <td class="ip-muted">{{ row.notes|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

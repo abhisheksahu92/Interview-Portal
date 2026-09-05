@@ -40,6 +40,7 @@ FEATURES = (
     "integrations",
     "contracting",
     "exchange",
+    "bgv",
 )
 
 #: Human-readable names for the flags above, for plan cards and gate messages.
@@ -59,6 +60,7 @@ FEATURE_LABELS = {
     "integrations": "Webhooks and integrations",
     "contracting": "Contracting back office",
     "exchange": "Agency requirement exchange",
+    "bgv": "Background verification",
 }
 
 

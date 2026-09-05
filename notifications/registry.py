@@ -118,6 +118,20 @@ for _event in (
     Event("usage_warning", "Usage warning", "Plan quota nearly exhausted.", channels=(EMAIL,)),
     Event("payment_failed", "Payment failed", "A subscription payment could not be taken.", channels=(EMAIL,)),
     Event("invitation", "Team invitation", "Invite a teammate to the company.", channels=(EMAIL,)),
+    # --- contracting (staffing back office) ---
+    Event("timesheet_submitted", "Timesheet submitted", "A contractor submitted a timesheet for approval."),
+    Event("timesheet_approved", "Timesheet approved", "Tells a contractor their timesheet was approved."),
+    Event("timesheet_rejected", "Timesheet rejected", "Tells a contractor their timesheet was sent back."),
+    Event("client_invoice_sent", "Client invoice sent", "Emails a client their GST invoice.", channels=(EMAIL,)),
+    # --- exchange (agency requirement network) ---
+    Event("exchange_partner_invite", "Exchange partner invite", "An agency wants to partner on the exchange.", channels=(EMAIL,)),
+    Event("exchange_partner_accepted", "Exchange partner accepted", "A partner accepted your exchange invite.", channels=(EMAIL,)),
+    Event("exchange_submission_received", "Exchange submission received", "A partner submitted a candidate for your requirement.", channels=(EMAIL,)),
+    Event("exchange_submission_shortlisted", "Exchange submission shortlisted", "Your submitted candidate was shortlisted.", channels=(EMAIL,)),
+    Event("exchange_submission_rejected", "Exchange submission rejected", "Your submitted candidate was passed on.", channels=(EMAIL,)),
+    Event("exchange_submission_revealed", "Exchange candidate revealed", "The requester revealed your candidate's details.", channels=(EMAIL,)),
+    Event("exchange_submission_hired", "Exchange placement made", "Your submitted candidate was hired.", channels=(EMAIL,)),
+    Event("exchange_deal_disputed", "Exchange deal disputed", "The other side raised a dispute on a deal.", channels=(EMAIL,)),
 ):
     register(_event)
 

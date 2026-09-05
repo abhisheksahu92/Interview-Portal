@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% load web_money %}
+{% block title %}India tech salary benchmarks{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-standalone">
+  <div class="ip-page-head">
+    <div>
+      <p class="ip-eyebrow mb-2">Compensation data</p>
+      <h1>What accepted offers actually pay</h1>
+      <p>
+        Median annual pay from offers candidates accepted on this platform in the last year.
+        Only roles with at least {{ min_n }} accepted offers behind them are published, so no
+        single employer's pay can be read out of these numbers.
+      </p>
+    </div>
+  </div>
+
+  {% if rows %}
+    <div class="ip-card">
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Median annual pay by skill</caption>
+          <thead><tr><th scope="col">Skill</th><th scope="col" class="text-end">Median (per year)</th>
+            <th scope="col" class="text-end">Offers</th></tr></thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                <td>{{ row.skill }}</td>
+                <td class="text-end ip-num"><strong>₹{{ row.median|inr }}</strong></td>
+                <td class="text-end ip-num">{{ row.n }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="ip-muted mt-3 mb-0">
+        Updated {{ generated_at|date:"d M Y" }}. Quartiles, city and experience breakdowns are in
+        the full report inside the product.
+      </p>
+    </div>
+  {% else %}
+    <div class="ip-card">
+      <p class="mb-0">Not enough accepted offers yet to publish a benchmark. Check back soon.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

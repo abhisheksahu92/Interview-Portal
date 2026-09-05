@@ -1,0 +1,9 @@
+Hello {{ contractor_name }},
+
+Your timesheet for {{ period }} was sent back for changes.
+{% if note %}
+Note: {{ note }}
+{% endif %}
+Open your timesheet link to correct and resubmit it.
+
+— {{ site_name }}

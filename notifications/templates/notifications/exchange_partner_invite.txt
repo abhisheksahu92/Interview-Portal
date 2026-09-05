@@ -1,0 +1,7 @@
+Hello,
+
+{{ partner }} has invited you to exchange requirements and candidates.
+
+Open Exchange > Partners to accept.
+
+— {{ site_name }}

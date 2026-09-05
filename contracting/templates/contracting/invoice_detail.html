@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load web_money %}
 {% block title %}{{ invoice.number }} · Interview Portal{% endblock %}
 {% block page_header %}
 <div class="ip-page-head">
@@ -22,6 +23,13 @@
 </div>
 {% endblock %}
 {% block content %}
+{% if invoice.gst_basis_note %}
+  <div class="alert alert-warning" role="alert">
+    <strong>Set your GSTIN in Billing to compute CGST/SGST correctly.</strong>
+    {{ invoice.gst_basis_note }}
+    <a href="{% url 'billing:overview' %}">Open billing settings</a>.
+  </div>
+{% endif %}
 <section class="ip-section ip-section--flush mb-4">
   <div class="ip-table-wrap">
     <table class="ip-table">
@@ -32,18 +40,18 @@
         <tr>
           <td>{{ item.label }}</td>
           <td class="text-end ip-num">{{ item.qty|floatformat:2 }} {{ item.unit_label }}</td>
-          <td class="text-end ip-num">₹{{ item.unit_inr|floatformat:2 }}</td>
-          <td class="text-end ip-num">₹{{ item.total_inr|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ item.unit_inr|floatformat:2|inr }}</td>
+          <td class="text-end ip-num">₹{{ item.total_inr|floatformat:2|inr }}</td>
         </tr>
         {% endfor %}
-        <tr><td colspan="3" class="text-end">Subtotal</td><td class="text-end ip-num">₹{{ invoice.subtotal|floatformat:2 }}</td></tr>
+        <tr><td colspan="3" class="text-end">Subtotal</td><td class="text-end ip-num">₹{{ invoice.subtotal|floatformat:2|inr }}</td></tr>
         {% if invoice.is_intra_state %}
-          <tr><td colspan="3" class="text-end ip-muted">CGST</td><td class="text-end ip-num">₹{{ invoice.cgst|floatformat:2 }}</td></tr>
-          <tr><td colspan="3" class="text-end ip-muted">SGST</td><td class="text-end ip-num">₹{{ invoice.sgst|floatformat:2 }}</td></tr>
+          <tr><td colspan="3" class="text-end ip-muted">CGST</td><td class="text-end ip-num">₹{{ invoice.cgst|floatformat:2|inr }}</td></tr>
+          <tr><td colspan="3" class="text-end ip-muted">SGST</td><td class="text-end ip-num">₹{{ invoice.sgst|floatformat:2|inr }}</td></tr>
         {% else %}
-          <tr><td colspan="3" class="text-end ip-muted">IGST @ {{ invoice.gst_rate|floatformat:0 }}%</td><td class="text-end ip-num">₹{{ invoice.igst|floatformat:2 }}</td></tr>
+          <tr><td colspan="3" class="text-end ip-muted">IGST @ {{ invoice.gst_rate|floatformat:0 }}%</td><td class="text-end ip-num">₹{{ invoice.igst|floatformat:2|inr }}</td></tr>
         {% endif %}
-        <tr><td colspan="3" class="text-end"><strong>Total</strong></td><td class="text-end ip-num"><strong>₹{{ invoice.total|floatformat:2 }}</strong></td></tr>
+        <tr><td colspan="3" class="text-end"><strong>Total</strong></td><td class="text-end ip-num"><strong>₹{{ invoice.total|floatformat:2|inr }}</strong></td></tr>
       </tbody>
     </table>
   </div>

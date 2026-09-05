@@ -1,0 +1,5 @@
+Hello,
+
+Your candidate {{ reference }} was not taken forward for {{ requirement }}.
+
+— {{ site_name }}

@@ -164,7 +164,9 @@ class HireForm(forms.Form):
     placement_fee_inr = forms.DecimalField(
         min_value=1,
         label="Placement fee (₹)",
-        widget=forms.NumberInput(attrs={"class": "form-control", "step": "1000"}),
+        # step="1" (not 1000): a real fee like 200000 must not trip HTML5's
+        # step validation, which measures from min_value, not from zero.
+        widget=forms.NumberInput(attrs={"class": "form-control", "step": "1"}),
     )
 
 
