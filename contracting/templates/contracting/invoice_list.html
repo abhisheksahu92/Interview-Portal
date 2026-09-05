@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Client invoices · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Client invoices</h1>
+    <p>₹{{ receivables.open|floatformat:0 }} outstanding{% if dso is not None %} · DSO {{ dso }} days{% endif %}.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section ip-section--tight mb-4">
+  <form method="post" action="{% url 'contracting:invoice_generate' %}" class="d-flex flex-wrap gap-2 align-items-end">
+    {% csrf_token %}
+    <div>
+      <label class="form-label small" for="{{ form.month.id_for_label }}">Billing month</label>
+      {{ form.month }}
+    </div>
+    <button class="btn btn-sm btn-primary" type="submit">Generate from approved timesheets</button>
+  </form>
+</section>
+{% if invoices %}
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Invoices raised on clients</caption>
+      <thead>
+        <tr><th scope="col">Number</th><th scope="col">Client</th><th scope="col">Period</th>
+            <th scope="col" class="text-end">Subtotal</th><th scope="col" class="text-end">Total</th>
+            <th scope="col">Due</th><th scope="col">Status</th></tr>
+      </thead>
+      <tbody>
+        {% for invoice in invoices %}
+        <tr>
+          <td><a href="{% url 'contracting:invoice_detail' invoice.pk %}">{{ invoice.number }}</a></td>
+          <td class="ip-muted">{{ invoice.client.name }}</td>
+          <td class="ip-muted text-nowrap">{{ invoice.period_start|date:"d M" }} – {{ invoice.period_end|date:"d M Y" }}</td>
+          <td class="text-end ip-num">₹{{ invoice.subtotal|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ invoice.total|floatformat:2 }}</td>
+          <td class="ip-muted text-nowrap">{{ invoice.due_at|date:"d M Y"|default:"—" }}</td>
+          <td><span class="ip-badge ip-badge--{{ invoice.status_kind }}">{{ invoice.get_status_display }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+    <div class="ip-empty__title">No invoices yet</div>
+    <p class="ip-muted">Pick a month above once timesheets have been approved.</p>
+  </div>
+{% endif %}
+{% endblock %}

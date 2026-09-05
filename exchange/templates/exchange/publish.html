@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Publish to exchange · {{ company.name }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Publish to exchange</h1>
+    <p>Share a role with your partner network. The end client is anonymised for anyone who is not an accepted partner.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section" style="max-width:44rem">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <div class="ip-card__actions">
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:requirements' %}">Cancel</a>
+      <button class="btn btn-sm btn-primary" type="submit">Publish</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

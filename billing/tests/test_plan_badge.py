@@ -22,7 +22,8 @@ def test_context_processor_exposes_effective_plan_and_trial(rf, trial_company):
     request.user = owner
     request.company = trial_company
     context = billing_context(request)
-    assert context["billing_plan"].code == Plan.FREE  # billed tier
+    # Premise changed in phase 4: the billed tier of a new company is STARTER.
+    assert context["billing_plan"].code == Plan.STARTER  # billed tier
     assert context["billing_effective_plan"].code == Plan.AGENCY
     assert context["billing_in_trial"] is True
     assert 1 <= context["billing_trial_days_left"] <= 14

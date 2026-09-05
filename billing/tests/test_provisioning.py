@@ -12,7 +12,9 @@ from jobs.models import Job
 def test_company_creation_provisions_a_trial_subscription(db):
     company = Company.objects.create(name="Brand New Ltd")
     subscription = Subscription.objects.get(company=company)
-    assert subscription.plan.code == Plan.FREE
+    # Premise changed in phase 4: new companies are billed on STARTER (FREE is
+    # kept only for legacy rows) and trial into the AGENCY tier.
+    assert subscription.plan.code == Plan.STARTER
     assert subscription.status == Subscription.TRIALING
     assert subscription.in_trial is True
     assert 13 <= subscription.trial_days_left <= 14
@@ -20,26 +22,33 @@ def test_company_creation_provisions_a_trial_subscription(db):
 
 def test_trial_limits_apply_from_the_first_day(db):
     """A trialling company is metered against the trial tier, not FREE."""
-    company = Company.objects.create(name="Day One Ltd")  # billed on FREE, trialling
+    company = Company.objects.create(name="Day One Ltd")  # billed on STARTER, trialling
     for i in range(3):
         Job.objects.create(company=company, title=f"Dev {i}", status=Job.OPEN)
     assert Job.objects.filter(company=company, status=Job.OPEN).count() == 3
 
 
-def test_free_limits_bite_once_the_trial_ends(db):
-    """No manual provisioning step: the plan limit bites the moment it applies."""
+def test_plan_limits_bite_once_the_trial_ends(db):
+    """No manual provisioning step: the plan limit bites the moment it applies.
+
+    Premise changed in phase 4: the expired trial lands on STARTER (3 open
+    jobs), not FREE (1), and only once any grace window has passed.
+    """
     from datetime import timedelta
 
     from django.utils import timezone
 
     company = Company.objects.create(name="Day Fifteen Ltd")
     Subscription.objects.filter(company=company).update(
-        status=Subscription.ACTIVE, trial_ends_at=timezone.now() - timedelta(days=1)
+        status=Subscription.ACTIVE,
+        trial_ends_at=timezone.now() - timedelta(days=1),
+        grace_until=None,
     )
     company.refresh_from_db()
-    Job.objects.create(company=company, title="Dev 1", status=Job.OPEN)
+    for i in range(3):
+        Job.objects.create(company=company, title=f"Dev {i}", status=Job.OPEN)
     with pytest.raises(ValidationError):
-        Job.objects.create(company=company, title="Dev 2", status=Job.OPEN)
+        Job.objects.create(company=company, title="Dev 4", status=Job.OPEN)
 
 
 def test_saving_a_company_again_does_not_duplicate_the_subscription(db):

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == "create" %}New engagement{% else %}Edit engagement{% endif %} · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-eyebrow mb-2">{{ contractor.name }}</p>
+    <h1>{% if mode == "create" %}New engagement{% else %}Edit engagement{% endif %}</h1>
+    <p>The bill rate invoices the client; the pay rate drives payroll and TDS.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section" style="max-width:720px">
+  <form method="post" class="ip-form-fields">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-primary" type="submit">Save engagement</button>
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:contractor_detail' contractor.pk %}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

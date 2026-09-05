@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Timesheets · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div><h1>Timesheets</h1><p>Approve on a client's behalf, or watch what the portal has decided.</p></div>
+</div>
+{% endblock %}
+{% block content %}
+<form class="ip-toolbar" method="get">
+  <div class="ip-toolbar__field">
+    <label for="ts-status">Status</label>
+    <select class="form-select form-select-sm" id="ts-status" name="status" onchange="this.form.submit()">
+      <option value="">All statuses</option>
+      {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="ip-toolbar__actions"><noscript><button class="btn btn-sm btn-primary">Filter</button></noscript></div>
+</form>
+{% if rows %}
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Timesheets across every engagement</caption>
+      <thead>
+        <tr><th scope="col">Contractor</th><th scope="col">Client</th><th scope="col">Period</th>
+            <th scope="col" class="text-end">Quantity</th><th scope="col" class="text-end">Bill</th>
+            <th scope="col" class="text-end">Margin</th><th scope="col">Status</th><th scope="col"></th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.timesheet.engagement.contractor.name }}</td>
+          <td class="ip-muted">{{ row.timesheet.engagement.client.name }}</td>
+          <td class="ip-muted text-nowrap">{{ row.timesheet.period_start|date:"d M" }} – {{ row.timesheet.period_end|date:"d M Y" }}</td>
+          <td class="text-end ip-num">{{ row.totals.quantity|floatformat:2 }} {{ row.totals.unit_label }}</td>
+          <td class="text-end ip-num">₹{{ row.totals.bill|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ row.totals.margin|floatformat:2 }}</td>
+          <td>{% include "contracting/_status_badge.html" with timesheet=row.timesheet %}</td>
+          <td class="text-end">
+            {% if row.timesheet.status == "SUBMITTED" %}
+              <form class="d-inline" method="post" action="{% url 'contracting:timesheet_decide' row.timesheet.pk 'approve' %}">
+                {% csrf_token %}<button class="btn btn-sm btn-primary" type="submit">Approve</button>
+              </form>
+              <form class="d-inline" method="post" action="{% url 'contracting:timesheet_decide' row.timesheet.pk 'reject' %}">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Reject</button>
+              </form>
+            {% else %}<span class="ip-muted">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
+    <div class="ip-empty__title">Nothing here</div>
+    <p class="ip-muted">No timesheets match this filter.</p>
+  </div>
+{% endif %}
+{% endblock %}

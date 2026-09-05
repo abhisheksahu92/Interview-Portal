@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Payroll {{ run.label }} · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-eyebrow mb-2">Payroll</p>
+    <h1>{{ run.label }}</h1>
+    <p>{{ run.headcount }} contractor(s) · gross ₹{{ run.gross_total|floatformat:2 }} · net ₹{{ run.net_total|floatformat:2 }}</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-primary" href="{% url 'contracting:payroll_download' run.pk %}">Download CSV</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="ip-table-wrap">
+  <table class="ip-table">
+    <caption class="visually-hidden">Payroll rows for {{ run.label }}</caption>
+    <thead>
+      <tr><th scope="col">Employee id</th><th scope="col">Name</th><th scope="col">PAN</th>
+          <th scope="col" class="text-end">Days</th><th scope="col" class="text-end">Gross</th>
+          <th scope="col" class="text-end">TDS</th><th scope="col" class="text-end">Net</th></tr>
+    </thead>
+    <tbody>
+      {% for row in run.rows %}
+      <tr>
+        <td class="ip-muted">{{ row.employee_id }}</td>
+        <td>{{ row.name }}</td>
+        <td class="ip-muted">{{ row.pan|default:"—" }}</td>
+        <td class="text-end ip-num">{{ row.days }}</td>
+        <td class="text-end ip-num">₹{{ row.gross }}</td>
+        <td class="text-end ip-num">₹{{ row.tds }}</td>
+        <td class="text-end ip-num"><strong>₹{{ row.net }}</strong></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="ip-muted">No approved work in this month.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

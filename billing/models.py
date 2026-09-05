@@ -24,6 +24,10 @@ class Plan(models.Model):
     ]
     PAID_CODES = (STARTER, GROWTH, AGENCY)
 
+    SEAT = "SEAT"
+    FLAT = "FLAT"
+    PRICING_MODEL_CHOICES = [(SEAT, "Per recruiter seat"), (FLAT, "Flat monthly")]
+
     code = models.CharField(max_length=20, choices=CODE_CHOICES, unique=True)
     name = models.CharField(max_length=80)
     max_open_jobs = models.PositiveIntegerField(default=1)
@@ -38,6 +42,14 @@ class Plan(models.Model):
     per_hire_fee_inr = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+    # Placement-linked pricing (phase 4). ``pricing_model`` decides whether
+    # ``price_monthly_inr`` is charged once (FLAT) or per recruiter seat (SEAT).
+    pricing_model = models.CharField(
+        max_length=10, choices=PRICING_MODEL_CHOICES, default=FLAT
+    )
+    success_fee_inr = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    ai_included = models.PositiveIntegerField(default=0)
+    ai_overage_inr = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     # Entitlement flags read via billing.entitlements.has_feature().
     features = models.JSONField(default=dict, blank=True)
 
@@ -50,6 +62,22 @@ class Plan(models.Model):
     @property
     def is_free(self):
         return self.code == self.FREE
+
+    @property
+    def is_seat_based(self):
+        return self.pricing_model == self.SEAT
+
+    @property
+    def ai_allowance(self):
+        """Included AI screens per month (falls back to ``ai_credits_monthly``)."""
+        return int(self.ai_included or self.ai_credits_monthly or 0)
+
+    def subscription_amount(self, seats=1, interval=None):
+        """What the recurring subscription line costs for ``seats`` seats."""
+        price = Decimal(self.price_for(interval or Subscription.MONTHLY) or 0)
+        if self.is_seat_based:
+            return price * Decimal(max(1, int(seats)))
+        return price
 
     def price_for(self, interval):
         """INR price for MONTHLY/YEARLY."""
@@ -103,6 +131,10 @@ class Subscription(models.Model):
     trial_ends_at = models.DateTimeField(null=True, blank=True)
     current_period_end = models.DateTimeField(null=True, blank=True)
     past_due_since = models.DateTimeField(null=True, blank=True)
+    #: Set when a trial is downgraded: limits are not enforced until it passes.
+    grace_until = models.DateTimeField(null=True, blank=True)
+    #: When True, metered usage is refused past the allowance instead of billed.
+    hard_cap = models.BooleanField(default=False)
     gstin = models.CharField(max_length=20, blank=True)
     billing_address = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -130,6 +162,11 @@ class Subscription(models.Model):
             return 0
         delta = self.trial_ends_at - timezone.now()
         return max(0, math.ceil(delta.total_seconds() / 86400))
+
+    @property
+    def in_grace(self):
+        """True while a post-trial grace window is still open."""
+        return bool(self.grace_until and self.grace_until > timezone.now())
 
     @property
     def is_paid(self):
@@ -189,6 +226,8 @@ class UsageRecord(models.Model):
     kind = models.CharField(max_length=20, choices=KIND_CHOICES)
     quantity = models.PositiveIntegerField(default=1)
     period_start = models.DateField()
+    #: True when this record is beyond the plan allowance and therefore billed.
+    overage = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -218,6 +257,10 @@ class Invoice(models.Model):
     gstin = models.CharField(max_length=20, blank=True)
     place_of_supply = models.CharField(max_length=4, blank=True)
     description = models.CharField(max_length=200, blank=True)
+    #: [{kind, label, qty, unit_inr, total_inr}] — see billing.invoicing.
+    line_items = models.JSONField(default=list, blank=True)
+    #: First day of the billed month for monthly bills (None for one-offs).
+    period_start = models.DateField(null=True, blank=True)
     pdf = models.FileField(upload_to="invoices/", blank=True)
     provider = models.CharField(
         max_length=20, choices=Subscription.PROVIDER_CHOICES, blank=True
@@ -228,6 +271,13 @@ class Invoice(models.Model):
 
     class Meta:
         ordering = ["-issued_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["company", "period_start"],
+                condition=models.Q(period_start__isnull=False),
+                name="billing_invoice_unique_period",
+            )
+        ]
 
     def __str__(self):
         return self.number
@@ -339,3 +389,65 @@ class ProcessedWebhookEvent(models.Model):
 
     def __str__(self):
         return f"{self.provider}:{self.event_id}"
+
+
+class BillingCharge(models.Model):
+    """A one-off charge pushed onto the next monthly bill by any app.
+
+    Sibling apps (contracting BGV/platform fees, exchange platform fees) call
+    :func:`billing.ledger.add_charge` rather than importing this model, so the
+    ledger stays the only public write seam.
+    """
+
+    SUBSCRIPTION = "SUBSCRIPTION"
+    SUCCESS_FEE = "SUCCESS_FEE"
+    AI_OVERAGE = "AI_OVERAGE"
+    SEAT = "SEAT"
+    BGV = "BGV"
+    PLATFORM_FEE = "PLATFORM_FEE"
+    OTHER = "OTHER"
+    KIND_CHOICES = [
+        (SUBSCRIPTION, "Subscription"),
+        (SUCCESS_FEE, "Success fee"),
+        (AI_OVERAGE, "AI overage"),
+        (SEAT, "Seat"),
+        (BGV, "Background verification"),
+        (PLATFORM_FEE, "Platform fee"),
+        (OTHER, "Other"),
+    ]
+
+    company = models.ForeignKey(
+        "core.Company", on_delete=models.CASCADE, related_name="billing_charges"
+    )
+    kind = models.CharField(max_length=30, choices=KIND_CHOICES, default=OTHER)
+    label = models.CharField(max_length=200)
+    amount_inr = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    #: Caller-supplied idempotency key, unique per (company, kind).
+    ref = models.CharField(max_length=120, blank=True)
+    occurred_at = models.DateTimeField(default=timezone.now)
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="charges",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-occurred_at", "-id"]
+        indexes = [models.Index(fields=["company", "occurred_at"])]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["company", "kind", "ref"],
+                condition=~models.Q(ref=""),
+                name="billing_charge_unique_ref",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.kind} ₹{self.amount_inr} — {self.label}"
+
+    @property
+    def is_invoiced(self):
+        return self.invoice_id is not None

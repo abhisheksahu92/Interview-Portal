@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Payroll · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div><h1>Payroll</h1><p>Gross from pay rates, TDS withheld, and a CSV your HRMS can import.</p></div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section ip-section--tight mb-4">
+  <form method="post" action="{% url 'contracting:payroll_run' %}" class="d-flex flex-wrap gap-2 align-items-end">
+    {% csrf_token %}
+    <div>
+      <label class="form-label small" for="{{ form.month.id_for_label }}">Payroll month</label>
+      {{ form.month }}
+    </div>
+    <button class="btn btn-sm btn-primary" type="submit">Run payroll</button>
+  </form>
+</section>
+{% if runs %}
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Payroll runs</caption>
+      <thead><tr><th scope="col">Month</th><th scope="col" class="text-end">Contractors</th>
+        <th scope="col" class="text-end">Gross</th><th scope="col" class="text-end">TDS</th>
+        <th scope="col" class="text-end">Net</th><th scope="col">Status</th><th scope="col"></th></tr></thead>
+      <tbody>
+        {% for run in runs %}
+        <tr>
+          <td><a href="{% url 'contracting:payroll_detail' run.pk %}">{{ run.label }}</a></td>
+          <td class="text-end ip-num">{{ run.headcount }}</td>
+          <td class="text-end ip-num">₹{{ run.gross_total|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ run.tds_total|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ run.net_total|floatformat:2 }}</td>
+          <td><span class="ip-badge ip-badge--{% if run.status == 'FINAL' %}success{% else %}neutral{% endif %}">{{ run.get_status_display }}</span></td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:payroll_download' run.pk %}">CSV</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-cash-stack"></i></span>
+    <div class="ip-empty__title">No payroll runs yet</div>
+    <p class="ip-muted">Pick a month above to compute contractor payouts.</p>
+  </div>
+{% endif %}
+{% endblock %}

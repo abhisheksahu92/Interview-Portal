@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Submit a candidate · Exchange{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>{{ requirement.title }}</h1>
+    <p>
+      {{ requirement.company.name }}
+      <span class="ip-meta-dot">·</span>{{ client_label|default:"Client not disclosed" }}
+      <span class="ip-meta-dot">·</span>{{ requirement.budget_label }}
+      <span class="ip-meta-dot">·</span>{{ requirement.fee_split_pct }}% of the placement fee is yours
+    </p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Offer a candidate</h2></div>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        <p class="ip-muted small">The partner sees an anonymised card — name, email and phone stay hidden until they accept.</p>
+        <div class="ip-card__actions">
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:index' %}">Back to feed</a>
+          <button class="btn btn-sm btn-primary" type="submit">Submit candidate</button>
+        </div>
+      </form>
+    </section>
+  </div>
+  <div class="col-lg-5">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>The role</h2></div>
+      <dl class="ip-kv">
+        <dt>Location</dt><dd>{{ requirement.location|default:"—" }}</dd>
+        <dt>Budget</dt><dd>{{ requirement.budget_label }}</dd>
+        <dt>Skills</dt>
+        <dd><div class="ip-chips">{% for skill in requirement.skills.all %}<span class="ip-badge ip-badge--neutral">{{ skill.name }}</span>{% empty %}—{% endfor %}</div></dd>
+        <dt>Expires</dt><dd>{{ requirement.expires_at|date:"d M Y"|default:"No expiry" }}</dd>
+      </dl>
+      {% if requirement.description %}<p class="ip-muted">{{ requirement.description|linebreaksbr }}</p>{% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% comment %}Timesheet status pill. Expects `timesheet`.{% endcomment %}
+{% if timesheet.status == "APPROVED" %}<span class="ip-badge ip-badge--success">Approved</span>
+{% elif timesheet.status == "SUBMITTED" %}<span class="ip-badge ip-badge--accent">Submitted</span>
+{% elif timesheet.status == "REJECTED" %}<span class="ip-badge ip-badge--danger">Rejected</span>
+{% elif timesheet.status == "INVOICED" %}<span class="ip-badge ip-badge--info">Invoiced</span>
+{% else %}<span class="ip-badge ip-badge--neutral">Draft</span>{% endif %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Your timesheets{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-standalone">
+  <div class="ip-page-head">
+    <div>
+      <p class="ip-eyebrow mb-2">Timesheets</p>
+      <h1>Hello {{ contractor.name }}</h1>
+      <p>This week: {{ week_start|date:"d M" }} – {{ week_end|date:"d M Y" }}. This is a private link; please do not share it.</p>
+    </div>
+  </div>
+
+  {% for card in cards %}
+    <section class="ip-section mb-4">
+      <div class="ip-section__head">
+        <h2 class="h6 mb-0">{{ card.engagement.role_title }} · {{ card.engagement.client.name }}</h2>
+        {% include "contracting/_status_badge.html" with timesheet=card.current %}
+      </div>
+      <p class="ip-muted">
+        Week of {{ card.current.period_start|date:"d M Y" }} — {{ card.current.total_hours }} hours logged.
+      </p>
+      <a class="btn btn-primary" href="{% url 'contracting:contractor_timesheet' contractor.token card.current.pk %}">
+        {% if card.current.is_editable %}Fill in this week{% else %}View this week{% endif %}
+      </a>
+      {% if card.recent %}
+        <ul class="list-unstyled mt-3 mb-0">
+          {% for timesheet in card.recent %}
+            <li class="d-flex align-items-center gap-2 py-1">
+              <a href="{% url 'contracting:contractor_timesheet' contractor.token timesheet.pk %}">
+                {{ timesheet.period_start|date:"d M" }} – {{ timesheet.period_end|date:"d M Y" }}
+              </a>
+              <span class="ip-muted">{{ timesheet.total_hours }} h</span>
+              {% include "contracting/_status_badge.html" with timesheet=timesheet %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </section>
+  {% empty %}
+    <div class="ip-empty">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-clipboard"></i></span>
+      <div class="ip-empty__title">No active engagements</div>
+      <p class="ip-muted">Your recruitment contact will be in touch when a placement starts.</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Timesheet {{ timesheet.period_start|date:"d M Y" }}{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-standalone">
+  <div class="ip-page-head">
+    <div>
+      <p class="ip-eyebrow mb-2">{{ engagement.client.name }} · {{ engagement.role_title }}</p>
+      <h1>{{ timesheet.period_start|date:"d M" }} – {{ timesheet.period_end|date:"d M Y" }}</h1>
+      <p>{{ quantity|floatformat:2 }} {{ unit_label }} logged so far.</p>
+    </div>
+    <div class="ip-page-head__actions">
+      {% include "contracting/_status_badge.html" with timesheet=timesheet %}
+      <a class="btn btn-outline-secondary" href="{% url 'contracting:contractor_portal' contractor.token %}">All timesheets</a>
+    </div>
+  </div>
+
+  {% if timesheet.client_note %}
+    <div class="alert alert-warning">
+      <strong>Note from {{ engagement.client.name }}:</strong> {{ timesheet.client_note }}
+    </div>
+  {% endif %}
+
+  <form method="post" class="ip-section">
+    {% csrf_token %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Hours worked each day this period</caption>
+        <thead><tr><th scope="col">Day</th><th scope="col">Hours</th><th scope="col">Note</th></tr></thead>
+        <tbody>
+          {% for day in days %}
+          <tr{% if day.is_weekend %} class="ip-muted"{% endif %}>
+            <th scope="row" class="fw-normal">
+              <label for="hours-{{ day.iso }}">{{ day.date|date:"D d M" }}</label>
+            </th>
+            <td style="max-width:9rem">
+              <input class="form-control form-control-sm" type="number" min="0" max="24" step="0.25"
+                     id="hours-{{ day.iso }}" name="hours-{{ day.iso }}" value="{{ day.hours }}"
+                     {% if not timesheet.is_editable %}disabled{% endif %}>
+            </td>
+            <td>
+              <input class="form-control form-control-sm" type="text" maxlength="200"
+                     aria-label="Note for {{ day.date|date:'D d M' }}"
+                     name="note-{{ day.iso }}" value="{{ day.note }}"
+                     {% if not timesheet.is_editable %}disabled{% endif %}>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if timesheet.is_editable %}
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-outline-secondary" type="submit" name="action" value="save">Save draft</button>
+        <button class="btn btn-primary" type="submit" name="action" value="submit">Submit for approval</button>
+      </div>
+    {% else %}
+      <p class="ip-muted mt-3 mb-0">This timesheet is {{ timesheet.get_status_display|lower }} and can no longer be changed.</p>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

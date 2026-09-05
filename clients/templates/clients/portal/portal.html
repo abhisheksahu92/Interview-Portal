@@ -1,4 +1,4 @@
-{% extends "clients/portal/base.html" %}
+{% extends "clients/portal/base.html" %}{% load features %}
 {% block content %}
 {% if groups %}
   {% for group in groups %}
@@ -118,5 +118,9 @@
     <h2 class="h6">No candidates yet</h2>
     <p class="ip-muted mb-0">Your recruiting partner has not submitted anyone for review yet.</p>
   </div>
+{% endif %}
+
+{% if access.client.company|has_feature:"contracting" %}
+  {% include "contracting/partials/portal_timesheets.html" with access=access %}
 {% endif %}
 {% endblock %}

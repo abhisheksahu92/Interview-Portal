@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}{{ contractor.name }} · Contracting{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-eyebrow mb-2">Contractor</p>
+    <h1>{{ contractor.name }}</h1>
+    <p>
+      {{ contractor.get_status_display }}
+      {% if contractor.email %}<span class="ip-meta-dot">·</span>{{ contractor.email }}{% endif %}
+      {% if contractor.pan %}<span class="ip-meta-dot">·</span>PAN {{ contractor.pan }}{% endif %}
+    </p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:contractor_edit' contractor.pk %}">Edit</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'contracting:engagement_create' contractor.pk %}">New engagement</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-6">
+    <section class="ip-section mb-4">
+      <div class="ip-section__head">
+        <h2 class="h6 mb-0">Onboarding checklist</h2>
+        <span class="ip-badge ip-badge--{% if progress.complete %}success{% else %}warning{% endif %}">{{ progress.done }}/{{ progress.total }}</span>
+      </div>
+      <ul class="list-unstyled mb-0">
+        {% for row in checklist %}
+          <li class="d-flex align-items-center gap-2 py-1">
+            {% if row.done %}<i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+            {% else %}<i class="bi bi-circle ip-muted" aria-hidden="true"></i>{% endif %}
+            <span>{{ row.label }}</span>
+            {% if row.kind == "document" and row.done %}
+              {% if row.verified %}<span class="ip-badge ip-badge--success">Verified</span>
+              {% else %}<span class="ip-badge ip-badge--neutral">Unverified</span>{% endif %}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="ip-section mb-4">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Documents</h2></div>
+      <ul class="list-unstyled">
+        {% for document in contractor.documents.all %}
+          <li class="ip-file-row d-flex align-items-center gap-2 py-1">
+            <span>{{ document.get_kind_display }}</span>
+            <span class="ip-muted small">{{ document.created_at|date:"d M Y" }}</span>
+            {% if document.is_verified %}
+              <span class="ip-badge ip-badge--success ms-auto">Verified</span>
+            {% else %}
+              <form class="ms-auto" method="post" action="{% url 'contracting:document_verify' contractor.pk document.pk %}">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Mark verified</button>
+              </form>
+            {% endif %}
+          </li>
+        {% empty %}
+          <li class="ip-muted">Nothing uploaded yet.</li>
+        {% endfor %}
+      </ul>
+      <form method="post" enctype="multipart/form-data" action="{% url 'contracting:document_upload' contractor.pk %}" class="pt-3 border-top">
+        {% csrf_token %}
+        <div class="row g-2 align-items-end">
+          <div class="col-sm-4"><label class="form-label small" for="{{ document_form.kind.id_for_label }}">Kind</label>{{ document_form.kind }}</div>
+          <div class="col-sm-5"><label class="form-label small" for="{{ document_form.file.id_for_label }}">File</label>{{ document_form.file }}</div>
+          <div class="col-sm-3"><button class="btn btn-sm btn-primary w-100" type="submit">Upload</button></div>
+        </div>
+        <div class="form-text">PDF, Word, text or image, up to 5 MB.</div>
+      </form>
+    </section>
+  </div>
+
+  <div class="col-lg-6">
+    <section class="ip-section mb-4">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Timesheet link</h2></div>
+      <p class="ip-muted small">Send this private link to {{ contractor.name }} to log hours — no account needed.</p>
+      <p class="ip-mono small text-break">{{ timesheet_url }}</p>
+      <form method="post" action="{% url 'contracting:contractor_rotate_link' contractor.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-outline-secondary" type="submit">Generate a new link</button>
+      </form>
+    </section>
+
+    <section class="ip-section ip-section--flush mb-4">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Engagements</h2></div>
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Engagements for this contractor</caption>
+          <thead><tr><th scope="col">Client</th><th scope="col">Role</th><th scope="col" class="text-end">Bill</th><th scope="col" class="text-end">Pay</th><th scope="col"></th></tr></thead>
+          <tbody>
+            {% for engagement in engagements %}
+            <tr>
+              <td>{{ engagement.client.name }}</td>
+              <td class="ip-muted">{{ engagement.role_title }}</td>
+              <td class="text-end ip-num">₹{{ engagement.bill_rate_inr|floatformat:2 }}</td>
+              <td class="text-end ip-num">₹{{ engagement.pay_rate_inr|floatformat:2 }}</td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:engagement_edit' engagement.pk %}">Edit</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="ip-muted">Not placed with a client yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="ip-section ip-section--flush">
+      <div class="ip-section__head"><h2 class="h6 mb-0">Recent timesheets</h2></div>
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Recent timesheets for this contractor</caption>
+          <thead><tr><th scope="col">Period</th><th scope="col">Client</th><th scope="col" class="text-end">Hours</th><th scope="col">Status</th></tr></thead>
+          <tbody>
+            {% for timesheet in timesheets %}
+            <tr>
+              <td class="text-nowrap">{{ timesheet.period_start|date:"d M" }} – {{ timesheet.period_end|date:"d M Y" }}</td>
+              <td class="ip-muted">{{ timesheet.engagement.client.name }}</td>
+              <td class="text-end ip-num">{{ timesheet.total_hours }}</td>
+              <td>{% include "contracting/_status_badge.html" with timesheet=timesheet %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="ip-muted">No timesheets yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -30,6 +30,7 @@ def _plan_with_fee(company, amount):
 
 
 def test_no_fee_when_the_plan_has_none(company):
+    """The legacy FREE tier carries neither a success fee nor a per-hire fee."""
     application = _application(company)
     application.status = Application.HIRED
     application.save()

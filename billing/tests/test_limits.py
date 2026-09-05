@@ -7,20 +7,25 @@ from billing.services import get_subscription, pro_plan
 from jobs.models import Job
 
 
-def test_new_company_is_provisioned_on_a_free_plan(company):
+def test_new_company_is_provisioned_on_a_metered_plan(company):
     """A post_save signal meters every company from the moment it is created."""
     subscription = Subscription.objects.get(company=company)
+    # Premise changed in phase 4: new companies are billed on STARTER; the
+    # `company` fixture pins the legacy FREE tier so older tests keep their
+    # baseline (see test_provisioning for the new default).
     assert subscription.plan.code == Plan.FREE
     assert subscription.status == Subscription.ACTIVE
     # get_subscription is idempotent and returns that same row
     assert get_subscription(company).pk == subscription.pk
 
 
-def test_free_subscription_is_created_lazily(company):
+def test_subscription_is_created_lazily(company):
+    # Premise changed in phase 4: a lazily created subscription lands on
+    # STARTER (FREE is legacy-only), trialling into the AGENCY tier.
     Subscription.objects.filter(company=company).delete()
     subscription = get_subscription(company)
-    assert subscription.plan.code == Plan.FREE
-    assert subscription.plan.max_open_jobs == 1
+    assert subscription.plan.code == Plan.STARTER
+    assert subscription.plan.max_open_jobs == 3
     assert subscription.status == Subscription.TRIALING
     # idempotent
     assert get_subscription(company).pk == subscription.pk
@@ -31,7 +36,11 @@ def test_seed_migration_created_every_tier(db):
     pro = Plan.objects.get(code=Plan.PRO)
     assert pro.max_open_jobs == 25
     assert pro.price_monthly == 49
-    assert Plan.objects.get(code=Plan.STARTER).price_monthly_inr == 1499
+    # Premise changed in phase 4: STARTER is ₹999 *per recruiter seat*.
+    starter = Plan.objects.get(code=Plan.STARTER)
+    assert starter.price_monthly_inr == 999
+    assert starter.pricing_model == Plan.SEAT
+    assert starter.success_fee_inr == 4999
     assert Plan.objects.get(code=Plan.GROWTH).price_monthly_inr == 4999
     agency = Plan.objects.get(code=Plan.AGENCY)
     assert agency.price_monthly_inr == 12999
@@ -106,7 +115,8 @@ def test_provision_subscriptions_command_meters_existing_companies(company):
     Subscription.objects.filter(company=company).delete()
     call_command("provision_subscriptions", verbosity=0)
     subscription = Subscription.objects.get(company=company)
-    assert subscription.plan.code == Plan.FREE
+    # Premise changed in phase 4: the backfill provisions STARTER, not FREE.
+    assert subscription.plan.code == Plan.STARTER
 
 
 def test_canceled_pro_subscription_falls_back_to_free_limits(company):

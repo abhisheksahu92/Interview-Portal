@@ -18,19 +18,21 @@ def test_trial_grants_every_agency_feature(trial_company):
     assert all(has_feature(trial_company, name) for name in FEATURES)
 
 
-def test_trial_is_billed_on_free_but_entitled_to_agency(trial_company):
+def test_trial_is_billed_on_starter_but_entitled_to_agency(trial_company):
+    # Premise changed in phase 4: the trial is billed on STARTER, not FREE.
     subscription = get_subscription(trial_company)
-    assert subscription.plan.code == Plan.FREE
+    assert subscription.plan.code == Plan.STARTER
     assert subscription.status == Subscription.TRIALING
     assert plan_for(trial_company).max_seats == Plan.objects.get(code=Plan.AGENCY).max_seats
 
 
-def test_expired_trial_falls_back_to_free(trial_company):
+def test_expired_trial_falls_back_to_the_billed_starter_tier(trial_company):
+    # Premise changed in phase 4: an expired trial lands on STARTER.
     Subscription.objects.filter(company=trial_company).update(
-        trial_ends_at=timezone.now() - timedelta(minutes=1)
+        status=Subscription.ACTIVE, trial_ends_at=timezone.now() - timedelta(minutes=1)
     )
     trial_company.refresh_from_db()
-    assert plan_for(trial_company).code == Plan.FREE
+    assert plan_for(trial_company).code == Plan.STARTER
     assert has_feature(trial_company, "client_portal") is False
 
 
@@ -52,6 +54,7 @@ def test_expire_trials_command_is_idempotent(trial_company):
     call_command("expire_trials", verbosity=0)
     subscription = Subscription.objects.get(company=trial_company)
     assert subscription.status == Subscription.ACTIVE
+    assert subscription.plan.code == Plan.STARTER
     assert subscription.in_trial is False
     call_command("expire_trials", verbosity=0)
     assert Subscription.objects.get(company=trial_company).status == Subscription.ACTIVE

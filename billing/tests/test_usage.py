@@ -18,9 +18,12 @@ def _upgrade(company, code):
 
 
 def test_free_plan_has_no_ai_credits(company):
+    # Premise changed in phase 4: AI screening past the allowance is *billed*
+    # as overage rather than blocked (see test_placement_pricing for the
+    # hard_cap opt-out), so the quota is zero but the call still succeeds.
     assert usage.quota(company, usage.AI_SCREEN) == 0
-    with pytest.raises(usage.QuotaExceeded):
-        usage.consume(company, usage.AI_SCREEN)
+    record = usage.consume(company, usage.AI_SCREEN)
+    assert record.overage is True
 
 
 def test_ai_credits_come_from_the_plan(company):
@@ -47,8 +50,11 @@ def test_video_minutes_are_agency_only(company):
     assert usage.quota(company, usage.VIDEO_MINUTE) == 300
 
 
-def test_consume_raises_once_the_quota_is_spent(company):
+def test_consume_raises_once_the_quota_is_spent_under_a_hard_cap(company):
+    # Premise changed in phase 4: only a hard-capped subscription refuses;
+    # otherwise the extra screens land on the monthly invoice.
     _upgrade(company, Plan.STARTER)
+    Subscription.objects.filter(company=company).update(hard_cap=True)
     usage.consume(company, usage.AI_SCREEN, qty=50)
     with pytest.raises(usage.QuotaExceeded) as exc:
         usage.consume(company, usage.AI_SCREEN)
@@ -58,7 +64,10 @@ def test_consume_raises_once_the_quota_is_spent(company):
 
 
 def test_consume_never_partially_records_an_overflowing_batch(company):
+    # Premise changed in phase 4: the all-or-nothing guarantee now applies to a
+    # hard-capped subscription (an uncapped one bills the excess instead).
     _upgrade(company, Plan.STARTER)
+    Subscription.objects.filter(company=company).update(hard_cap=True)
     with pytest.raises(usage.QuotaExceeded):
         usage.consume(company, usage.AI_SCREEN, qty=51)
     assert usage.used(company, usage.AI_SCREEN) == 0

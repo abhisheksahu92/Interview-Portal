@@ -23,6 +23,14 @@
   </div>
 {% endif %}
 
+{% if in_grace %}
+  <div class="alert alert-warning">
+    <strong>Grace period:</strong> your trial has ended and you are now on the
+    {{ subscription.plan.name }} plan. Plan limits are not enforced until
+    {{ grace_until|date:"j M Y" }} — pick a plan before then.
+  </div>
+{% endif %}
+
 {% if not_configured %}
   <div class="alert alert-warning">
     No payment provider is configured on this server, so upgrades are disabled.
@@ -71,6 +79,47 @@
 </div>
 
 <section class="mb-5">
+  <div class="ip-section__head"><h2>This month so far</h2></div>
+  <div class="ip-section">
+    <p class="ip-muted small">
+      Your running bill for {{ projection.period_label }}
+      {% if projection.invoiced %}(already invoiced){% else %}(invoiced at month end){% endif %}.
+    </p>
+    {% if projection.lines %}
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <caption class="visually-hidden">Projected charges for this month</caption>
+          <thead>
+            <tr><th scope="col">Charge</th><th scope="col" class="text-end">Qty</th>
+              <th scope="col" class="text-end">Unit</th><th scope="col" class="text-end">Amount</th></tr>
+          </thead>
+          <tbody>
+            {% for line in projection.lines %}
+              <tr>
+                <td>{{ line.label }}</td>
+                <td class="text-end ip-muted">{{ line.qty }}</td>
+                <td class="text-end ip-muted">₹{{ line.unit_inr }}</td>
+                <td class="text-end">₹{{ line.total_inr }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr><th scope="row" colspan="3" class="text-end">Subtotal</th>
+              <td class="text-end">₹{{ projection.subtotal|inr }}</td></tr>
+            <tr><th scope="row" colspan="3" class="text-end">GST 18%</th>
+              <td class="text-end">₹{{ projection.tax|inr }}</td></tr>
+            <tr><th scope="row" colspan="3" class="text-end">Projected total</th>
+              <td class="text-end"><strong>₹{{ projection.total|inr }}</strong></td></tr>
+          </tfoot>
+        </table>
+      </div>
+    {% else %}
+      <p class="ip-muted small mb-0">Nothing billable yet this month.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="mb-5">
   <div class="ip-section__head"><h2>Monthly usage</h2></div>
   <div class="ip-meter-grid">
     {% for row in usage_rows %}
@@ -112,12 +161,31 @@
         </div>
         <div class="ip-plan__price">
           {% if interval == 'YEARLY' %}
-            ₹{{ p.price_yearly_inr|inr }} <span>/ year</span>
+            ₹{{ p.price_yearly_inr|inr }} <span>/ year{% if p.is_seat_based %} per seat{% endif %}</span>
           {% else %}
-            ₹{{ p.price_monthly_inr|inr }} <span>/ month</span>
+            ₹{{ p.price_monthly_inr|inr }} <span>/ month{% if p.is_seat_based %} per seat{% endif %}</span>
           {% endif %}
         </div>
+        <p class="ip-muted small">
+          {% if p.is_seat_based %}
+            Billed per recruiter seat — you have {{ seats_used }} seat{{ seats_used|pluralize }},
+            so ₹{{ p.price_monthly_inr|inr }} × {{ seats_used }} per month.
+          {% else %}
+            Flat monthly price, whatever the size of your team.
+          {% endif %}
+          {% if p.success_fee_inr %}
+            Plus a ₹{{ p.success_fee_inr|inr }} success fee per hire.
+          {% else %}
+            No success fee per hire.
+          {% endif %}
+        </p>
         <ul class="ip-plan__list">
+          <li><i class="bi bi-check2" aria-hidden="true"></i>
+            {% if p.is_seat_based %}₹{{ p.price_monthly_inr|inr }} per seat / month{% else %}Flat ₹{{ p.price_monthly_inr|inr }} / month{% endif %}</li>
+          <li><i class="bi bi-check2" aria-hidden="true"></i>
+            {% if p.success_fee_inr %}₹{{ p.success_fee_inr|inr }} success fee per hire{% else %}Zero success fee per hire{% endif %}</li>
+          <li><i class="bi bi-check2" aria-hidden="true"></i>
+            {{ p.ai_included }} AI screens included, then ₹{{ p.ai_overage_inr|floatformat:0 }} each</li>
           <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_open_jobs }} open job{{ p.max_open_jobs|pluralize }}</li>
           <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.max_seats }} seats</li>
           <li><i class="bi bi-check2" aria-hidden="true"></i> {{ p.ai_credits_monthly }} AI credits / month</li>
@@ -235,18 +303,22 @@
 {% if placement_fees %}
   <section class="mb-5">
     <div class="ip-section__head"><h2>Placement fees</h2></div>
+    <p class="ip-muted small">Every hire on a plan with a success fee is charged once, on that month's invoice.</p>
     <div class="ip-table-wrap">
       <table class="ip-table">
-        <caption class="visually-hidden">Placement fees charged on hires</caption>
-        <thead><tr><th scope="col">Hire</th><th scope="col">Job</th>
-          <th scope="col" class="text-end">Amount</th><th scope="col">Status</th></tr></thead>
+        <caption class="visually-hidden">Success fees charged on hires</caption>
+        <thead><tr><th scope="col">Hire</th><th scope="col">Candidate</th><th scope="col">Job</th>
+          <th scope="col" class="text-end">Fee</th><th scope="col">Invoiced</th></tr></thead>
         <tbody>
           {% for fee in placement_fees %}
             <tr>
               <td class="text-nowrap">{{ fee.created_at|date:"j M Y" }}</td>
+              <td>{{ fee.application.candidate }}</td>
               <td>{{ fee.application.job.title }}</td>
               <td class="text-end">₹{{ fee.amount|inr }}</td>
-              <td class="ip-muted">{{ fee.get_status_display }}</td>
+              <td class="ip-muted text-nowrap">
+                {% if fee.invoice %}{{ fee.invoice.number }}{% else %}Not yet — {{ fee.get_status_display|lower }}{% endif %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Partners · Exchange{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Exchange partners</h1>
+    <p>Trusted agencies you swap requirements and candidates with.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:index' %}">Feed</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Invite a partner</h2></div>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.target.id_for_label }}">{{ form.target.label }}</label>
+          {{ form.target }}
+          {% for error in form.target.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
+        </div>
+        <button class="btn btn-sm btn-primary" type="submit">Send request</button>
+      </form>
+    </section>
+  </div>
+  <div class="col-lg-7">
+    <section class="ip-section ip-section--flush">
+      <div class="ip-table-wrap">
+        <table class="ip-table">
+          <thead><tr><th>Company</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                <td>{{ row.other.name }}</td>
+                <td><span class="ip-badge ip-badge--{% if row.link.status == 'ACTIVE' %}success{% elif row.link.status == 'BLOCKED' %}danger{% else %}neutral{% endif %}">{{ row.link.get_status_display }}</span>
+                  {% if row.incoming %}<span class="ip-badge ip-badge--light">Awaiting you</span>{% endif %}
+                </td>
+                <td class="text-end">
+                  <div class="d-flex gap-2 justify-content-end">
+                    {% if row.incoming %}
+                      <form method="post" action="{% url 'exchange:partner_accept' row.link.pk %}" class="m-0">
+                        {% csrf_token %}<button class="btn btn-sm btn-primary" type="submit">Accept</button>
+                      </form>
+                    {% endif %}
+                    {% if row.link.status == 'BLOCKED' %}
+                      <form method="post" action="{% url 'exchange:partner_unblock' row.link.pk %}" class="m-0">
+                        {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Unblock</button>
+                      </form>
+                    {% else %}
+                      <form method="post" action="{% url 'exchange:partner_block' row.link.pk %}" class="m-0">
+                        {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Block</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="ip-empty ip-empty--sm"><div class="ip-empty__title">No partners yet</div><p class="ip-muted">Invite an agency by its company slug or an owner's email.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

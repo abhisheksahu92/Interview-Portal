@@ -18,9 +18,18 @@ def media_root(settings, tmp_path):
 
 
 def end_trial(company):
-    """Push a company past its 14-day trial (most tests want steady state)."""
+    """Push a company past its 14-day trial, billed on the legacy FREE tier.
+
+    New companies are provisioned on STARTER from phase 4 on; this fixture keeps
+    the legacy FREE baseline the older limit/entitlement tests are written
+    against, and tests that care about the new default create their own company.
+    """
+    from billing.services import free_plan
+
     Subscription.objects.filter(company=company).update(
-        status=Subscription.ACTIVE, trial_ends_at=timezone.now() - timedelta(days=1)
+        plan=free_plan(),
+        status=Subscription.ACTIVE,
+        trial_ends_at=timezone.now() - timedelta(days=1),
     )
     company.refresh_from_db()
     return company
@@ -34,7 +43,7 @@ def trial_company(db):
 
 @pytest.fixture
 def company(db):
-    """A company whose trial has ended (billed on FREE unless a test upgrades)."""
+    """A legacy company whose trial has ended (billed on FREE unless upgraded)."""
     return end_trial(Company.objects.create(name="Acme Staffing"))
 
 

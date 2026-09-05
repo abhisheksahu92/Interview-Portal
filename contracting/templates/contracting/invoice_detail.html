@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ invoice.number }} · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-eyebrow mb-2">Client invoice</p>
+    <h1>{{ invoice.number }}</h1>
+    <p>{{ invoice.client.name }} · {{ invoice.period_start|date:"d M" }} – {{ invoice.period_end|date:"d M Y" }}</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <span class="ip-badge ip-badge--{{ invoice.status_kind }}">{{ invoice.get_status_display }}</span>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:invoice_pdf' invoice.pk %}">Download PDF</a>
+    {% if not invoice.is_paid %}
+      <form class="d-inline" method="post" action="{% url 'contracting:invoice_send' invoice.pk %}">
+        {% csrf_token %}<button class="btn btn-sm btn-primary" type="submit">{% if invoice.sent_at %}Resend{% else %}Send{% endif %}</button>
+      </form>
+      <form class="d-inline" method="post" action="{% url 'contracting:invoice_mark_paid' invoice.pk %}">
+        {% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Mark paid</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section ip-section--flush mb-4">
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Invoice lines</caption>
+      <thead><tr><th scope="col">Description</th><th scope="col" class="text-end">Qty</th><th scope="col" class="text-end">Rate</th><th scope="col" class="text-end">Amount</th></tr></thead>
+      <tbody>
+        {% for item in invoice.line_items %}
+        <tr>
+          <td>{{ item.label }}</td>
+          <td class="text-end ip-num">{{ item.qty|floatformat:2 }} {{ item.unit_label }}</td>
+          <td class="text-end ip-num">₹{{ item.unit_inr|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ item.total_inr|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+        <tr><td colspan="3" class="text-end">Subtotal</td><td class="text-end ip-num">₹{{ invoice.subtotal|floatformat:2 }}</td></tr>
+        {% if invoice.is_intra_state %}
+          <tr><td colspan="3" class="text-end ip-muted">CGST</td><td class="text-end ip-num">₹{{ invoice.cgst|floatformat:2 }}</td></tr>
+          <tr><td colspan="3" class="text-end ip-muted">SGST</td><td class="text-end ip-num">₹{{ invoice.sgst|floatformat:2 }}</td></tr>
+        {% else %}
+          <tr><td colspan="3" class="text-end ip-muted">IGST @ {{ invoice.gst_rate|floatformat:0 }}%</td><td class="text-end ip-num">₹{{ invoice.igst|floatformat:2 }}</td></tr>
+        {% endif %}
+        <tr><td colspan="3" class="text-end"><strong>Total</strong></td><td class="text-end ip-num"><strong>₹{{ invoice.total|floatformat:2 }}</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section class="ip-section ip-section--tight">
+  <div class="ip-section__head">
+    <h2 class="h6 mb-0">Billing details</h2>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:billing_profile' invoice.client.pk %}">Edit</a>
+  </div>
+  <p class="ip-muted mb-0">
+    GSTIN {{ invoice.gstin|default:"—" }} · Place of supply {{ invoice.place_of_supply|default:"—" }}
+    · Terms {{ profile.payment_terms_days }} days
+  </p>
+</section>
+{% endblock %}

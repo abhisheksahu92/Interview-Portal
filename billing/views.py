@@ -54,16 +54,21 @@ def _overview_context(request, details_form=None):
             "pro_plan": pro_plan(),
             "invoices": list(Invoice.objects.filter(company=company)[:24]),
             "placement_fees": list(
-                company.placement_fees.select_related("application__job")[:24]
+                company.placement_fees.select_related(
+                    "application__job", "application__candidate", "invoice"
+                )[:24]
             ),
             "provider": provider_choice(),
             "razorpay_ready": razorpay_gateway.is_configured(),
             "stripe_ready": gateway.is_configured() and bool(settings.STRIPE_PRICE_ID_PRO),
+            # Yearly is the default view (two months free); ?interval=MONTHLY
+            # switches back.
             "interval": (
-                Subscription.YEARLY
-                if request.GET.get("interval") == Subscription.YEARLY
-                else Subscription.MONTHLY
+                Subscription.MONTHLY
+                if request.GET.get("interval") == Subscription.MONTHLY
+                else Subscription.YEARLY
             ),
+            "projection": invoicing.projected_bill(company),
             "intervals": Subscription.INTERVAL_CHOICES,
             "is_owner": request.user.role_in(company) == Membership.OWNER,
             "details_form": details_form or BillingDetailsForm.from_subscription(subscription),

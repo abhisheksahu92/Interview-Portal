@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Exchange · {{ company.name }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Exchange</h1>
+    <p>Requirements from your partner network. Responding is free on every plan{% if not can_publish %} — publishing needs the Agency plan{% endif %}.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:partners' %}">Partners</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:submissions' %}">My submissions</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:requirements' %}">My requirements</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'exchange:publish' %}">Publish to exchange</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-3">
+    <section class="ip-section">
+      <div class="ip-section__head"><h2>Filters</h2></div>
+      <form method="get" action="{% url 'exchange:index' %}" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.q.id_for_label }}">{{ form.q.label }}</label>
+          {{ form.q }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.skills.id_for_label }}">Skills</label>
+          {{ form.skills }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.location.id_for_label }}">Location</label>
+          {{ form.location }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.budget_min.id_for_label }}">{{ form.budget_min.label }}</label>
+          {{ form.budget_min }}
+        </div>
+        <button class="btn btn-sm btn-primary w-100" type="submit">Apply filters</button>
+      </form>
+    </section>
+    <section class="ip-section mt-4">
+      <div class="ip-section__head"><h2>Network</h2></div>
+      <p class="ip-muted small mb-0">{{ partner_count }} active partner{{ partner_count|pluralize }}. Partner-only requirements are visible to accepted partners; network requirements are open to everyone.</p>
+    </section>
+  </div>
+  <div class="col-lg-9">
+    {% include "exchange/partials/feed_results.html" %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Engagements · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div><h1>Engagements</h1><p>Every placement, with its rates and margin per unit.</p></div>
+</div>
+{% endblock %}
+{% block content %}
+{% if engagements %}
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Contractor engagements</caption>
+      <thead>
+        <tr><th scope="col">Contractor</th><th scope="col">Client</th><th scope="col">Role</th>
+            <th scope="col">Unit</th><th scope="col" class="text-end">Bill</th>
+            <th scope="col" class="text-end">Pay</th><th scope="col" class="text-end">Margin</th>
+            <th scope="col">Status</th><th scope="col"></th></tr>
+      </thead>
+      <tbody>
+        {% for engagement in engagements %}
+        <tr>
+          <td><a href="{% url 'contracting:contractor_detail' engagement.contractor.pk %}">{{ engagement.contractor.name }}</a></td>
+          <td class="ip-muted">{{ engagement.client.name }}</td>
+          <td class="ip-muted">{{ engagement.role_title }}</td>
+          <td class="ip-muted">{{ engagement.get_rate_unit_display }}</td>
+          <td class="text-end ip-num">₹{{ engagement.bill_rate_inr|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ engagement.pay_rate_inr|floatformat:2 }}</td>
+          <td class="text-end ip-num">₹{{ engagement.margin_per_unit|floatformat:2 }} <span class="ip-muted">({{ engagement.margin_percent|floatformat:1 }}%)</span></td>
+          <td><span class="ip-badge ip-badge--{% if engagement.status == 'ACTIVE' %}success{% else %}neutral{% endif %}">{{ engagement.get_status_display }}</span></td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:engagement_edit' engagement.pk %}">Edit</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-briefcase"></i></span>
+    <div class="ip-empty__title">No engagements yet</div>
+    <p class="ip-muted">Open a contractor and place them with a client to begin.</p>
+  </div>
+{% endif %}
+{% endblock %}

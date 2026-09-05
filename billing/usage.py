@@ -4,13 +4,14 @@ Public API::
 
     from billing import usage
 
-    usage.consume(company, usage.AI_SCREEN)        # raises QuotaExceeded
+    usage.consume(company, usage.AI_SCREEN)        # billed overage, or QuotaExceeded
     usage.remaining(company, usage.WHATSAPP_MSG)   # int, or None = unlimited
     usage.quota(company, usage.VIDEO_MINUTE)
     usage.snapshot(company)                        # for the billing overview
 """
 
 import logging
+from decimal import Decimal
 
 from django.db.models import Sum
 from django.utils import timezone
@@ -60,7 +61,7 @@ def quota(company, kind):
     if plan is None:
         return 0
     if kind == AI_SCREEN:
-        return int(plan.ai_credits_monthly or 0)
+        return plan.ai_allowance
     if kind == WHATSAPP_MSG:
         return int(WHATSAPP_QUOTAS.get(plan.code, 0))
     if kind == VIDEO_MINUTE:
@@ -81,11 +82,34 @@ def remaining(company, kind, moment=None):
     return max(0, quota(company, kind) - used(company, kind, moment=moment))
 
 
+def hard_capped(company):
+    """True when this company has opted out of billed overage."""
+    from billing.models import Subscription
+
+    return bool(
+        Subscription.objects.filter(company=company, hard_cap=True).exists()
+    )
+
+
+def overage_price(company, kind):
+    """Per-unit price of one unit beyond the allowance (0 = not billable)."""
+    from billing.entitlements import plan_for
+
+    if kind != AI_SCREEN:
+        return Decimal("0")
+    plan = plan_for(company)
+    return Decimal(getattr(plan, "ai_overage_inr", 0) or 0)
+
+
 def consume(company, kind, qty=1):
     """Record ``qty`` units of ``kind`` for ``company``.
 
-    Raises :class:`QuotaExceeded` when the plan allowance would be passed, and
-    fires a ``usage_warning`` notification the first time usage crosses 80%.
+    Past the plan allowance AI screening is *billed*, not blocked: the record
+    is flagged ``overage`` and a matching ``AI_OVERAGE`` charge lands on the
+    next monthly invoice through :func:`billing.ledger.add_charge`. A company
+    that would rather stop than pay sets ``Subscription.hard_cap``, and other
+    metered kinds (WhatsApp, video) still raise :class:`QuotaExceeded`. The
+    ``usage_warning`` notification still fires the first time usage crosses 80%.
     """
     if company is None:
         raise QuotaExceeded(kind, 0, 0)
@@ -97,16 +121,44 @@ def consume(company, kind, qty=1):
 
     allowance = quota(company, kind)
     before = used(company, kind)
-    if before + qty > allowance:
-        raise QuotaExceeded(kind, allowance, before)
+    after = before + qty
+    is_overage = after > allowance
+    if is_overage:
+        unit = overage_price(company, kind)
+        if not unit or hard_capped(company):
+            raise QuotaExceeded(kind, allowance, before)
 
     record = UsageRecord.objects.create(
-        company=company, kind=kind, quantity=qty, period_start=period_start()
+        company=company,
+        kind=kind,
+        quantity=qty,
+        period_start=period_start(),
+        overage=is_overage,
     )
-    after = before + qty
+    if is_overage:
+        _bill_overage(company, kind, before, after, allowance)
     if allowance and before < allowance * warn_threshold <= after:
         _warn(company, kind, after, allowance)
     return record
+
+
+def _bill_overage(company, kind, before, after, allowance):
+    """Keep this period's AI overage charge in step with recorded usage."""
+    from billing import ledger
+
+    units = after - max(before, allowance)
+    if units <= 0:
+        return None
+    start = period_start()
+    total_units = max(0, after - allowance)
+    unit = overage_price(company, kind)
+    return ledger.add_charge(
+        company,
+        ledger.AI_OVERAGE,
+        f"AI screening overage — {total_units} beyond {allowance} included",
+        Decimal(total_units) * unit,
+        ref=f"ai-overage:{start:%Y-%m}",
+    )
 
 
 def _warn(company, kind, used_now, allowance):
@@ -147,6 +199,8 @@ def snapshot(company):
                 "percent": min(100, percent),
                 "warning": bool(allowance) and percent >= int(warn_threshold * 100),
                 "included": bool(allowance),
+                "over": max(0, consumed - allowance),
+                "overage_inr": overage_price(company, kind),
             }
         )
     return rows

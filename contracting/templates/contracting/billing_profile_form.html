@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Billing details · {{ client.name }}{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <p class="ip-eyebrow mb-2">{{ client.name }}</p>
+    <h1>Billing details</h1>
+    <p>The GST state code decides whether invoices split CGST/SGST or charge IGST.</p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section" style="max-width:640px">
+  <form method="post" class="ip-form-fields">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+    <button class="btn btn-sm btn-primary" type="submit">Save billing details</button>
+  </form>
+</section>
+{% endblock %}

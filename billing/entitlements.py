@@ -38,6 +38,8 @@ FEATURES = (
     "marketplace",
     "white_label",
     "integrations",
+    "contracting",
+    "exchange",
 )
 
 #: Human-readable names for the flags above, for plan cards and gate messages.
@@ -55,6 +57,8 @@ FEATURE_LABELS = {
     "marketplace": "Question marketplace",
     "white_label": "White-label branding",
     "integrations": "Webhooks and integrations",
+    "contracting": "Contracting back office",
+    "exchange": "Agency requirement exchange",
 }
 
 
@@ -75,15 +79,17 @@ class FeatureNotAvailable(PermissionDenied):
 def plan_for(company):
     """The Plan governing ``company``, or None when it cannot be determined.
 
-    Honours the 14-day trial: a company still inside its trial window and not
-    yet on a paid plan is entitled to the full trial tier (AGENCY). Once the
-    trial has expired it falls back to FREE unless it has paid.
+    Honours the 14-day trial: a company whose subscription is still TRIALING
+    inside its trial window is entitled to the full trial tier (AGENCY),
+    whatever tier it is billed on. Once the trial has expired the billed tier
+    applies — STARTER for companies provisioned from phase 4 on, FREE for
+    legacy rows and cancelled subscriptions.
     """
     if company is None:
         return None
     subscription = getattr(company, "subscription", None)
     if subscription is not None:
-        if subscription.plan.is_free and subscription.in_trial:
+        if subscription.in_trial and subscription.status == subscription.TRIALING:
             from billing.services import trial_plan
 
             return trial_plan()

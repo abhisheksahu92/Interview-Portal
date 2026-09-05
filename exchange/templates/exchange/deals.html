@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Deals · Exchange{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Exchange deals</h1>
+    <p>Placements made through the network, with each side's share after the platform fee.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:index' %}">Feed</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section ip-section--flush">
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <thead>
+        <tr><th>Role</th><th>Counterparty</th><th>Side</th><th class="text-end">Placement fee</th><th class="text-end">Platform fee</th><th class="text-end">Your share</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.deal.submission.requirement.title }}</td>
+            <td>{{ row.counterparty.name }}</td>
+            <td>{% if row.is_requester %}Requester{% else %}Responder{% endif %}</td>
+            <td class="ip-num">₹{{ row.deal.placement_fee_inr }}</td>
+            <td class="ip-num">₹{{ row.platform_fee }}</td>
+            <td class="ip-num">₹{{ row.share }}</td>
+            <td>
+              <span class="ip-badge ip-badge--{% if row.deal.status == 'SETTLED' %}success{% else %}neutral{% endif %}">{{ row.deal.get_status_display }}</span>
+              {% if row.deal.disputed %}<span class="ip-badge ip-badge--danger">Disputed</span>{% endif %}
+            </td>
+            <td class="text-end">
+              {% if not row.deal.disputed %}
+                <form method="post" action="{% url 'exchange:deal_dispute' row.deal.pk %}" class="m-0 d-flex gap-2">
+                  {% csrf_token %}
+                  <input class="form-control form-control-sm" type="text" name="reason" aria-label="Dispute reason" placeholder="Reason">
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Dispute</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8"><div class="ip-empty ip-empty--sm"><div class="ip-empty__title">No deals yet</div></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% include "exchange/partials/pager.html" %}
+{% endblock %}

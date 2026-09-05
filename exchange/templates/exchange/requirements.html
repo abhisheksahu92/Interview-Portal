@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}My requirements · Exchange{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>My requirements</h1>
+    <p>Roles you have published to the exchange and the candidates coming back.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:index' %}">Feed</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'exchange:publish' %}">Publish to exchange</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section ip-section--flush">
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <thead>
+        <tr><th>Role</th><th>Visibility</th><th>Split</th><th>Status</th><th>Expires</th><th class="text-end">Submissions</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for requirement in requirements %}
+          <tr>
+            <td><a href="{% url 'exchange:requirement_detail' requirement.pk %}">{{ requirement.title }}</a></td>
+            <td>{{ requirement.get_visibility_display }}</td>
+            <td class="ip-num">{{ requirement.fee_split_pct }}%</td>
+            <td><span class="ip-badge ip-badge--{% if requirement.status == 'OPEN' %}success{% else %}neutral{% endif %}">{{ requirement.get_status_display }}</span></td>
+            <td>{{ requirement.expires_at|date:"d M Y"|default:"—" }}</td>
+            <td class="ip-num">{{ requirement.submission_count }}</td>
+            <td class="text-end">
+              {% if requirement.status == 'OPEN' %}
+                <form method="post" action="{% url 'exchange:requirement_close' requirement.pk %}" class="m-0">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Close</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="ip-empty ip-empty--sm"><div class="ip-empty__title">Nothing published yet</div></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% include "exchange/partials/pager.html" %}
+{% endblock %}

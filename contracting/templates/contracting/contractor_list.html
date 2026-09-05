@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Contractors · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div><h1>Contractors</h1><p>{{ rows|length }} on the books.</p></div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-primary" href="{% url 'contracting:contractor_create' %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add contractor
+    </a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form class="ip-toolbar" method="get">
+  <div class="ip-toolbar__field">
+    <label for="c-status">Status</label>
+    <select class="form-select form-select-sm" id="c-status" name="status" onchange="this.form.submit()">
+      <option value="">All statuses</option>
+      {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="ip-toolbar__actions"><noscript><button class="btn btn-sm btn-primary">Filter</button></noscript></div>
+</form>
+{% if rows %}
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <caption class="visually-hidden">Contractors on this company's books</caption>
+      <thead>
+        <tr><th scope="col">Name</th><th scope="col">Status</th><th scope="col">Onboarding</th>
+            <th scope="col">Engagements</th><th scope="col">Email</th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td><a href="{% url 'contracting:contractor_detail' row.contractor.pk %}">{{ row.contractor.name }}</a></td>
+          <td><span class="ip-badge ip-badge--{% if row.contractor.status == 'ACTIVE' %}success{% elif row.contractor.status == 'ENDED' %}neutral{% else %}warning{% endif %}">{{ row.contractor.get_status_display }}</span></td>
+          <td class="ip-num">{{ row.progress.done }}/{{ row.progress.total }}</td>
+          <td class="ip-muted">{% for e in row.contractor.engagements.all %}{{ e.client.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+          <td class="ip-muted">{{ row.contractor.email|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="ip-empty">
+    <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+    <div class="ip-empty__title">No contractors yet</div>
+    <p class="ip-muted">Add a contractor to start onboarding, timesheets and invoicing.</p>
+    <a class="btn btn-sm btn-primary" href="{% url 'contracting:contractor_create' %}">Add contractor</a>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,6 +1,22 @@
-"""GST invoicing: financial-year numbering, tax split and HTML→PDF rendering."""
+"""GST invoicing: FY numbering, tax split, monthly bill assembly and PDFs.
 
+The monthly bill is assembled from four sources, in this order::
+
+    SUBSCRIPTION  the plan fee — seats_used x price for a SEAT plan (STARTER),
+                  a single flat line for GROWTH/AGENCY
+    SUCCESS_FEE   one line per PlacementFee raised in the period
+    AI_OVERAGE    AI screens beyond plan.ai_included x plan.ai_overage_inr
+    <other>       BillingCharge rows pushed in by sibling apps through
+                  billing.ledger.add_charge (BGV, platform fees, ...)
+
+``build_monthly_invoice(company, year, month)`` persists that as one Invoice
+per company per period (idempotent), and ``projected_bill(company)`` renders
+the same lines for the running month without writing anything.
+"""
+
+import calendar
 import logging
+from datetime import date, datetime, time
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.conf import settings
@@ -9,7 +25,14 @@ from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from billing.models import Invoice, InvoiceCounter
+from billing.models import (
+    Invoice,
+    InvoiceCounter,
+    PlacementFee,
+    Plan,
+    Subscription,
+    UsageRecord,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -166,3 +189,227 @@ def invoice_for_payment(subscription, *, amount=None, provider_ref="", provider=
         provider_ref=provider_ref,
         paid=True,
     )
+
+
+# --- Monthly bill assembly ----------------------------------------------
+
+SUBSCRIPTION = "SUBSCRIPTION"
+SUCCESS_FEE = "SUCCESS_FEE"
+AI_OVERAGE = "AI_OVERAGE"
+
+
+def month_bounds(year, month):
+    """``(first_day, first_day_of_next_month)`` for a calendar month."""
+    year, month = int(year), int(month)
+    last = calendar.monthrange(year, month)[1]
+    start = date(year, month, 1)
+    end = date(year + (month == 12), (month % 12) + 1, 1)
+    return start, end, date(year, month, last)
+
+
+def _aware(value):
+    """Midnight of ``value`` in the current timezone."""
+    stamp = datetime.combine(value, time.min)
+    if timezone.is_naive(stamp):
+        stamp = timezone.make_aware(stamp)
+    return stamp
+
+
+def _line(kind, label, qty, unit_inr):
+    unit = _q(unit_inr)
+    total = _q(unit * Decimal(qty))
+    return {
+        "kind": kind,
+        "label": label,
+        "qty": int(qty),
+        "unit_inr": str(unit),
+        "total_inr": str(total),
+    }
+
+
+def _subscription_line(subscription, seats):
+    """The recurring plan line: per-seat for STARTER, flat for GROWTH/AGENCY."""
+    plan = subscription.plan
+    if plan is None or plan.code == Plan.FREE:
+        return None
+    price = Decimal(plan.price_for(Subscription.MONTHLY) or 0)
+    if not price:
+        return None
+    if plan.is_seat_based:
+        seats = max(1, int(seats))
+        return _line(
+            SUBSCRIPTION,
+            f"{plan.name} plan — {seats} recruiter seat{'' if seats == 1 else 's'}",
+            seats,
+            price,
+        )
+    return _line(SUBSCRIPTION, f"{plan.name} plan — monthly subscription", 1, price)
+
+
+def _success_fee_lines(fees):
+    lines = []
+    for fee in fees:
+        application = getattr(fee, "application", None)
+        job = getattr(application, "job", None)
+        who = str(getattr(application, "candidate", "") or "hire")
+        title = getattr(job, "title", "") or "role"
+        lines.append(
+            _line(SUCCESS_FEE, f"Success fee — {who} · {title}", 1, fee.amount)
+        )
+    return lines
+
+
+def _ai_overage_line(company, plan, period_start_date):
+    """AI screens past the plan allowance, priced at ``ai_overage_inr``."""
+    from django.db.models import Sum
+
+    if plan is None:
+        return None
+    allowance = plan.ai_allowance
+    unit = Decimal(plan.ai_overage_inr or 0)
+    if not unit:
+        return None
+    total = UsageRecord.objects.filter(
+        company=company, kind=UsageRecord.AI_SCREEN, period_start=period_start_date
+    ).aggregate(total=Sum("quantity"))["total"]
+    over = int(total or 0) - allowance
+    if over <= 0:
+        return None
+    return _line(
+        AI_OVERAGE, f"AI screening overage — {over} beyond {allowance} included", over, unit
+    )
+
+
+def monthly_lines(company, year, month):
+    """Assemble ``(line_items, placement_fees, charges)`` for one month.
+
+    Pure read: nothing is written, so both :func:`build_monthly_invoice` and
+    :func:`projected_bill` can share it.
+    """
+    from billing import ledger
+    from billing.services import get_subscription
+
+    start, end, _last = month_bounds(year, month)
+    subscription = get_subscription(company)
+    plan = subscription.plan
+    lines = []
+    plan_line = _subscription_line(subscription, subscription.seats_used)
+    if plan_line:
+        lines.append(plan_line)
+
+    fees = list(
+        PlacementFee.objects.filter(
+            company=company,
+            created_at__gte=_aware(start),
+            created_at__lt=_aware(end),
+            invoice__isnull=True,
+        )
+        .exclude(status=PlacementFee.WAIVED)
+        .select_related("application__job", "application__candidate")
+        .order_by("created_at", "id")
+    )
+    lines.extend(_success_fee_lines(fees))
+
+    overage = _ai_overage_line(company, plan, start)
+    charges = ledger.charges_for_period(company, _aware(start), _aware(end))
+    # usage.consume already books AI overage through the ledger; only fall back
+    # to the metered calculation when no such charge exists for the period.
+    if overage and not any(c.kind == AI_OVERAGE for c in charges):
+        lines.append(overage)
+    for charge in charges:
+        lines.append(_line(charge.kind, charge.label, 1, charge.amount_inr))
+    return lines, fees, charges
+
+
+def lines_subtotal(lines):
+    return _q(sum((Decimal(line["total_inr"]) for line in lines), Decimal("0")))
+
+
+def build_monthly_invoice(company, year=None, month=None, *, with_pdf=False):
+    """Issue (once) the monthly invoice for ``company`` and return it.
+
+    Idempotent: a second call for the same period returns the invoice already
+    issued instead of numbering a new one. Returns ``None`` when the period has
+    nothing to bill.
+    """
+    now = timezone.now()
+    year = int(year or now.year)
+    month = int(month or now.month)
+    start, _end, last = month_bounds(year, month)
+
+    existing = Invoice.objects.filter(company=company, period_start=start).first()
+    if existing is not None:
+        return existing
+
+    lines, fees, charges = monthly_lines(company, year, month)
+    if not lines:
+        return None
+    subtotal = lines_subtotal(lines)
+    if subtotal <= 0:
+        return None
+
+    from billing.services import get_subscription
+
+    subscription = get_subscription(company)
+    cgst, sgst, igst = gst_split(subtotal, subscription.billing_state_code)
+    issued_at = _aware(last)
+    with transaction.atomic():
+        invoice = Invoice.objects.create(
+            company=company,
+            number=next_number(issued_at),
+            fy=financial_year(issued_at),
+            amount=subtotal,
+            gst_rate=Invoice.GST_RATE,
+            cgst=cgst,
+            sgst=sgst,
+            igst=igst,
+            total=_q(subtotal + cgst + sgst + igst),
+            gstin=subscription.gstin or "",
+            place_of_supply=subscription.billing_state_code,
+            description=f"{start:%B %Y} — {subscription.plan.name} plan and usage",
+            line_items=lines,
+            period_start=start,
+            provider=subscription.provider or "",
+            issued_at=issued_at,
+        )
+        if fees:
+            PlacementFee.objects.filter(pk__in=[f.pk for f in fees]).update(
+                invoice=invoice, status=PlacementFee.INVOICED
+            )
+        if charges:
+            from billing.models import BillingCharge
+
+            BillingCharge.objects.filter(pk__in=[c.pk for c in charges]).update(
+                invoice=invoice
+            )
+    if with_pdf:
+        try:
+            render_pdf(invoice)
+        except Exception as exc:  # pragma: no cover - never block billing
+            logger.warning("billing: invoice PDF failed for %s: %s", invoice.number, exc)
+    return invoice
+
+
+def projected_bill(company, moment=None):
+    """What this month's invoice looks like so far — read-only projection."""
+    moment = moment or timezone.now()
+    start, _end, _last = month_bounds(moment.year, moment.month)
+    lines, _fees, _charges = monthly_lines(company, moment.year, moment.month)
+    subtotal = lines_subtotal(lines)
+    from billing.services import get_subscription
+
+    subscription = get_subscription(company)
+    cgst, sgst, igst = gst_split(subtotal, subscription.billing_state_code)
+    tax = _q(cgst + sgst + igst)
+    return {
+        "period_start": start,
+        "period_label": f"{start:%B %Y}",
+        "lines": lines,
+        "subtotal": subtotal,
+        "cgst": cgst,
+        "sgst": sgst,
+        "igst": igst,
+        "tax": tax,
+        "total": _q(subtotal + tax),
+        "invoiced": Invoice.objects.filter(company=company, period_start=start).exists(),
+    }

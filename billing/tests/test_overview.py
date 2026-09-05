@@ -57,14 +57,18 @@ def test_overview_lists_the_three_tiers_with_inr_prices(client, owner):
     response = client.get(reverse("billing:overview"))
     codes = [p.code for p in response.context["plans"]]
     assert codes == [Plan.STARTER, Plan.GROWTH, Plan.AGENCY]
+    # Premise changed in phase 4: the toggle defaults to yearly and STARTER is
+    # ₹999 per seat, so the monthly view is requested explicitly here.
+    response = client.get(reverse("billing:overview") + "?interval=MONTHLY")
     # Prices render with Indian digit grouping (see web_money.inr).
-    assert b"1,499" in response.content
+    assert b"999" in response.content
     assert b"12,999" in response.content
 
 
-def test_yearly_toggle_switches_the_prices(client, owner):
+def test_yearly_is_the_default_toggle(client, owner):
+    # Premise changed in phase 4: yearly pricing is shown by default.
     client.force_login(owner)
-    response = client.get(reverse("billing:overview") + "?interval=YEARLY")
+    response = client.get(reverse("billing:overview"))
     assert response.context["interval"] == Subscription.YEARLY
     assert b"1,29,990" in response.content
 

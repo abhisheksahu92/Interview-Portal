@@ -10,6 +10,8 @@ from billing.models import Plan, Subscription
 # Canonical tier definitions; mirrored by the seed data migration.
 PLAN_SPECS = {
     Plan.FREE: {
+        # Legacy tier: kept for existing/cancelled subscriptions, never sold or
+        # assigned to a new company (they start on STARTER, see signals.py).
         "name": "Free",
         "max_open_jobs": 1,
         "max_seats": 2,
@@ -17,6 +19,10 @@ PLAN_SPECS = {
         "price_monthly": Decimal("0.00"),
         "price_monthly_inr": Decimal("0.00"),
         "price_yearly_inr": Decimal("0.00"),
+        "pricing_model": Plan.FLAT,
+        "success_fee_inr": Decimal("0.00"),
+        "ai_included": 0,
+        "ai_overage_inr": Decimal("5.00"),
         "features": {},
     },
     Plan.STARTER: {
@@ -25,8 +31,13 @@ PLAN_SPECS = {
         "max_seats": 3,
         "ai_credits_monthly": 50,
         "price_monthly": Decimal("19.00"),
-        "price_monthly_inr": Decimal("1499.00"),
-        "price_yearly_inr": Decimal("14990.00"),
+        # ₹999 *per recruiter seat* per month (pricing_model SEAT).
+        "price_monthly_inr": Decimal("999.00"),
+        "price_yearly_inr": Decimal("9990.00"),
+        "pricing_model": Plan.SEAT,
+        "success_fee_inr": Decimal("4999.00"),
+        "ai_included": 50,
+        "ai_overage_inr": Decimal("5.00"),
         "features": {"analytics": True},
     },
     Plan.GROWTH: {
@@ -37,6 +48,10 @@ PLAN_SPECS = {
         "price_monthly": Decimal("59.00"),
         "price_monthly_inr": Decimal("4999.00"),
         "price_yearly_inr": Decimal("49990.00"),
+        "pricing_model": Plan.FLAT,
+        "success_fee_inr": Decimal("2999.00"),
+        "ai_included": 500,
+        "ai_overage_inr": Decimal("5.00"),
         "features": {
             "analytics": True,
             "scheduling": True,
@@ -44,6 +59,7 @@ PLAN_SPECS = {
             "offers": True,
             "whatsapp": True,
             "ai_extraction": True,
+            "contracting": True,
         },
     },
     Plan.AGENCY: {
@@ -55,6 +71,10 @@ PLAN_SPECS = {
         "price_monthly_inr": Decimal("12999.00"),
         "price_yearly_inr": Decimal("129990.00"),
         "per_hire_fee_inr": None,
+        "pricing_model": Plan.FLAT,
+        "success_fee_inr": Decimal("0.00"),
+        "ai_included": 2000,
+        "ai_overage_inr": Decimal("5.00"),
         "features": {
             "analytics": True,
             "scheduling": True,
@@ -69,6 +89,8 @@ PLAN_SPECS = {
             "white_label": True,
             "ai_extraction": True,
             "integrations": True,
+            "contracting": True,
+            "exchange": True,
         },
     },
 }
@@ -95,6 +117,15 @@ def growth_plan():
 
 def agency_plan():
     return _plan(Plan.AGENCY)
+
+
+def default_plan():
+    """The tier a brand-new company is billed on once its trial ends.
+
+    FREE is legacy-only from phase 4 on: new companies are provisioned on
+    STARTER (seat-based, ₹999/seat) and trial into AGENCY entitlements.
+    """
+    return starter_plan()
 
 
 def trial_plan():
@@ -141,7 +172,7 @@ def get_subscription(company):
     if subscription is None:
         subscription = Subscription.objects.create(
             company=company,
-            plan=free_plan(),
+            plan=default_plan(),
             status=Subscription.TRIALING,
             trial_ends_at=trial_end_from(),
         )

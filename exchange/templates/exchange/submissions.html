@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}My submissions · Exchange{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>My submissions</h1>
+    <p>Candidates you have offered to partner requirements.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:index' %}">Feed</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'exchange:deals' %}">Deals</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="ip-section ip-section--flush">
+  <div class="ip-table-wrap">
+    <table class="ip-table">
+      <thead>
+        <tr><th>Candidate</th><th>Requirement</th><th>Partner</th><th>Status</th><th>Revealed</th><th class="text-end">Your share</th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.snapshot.name }}</td>
+            <td>{{ row.submission.requirement.title }}</td>
+            <td>{{ row.submission.requirement.company.name }}</td>
+            <td><span class="ip-badge ip-badge--{% if row.submission.status == 'HIRED' %}success{% elif row.submission.status == 'REJECTED' %}danger{% else %}neutral{% endif %}">{{ row.submission.get_status_display }}</span></td>
+            <td>{{ row.submission.revealed_at|date:"d M Y"|default:"Not yet" }}</td>
+            <td class="ip-num">{% if row.deal %}₹{{ row.deal.responder_share }}{% else %}—{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="ip-empty ip-empty--sm"><div class="ip-empty__title">Nothing submitted yet</div></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% include "exchange/partials/pager.html" %}
+{% endblock %}

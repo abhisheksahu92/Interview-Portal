@@ -1,0 +1,42 @@
+<section id="exchange-feed">
+  <div class="ip-section__head">
+    <h2>{{ total }} open requirement{{ total|pluralize }}</h2>
+  </div>
+  {% for row in rows %}{% with requirement=row.requirement %}
+    <article class="ip-card mb-3">
+      <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+          <div class="ip-card__name">{{ requirement.title }}</div>
+          <div class="ip-card__meta">
+            {{ requirement.company.name }}
+            <span class="ip-meta-dot">·</span>{{ row.client_label|default:"Client not disclosed" }}
+            {% if requirement.location %}<span class="ip-meta-dot">·</span>{{ requirement.location }}{% endif %}
+            <span class="ip-meta-dot">·</span>{{ requirement.budget_label }}
+          </div>
+        </div>
+        <div class="text-end">
+          <div class="ip-num">{{ requirement.fee_split_pct }}%</div>
+          <div class="ip-eyebrow">your split</div>
+        </div>
+      </div>
+      <div class="ip-chips mt-2">
+        {% for skill in requirement.skills.all %}<span class="ip-badge ip-badge--neutral">{{ skill.name }}</span>{% endfor %}
+        <span class="ip-badge ip-badge--light">{{ requirement.get_visibility_display }}</span>
+      </div>
+      <div class="ip-card__actions mt-3">
+        {% if row.submitted %}
+          <span class="ip-badge ip-badge--success">Already submitted</span>
+        {% endif %}
+        <a class="btn btn-sm btn-primary" href="{% url 'exchange:submit' requirement.pk %}">Submit a candidate</a>
+      </div>
+    </article>
+    {% endwith %}{% empty %}
+    <div class="ip-empty">
+      <div class="ip-empty__icon"><i class="bi bi-shuffle" aria-hidden="true"></i></div>
+      <div class="ip-empty__title">No open requirements yet</div>
+      <p class="ip-muted">Add partners to see the roles they are working on. Responding is free on every plan.</p>
+      <a class="btn btn-sm btn-primary" href="{% url 'exchange:partners' %}">Find partners</a>
+    </div>
+  {% endfor %}
+  {% include "exchange/partials/pager.html" %}
+</section>

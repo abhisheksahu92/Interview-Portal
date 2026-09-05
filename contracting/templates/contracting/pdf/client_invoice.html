@@ -1,0 +1,55 @@
+{% comment %}xhtml2pdf renders this: plain tables, no external CSS, no web fonts.{% endcomment %}
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 10.5pt; color: #111; }
+    h1 { font-size: 16pt; margin: 0 0 4px; }
+    .muted { color: #666; font-size: 9pt; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border-bottom: 1px solid #ddd; padding: 6px 4px; text-align: left; }
+    td.num, th.num { text-align: right; }
+    .total td { font-weight: bold; border-top: 2px solid #333; }
+  </style>
+</head>
+<body>
+  <h1>Tax invoice {{ invoice.number }}</h1>
+  <p class="muted">
+    Issued {{ invoice.issued_at|date:"j M Y" }}
+    {% if invoice.due_at %}&middot; Due {{ invoice.due_at|date:"j M Y" }}{% endif %}
+    &middot; Period {{ invoice.period_start|date:"j M Y" }} to {{ invoice.period_end|date:"j M Y" }}
+  </p>
+
+  <p><strong>From</strong><br>{{ company.name }}</p>
+  <p>
+    <strong>Billed to</strong><br>
+    {{ client.name }}<br>
+    {% if invoice.gstin %}GSTIN: {{ invoice.gstin }}<br>{% endif %}
+    {% if invoice.place_of_supply %}Place of supply: {{ invoice.place_of_supply }}{% endif %}
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Description</th><th class="num">Qty</th><th class="num">Rate (INR)</th><th class="num">Amount (INR)</th></tr>
+    </thead>
+    <tbody>
+      {% for item in invoice.line_items %}
+        <tr>
+          <td>{{ item.label }}{% if item.po_number %}<br><span class="muted">PO {{ item.po_number }}</span>{% endif %}</td>
+          <td class="num">{{ item.qty|floatformat:2 }} {{ item.unit_label }}</td>
+          <td class="num">{{ item.unit_inr|floatformat:2 }}</td>
+          <td class="num">{{ item.total_inr|floatformat:2 }}</td>
+        </tr>
+      {% endfor %}
+      <tr><td colspan="3">Subtotal</td><td class="num">{{ invoice.subtotal|floatformat:2 }}</td></tr>
+      {% if invoice.is_intra_state %}
+        <tr><td colspan="3">CGST @ {{ invoice.gst_rate|floatformat:2 }}% / 2</td><td class="num">{{ invoice.cgst|floatformat:2 }}</td></tr>
+        <tr><td colspan="3">SGST @ {{ invoice.gst_rate|floatformat:2 }}% / 2</td><td class="num">{{ invoice.sgst|floatformat:2 }}</td></tr>
+      {% else %}
+        <tr><td colspan="3">IGST @ {{ invoice.gst_rate|floatformat:2 }}%</td><td class="num">{{ invoice.igst|floatformat:2 }}</td></tr>
+      {% endif %}
+      <tr class="total"><td colspan="3">Total</td><td class="num">{{ invoice.total|floatformat:2 }}</td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

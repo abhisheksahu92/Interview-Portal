@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Contracting · Interview Portal{% endblock %}
+{% block page_header %}
+<div class="ip-page-head">
+  <div>
+    <h1>Contracting</h1>
+    <p>Margin, receivables and utilisation across every active placement.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:timesheet_queue' %}">Timesheets</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:invoice_list' %}">Invoices</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'contracting:contractor_list' %}">Contractors</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="ip-bento mb-4">
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Gross margin</div>
+    <div class="ip-kpi__value">₹{{ margin|floatformat:0 }}</div>
+    <div class="ip-kpi__trend">{{ margin_percent|floatformat:1 }}% of ₹{{ billed|floatformat:0 }} billed</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">Outstanding</div>
+    <div class="ip-kpi__value">₹{{ receivables.open|floatformat:0 }}</div>
+    <div class="ip-kpi__trend">{{ receivables.count }} open · ₹{{ receivables.overdue|floatformat:0 }} overdue</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi">
+    <div class="ip-kpi__label">DSO</div>
+    <div class="ip-kpi__value">{% if dso_days is not None %}{{ dso_days }}{% else %}—{% endif %}</div>
+    <div class="ip-kpi__trend">days sales outstanding</div>
+  </div>
+  <div class="ip-bento__tile ip-kpi ip-bento__tile--mint">
+    <div class="ip-kpi__label">Utilisation</div>
+    <div class="ip-kpi__value">{{ utilisation.percent }}%</div>
+    <div class="ip-kpi__trend">{{ utilisation.engaged }} of {{ utilisation.total }} engagements billing</div>
+  </div>
+</div>
+
+<section class="ip-section ip-section--flush mb-4">
+  <div class="ip-section__head"><h2 class="h6 mb-0">Margin per engagement</h2></div>
+  {% if engagements %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Bill minus pay for every engagement with approved work</caption>
+        <thead>
+          <tr>
+            <th scope="col">Contractor</th><th scope="col">Client</th><th scope="col">Role</th>
+            <th scope="col" class="text-end">Quantity</th><th scope="col" class="text-end">Billed</th>
+            <th scope="col" class="text-end">Paid</th><th scope="col" class="text-end">Margin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in engagements %}
+          <tr>
+            <td>{{ row.contractor }}</td>
+            <td class="ip-muted">{{ row.client }}</td>
+            <td class="ip-muted">{{ row.role_title }}</td>
+            <td class="text-end ip-num">{{ row.quantity|floatformat:2 }} {{ row.unit_label }}</td>
+            <td class="text-end ip-num">₹{{ row.bill|floatformat:2 }}</td>
+            <td class="text-end ip-num">₹{{ row.pay|floatformat:2 }}</td>
+            <td class="text-end ip-num"><strong>₹{{ row.margin|floatformat:2 }}</strong>
+              <span class="ip-muted">({{ row.margin_percent|floatformat:1 }}%)</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty ip-empty--sm">
+      <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-graph-up"></i></span>
+      <div class="ip-empty__title">No approved work yet</div>
+      <p class="ip-muted">Margin appears once a client approves a timesheet.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="ip-section ip-section--flush">
+  <div class="ip-section__head">
+    <h2 class="h6 mb-0">Awaiting client approval</h2>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'contracting:timesheet_queue' %}">Open queue</a>
+  </div>
+  {% if pending %}
+    <div class="ip-table-wrap">
+      <table class="ip-table">
+        <caption class="visually-hidden">Timesheets submitted and waiting on a client decision</caption>
+        <thead><tr><th scope="col">Contractor</th><th scope="col">Client</th><th scope="col">Period</th><th scope="col" class="text-end">Hours</th></tr></thead>
+        <tbody>
+          {% for timesheet in pending %}
+          <tr>
+            <td>{{ timesheet.engagement.contractor.name }}</td>
+            <td class="ip-muted">{{ timesheet.engagement.client.name }}</td>
+            <td class="ip-muted text-nowrap">{{ timesheet.period_start|date:"d M" }} – {{ timesheet.period_end|date:"d M Y" }}</td>
+            <td class="text-end ip-num">{{ timesheet.total_hours }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="ip-empty ip-empty--sm"><div class="ip-empty__title">Nothing waiting on a client</div></div>
+  {% endif %}
+</section>
+{% endblock %}

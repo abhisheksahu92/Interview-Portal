@@ -214,16 +214,25 @@ Seeded by a data migration (`billing/migrations/0006_seed_tiers.py`) from
 is priced at 10× monthly (two months free). Every new company starts on a
 **14-day trial with the AGENCY feature set** and no card.
 
-| | Free | Starter | Growth | Agency |
+| | Free (legacy) | Starter | Growth | Agency |
 | --- | --- | --- | --- | --- |
-| Monthly (INR) | ₹0 | ₹1,499 | ₹4,999 | ₹12,999 |
-| Yearly (INR) | ₹0 | ₹14,990 | ₹49,990 | ₹1,29,990 |
+| Monthly (INR) | ₹0 | **₹999 per recruiter seat** | ₹4,999 flat | ₹12,999 flat |
+| Yearly (INR) | ₹0 | ₹9,990 / seat | ₹49,990 | ₹1,29,990 |
+| Success fee per hire | — | ₹4,999 | ₹2,999 | ₹0 |
 | Open jobs | 1 | 3 | 25 | 200 |
 | Seats | 2 | 3 | 10 | 50 |
-| AI credits / month | 0 | 50 | 500 | 2,000 |
+| AI screens included / month | 0 | 50 | 500 | 2,000 |
+| AI overage | ₹5 per screen beyond the allowance | ₹5 | ₹5 | ₹5 |
 | Analytics | — | ✓ | ✓ | ✓ |
-| Scheduling, careers page, offers, WhatsApp | — | — | ✓ | ✓ |
-| Client portal, video screening, API, talent pool, marketplace, white-label, integrations | — | — | — | ✓ |
+| Scheduling, careers page, offers, WhatsApp, contracting | — | — | ✓ | ✓ |
+| Client portal, video screening, API, talent pool, marketplace, white-label, integrations, exchange | — | — | — | ✓ |
+
+`Plan.pricing_model` is `SEAT` (STARTER — `price_monthly_inr × seats_used`) or
+`FLAT` (GROWTH/AGENCY). **FREE is legacy only**: it stays for existing and
+cancelled subscriptions, but a new company is provisioned on STARTER and trials
+into the AGENCY entitlements for 14 days. `manage.py expire_trials` then moves it
+to STARTER with a **7-day grace window** (`Subscription.grace_until`) during
+which `billing.limits.can_open_job` does not enforce plan limits.
 
 Gating is centralised: `billing.entitlements.has_feature(company, "video")` and
 the `@require_feature("video")` decorator/mixin, with
@@ -231,9 +240,12 @@ the `@require_feature("video")` decorator/mixin, with
 trial's AGENCY set while the trial is live, the billed plan after).
 
 Metered usage lives in `billing.usage`: `consume(company, kind, qty=1)` records
-a `UsageRecord` and raises `QuotaExceeded` past the plan's allowance, and
-crossing `usage.warn_threshold` (0.8) fires a `usage_warning` notification.
-Kinds are `AI_SCREEN`, `WHATSAPP_MSG` and `VIDEO_MINUTE`.
+a `UsageRecord`, and crossing `usage.warn_threshold` (0.8) fires a
+`usage_warning` notification. Kinds are `AI_SCREEN`, `WHATSAPP_MSG` and
+`VIDEO_MINUTE`. AI screening past `plan.ai_included` is **billed, not blocked**:
+the record is flagged `overage` and an `AI_OVERAGE` charge for the period is kept
+in step on the ledger. Set `Subscription.hard_cap` to refuse instead
+(`QuotaExceeded`); the other kinds still raise past their quota.
 
 ## Billing
 
@@ -331,7 +343,48 @@ fee or reseller commission.
 A `PAST_DUE` subscription gets three reminder emails over seven days
 (`DunningReminder` rows keep it idempotent) and is then downgraded to FREE —
 `manage.py run_dunning`, one of the [periodic tasks](#periodic-tasks). Marking an
-application HIRED creates a `PlacementFee` when the plan carries a per-hire fee.
+application HIRED creates a `PlacementFee` for **every** hire whose plan carries
+a success fee (`plan.success_fee_inr`, or the legacy `per_hire_fee_inr`
+override), once per application.
+
+### The monthly bill
+
+`billing.invoicing.build_monthly_invoice(company, year, month)` assembles one
+invoice per company per calendar month from four sources, stored on
+`Invoice.line_items` as `[{kind, label, qty, unit_inr, total_inr}]`:
+
+| Line kind | Where it comes from |
+| --- | --- |
+| `SUBSCRIPTION` | the plan fee — `seats_used × ₹999` on STARTER, flat elsewhere |
+| `SUCCESS_FEE` | one line per `PlacementFee` raised that month (marked INVOICED) |
+| `AI_OVERAGE` | AI screens beyond `plan.ai_included`, at `plan.ai_overage_inr` |
+| anything else | `BillingCharge` rows pushed in by other apps (BGV, platform fees) |
+
+GST is added with the same `invoicing.gst_split` as one-off invoices, and the
+invoice is numbered from the FY counter. The call is **idempotent** — a second
+call for the same period returns the invoice already issued (enforced by a
+unique `(company, period_start)` constraint) — and returns `None` when the month
+has nothing billable.
+
+`manage.py bill_month [--company <id|name>] [--year Y --month M] [--pdf]` runs it
+for every metered company; re-running it is a no-op.
+`billing.invoicing.projected_bill(company)` returns the same lines for the
+running month without writing anything, and drives the "This month so far" card
+on `/billing/`.
+
+Any app that needs to put money on a tenant's next bill calls the ledger through
+a late import rather than touching billing models:
+
+```python
+from billing import ledger
+
+ledger.add_charge(company, ledger.BGV, "BGV — Priya Sharma", 499, ref=f"bgv:{check.pk}")
+ledger.add_charge(company, ledger.PLATFORM_FEE, "Exchange platform fee", 1200, ref=f"deal:{deal.pk}")
+```
+
+`ref` is an idempotency key scoped to `(company, kind)`: repeating a call updates
+the pending charge instead of double-charging, and is ignored once the charge has
+been invoiced. `occurred_at` (default now) decides which month picks it up.
 
 ## Interview scheduling
 

@@ -26,20 +26,22 @@ def test_trial_company_may_open_more_than_one_job(trial_company):
     assert allowed is True and reason == ""
 
 
-def test_expired_trial_is_capped_at_the_free_limit(trial_company):
-    Job.objects.create(company=trial_company, title="Dev 1", status=Job.OPEN)
+def test_expired_trial_is_capped_at_the_starter_limit(trial_company):
+    """Premise changed in phase 4: an expired trial lands on STARTER (3 jobs)."""
+    for i in range(3):
+        Job.objects.create(company=trial_company, title=f"Dev {i}", status=Job.OPEN)
     Subscription.objects.filter(company=trial_company).update(
-        trial_ends_at=timezone.now() - timedelta(minutes=1)
+        status=Subscription.ACTIVE, trial_ends_at=timezone.now() - timedelta(minutes=1)
     )
     trial_company.refresh_from_db()
 
     subscription = get_subscription(trial_company)
-    assert subscription.max_open_jobs == 1
+    assert subscription.max_open_jobs == 3
     allowed, reason = can_open_job(trial_company)
     assert allowed is False
-    assert "Free plan allows 1 open job" in reason
+    assert "Starter plan allows 3 open jobs" in reason
     with pytest.raises(ValidationError):
-        Job.objects.create(company=trial_company, title="Dev 2", status=Job.OPEN)
+        Job.objects.create(company=trial_company, title="Dev 4", status=Job.OPEN)
 
 
 def test_trial_quotas_follow_the_trial_plan(trial_company):
