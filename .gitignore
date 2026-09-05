@@ -21,3 +21,6 @@ IP Important Data.txt
 .idea/
 .vscode/
 .claude/settings.local.json
+envs/.env.local
+envs/.env.dev
+envs/.env.prod

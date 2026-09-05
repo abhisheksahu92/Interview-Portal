@@ -1,0 +1,133 @@
+# Render blueprint for Interview Portal.
+#
+# Database lives on Neon (set DATABASE_URL by hand, use the POOLED connection
+# string). Uploaded resumes and videos live in Cloudflare R2. Cloudflare sits
+# in front as DNS + proxy; Django already trusts X-Forwarded-Proto.
+#
+# Secrets marked `sync: false` are NOT stored in this file. Paste them into the
+# Render dashboard once, per service. Never commit them.
+
+services:
+  - type: web
+    name: interview-portal
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter            # free tier sleeps and would break timers/webhooks
+    region: singapore        # closest to Indian customers
+    healthCheckPath: /healthz/
+    autoDeploy: false        # promote deliberately, not on every push
+    preDeployCommand: >-
+      python manage.py check_deploy &&
+      python manage.py migrate --noinput
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: interview_portal.settings
+      - key: DEBUG
+        value: "False"
+      - key: GUNICORN_WORKERS
+        value: "3"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+      # --- Site identity -------------------------------------------------
+      - key: SITE_URL
+        value: https://interview.abhishreelabs.in
+      - key: ALLOWED_HOSTS
+        value: interview.abhishreelabs.in
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://interview.abhishreelabs.in
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+
+      # --- Data ----------------------------------------------------------
+      - key: DATABASE_URL          # Neon pooled connection string
+        sync: false
+
+      # --- Cloudflare R2 (S3-compatible) ---------------------------------
+      - key: AWS_STORAGE_BUCKET_NAME
+        value: interview-portal-media
+      - key: AWS_S3_REGION_NAME
+        value: auto
+      - key: AWS_S3_ENDPOINT_URL   # https://<account-id>.r2.cloudflarestorage.com
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+
+      # --- Crypto ---------------------------------------------------------
+      - key: SECRET_KEY
+        generateValue: true
+      - key: INTEGRATIONS_ENCRYPTION_KEY   # Fernet key, rotating it orphans stored credentials
+        sync: false
+      - key: LICENSE_SIGNING_KEY
+        sync: false
+
+      # --- Email (Resend SMTP) --------------------------------------------
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        value: smtp.resend.com
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        value: resend
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+
+      # --- Money ----------------------------------------------------------
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: COMPANY_GSTIN
+        sync: false
+      - key: COMPANY_STATE_CODE
+        sync: false
+
+      # --- AI ---------------------------------------------------------------
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+  # Trials, dunning, reminders, offer expiry, webhook delivery, video jobs.
+  # Without this, nothing bills and no reminder is ever sent.
+  - type: cron
+    name: interview-portal-periodic
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: singapore
+    schedule: "*/10 * * * *"
+    dockerCommand: python manage.py run_periodic
+    envVars:
+      - fromGroup: interview-portal-shared
+
+  # Monthly invoice generation, 02:00 IST on the 1st (20:30 UTC on the last day
+  # is fragile across month lengths, so run at 20:30 UTC on the 1st instead).
+  - type: cron
+    name: interview-portal-billing
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: singapore
+    schedule: "30 20 1 * *"
+    dockerCommand: python manage.py bill_month
+    envVars:
+      - fromGroup: interview-portal-shared
+
+# Shared env group so the two cron jobs reuse the web service's configuration.
+# Create it in the dashboard as "interview-portal-shared" and add the same
+# DATABASE_URL / R2 / crypto / email / Razorpay values.
+envVarGroups:
+  - name: interview-portal-shared
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: interview_portal.settings
+      - key: DEBUG
+        value: "False"

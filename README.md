@@ -837,6 +837,54 @@ The overlay forces `DEBUG=False`, raises the worker count, sets
 host reverse proxy (nginx/Caddy/Traefik) terminates TLS in front of it. Point
 `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` at your real domain in `.env`.
 
+### Render + Neon + Cloudflare (recommended)
+
+`render.yaml` is a blueprint for three services from the same image: the web
+service, a `run_periodic` cron every 10 minutes, and `bill_month` monthly.
+Skipping the cron services means trials never expire, dunning never runs,
+reminders are never sent and no invoice is ever raised.
+
+Use the **Starter** plan, not Free: free instances sleep after 15 minutes of
+idleness, which breaks server-side assessment timers and drops gateway
+webhooks.
+
+1. **Neon** — create the project, then copy the *pooled* connection string
+   (the one containing `-pooler`) into `DATABASE_URL`. The direct string
+   exhausts connections once several gunicorn workers are running. Create a
+   separate Neon branch for staging; never point staging at the main branch.
+2. **Cloudflare R2** — create a bucket, then set `AWS_STORAGE_BUCKET_NAME`,
+   `AWS_S3_REGION_NAME=auto`, `AWS_S3_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com`
+   and the R2 access key pair. Keep the bucket private: resumes are served
+   through signed URLs. Add a CORS rule allowing `PUT` from your domain, or
+   browser video uploads fail. Render's own disk is wiped on every deploy, so
+   this is not optional.
+3. **Cloudflare DNS** — proxied `CNAME` to the Render host, SSL mode *Full
+   (strict)*. Django already trusts `X-Forwarded-Proto`, so no extra setting
+   is needed. Do not enable Cloudflare caching on `/` — authenticated pages
+   would be served to the wrong tenant.
+4. **Render** — create the blueprint, then paste every `sync: false` secret
+   into the dashboard, plus the shared env group used by the cron jobs.
+5. **Razorpay** — register the webhook at
+   `https://<your-domain>/billing/webhooks/razorpay/` and put its signing
+   secret in `RAZORPAY_WEBHOOK_SECRET`. Without it payments are taken but
+   never recorded against a subscription.
+
+The blueprint runs `check_deploy` before every deploy, which refuses to start
+on a misconfiguration that would otherwise fail silently, such as SQLite in
+production, a console email backend or a missing media bucket:
+
+```bash
+python manage.py check_deploy              # blocks on real problems
+python manage.py check_deploy --warn-only  # report without failing
+```
+
+Environment templates for the three environments live in `envs/`. Copy the one
+you need and fill it in; the real files are gitignored.
+
+```bash
+cp envs/.env.local.example .env
+```
+
 ### Fly.io
 
 `fly.toml` is checked in: region `bom`, `release_command` runs migrations
