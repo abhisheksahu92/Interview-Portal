@@ -20,3 +20,4 @@ IP Important Data.txt
 .ruff_cache/
 .idea/
 .vscode/
+.claude/settings.local.json
