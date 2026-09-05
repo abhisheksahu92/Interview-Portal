@@ -12,7 +12,7 @@ RUN apt-get update
 # Install software
 RUN apt-get install -y git
 
-ENV GIT_ACCESS_TOKEN=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
+ENV GIT_ACCESS_TOKEN=<REVOKED_TOKEN_REMOVED>
 
 # Copy Git Code.
 RUN git clone https://abhisheksahu92:${GIT_ACCESS_TOKEN}@github.com/abhisheksahu92/Interview-Portal
