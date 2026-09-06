@@ -174,6 +174,7 @@ Copy `.env.example` to `.env`; everything is read from the environment.
 | `SENTRY_DSN` / `SENTRY_ENVIRONMENT` | empty | error tracking; off when blank, never sends PII or request bodies |
 | `POSTHOG_PROJECT_KEY` / `POSTHOG_HOST` | empty / EU | product analytics for signed-in workspace users only; the `phc_` project key, never a personal `phx_` key |
 | `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET`, `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` | empty | optional opportunity-network sources; the adapters skip themselves when blank |
+| `CRON_TOKEN` / `CRON_TICK_BUDGET_SECONDS` | empty / `25` | enables `/internal/cron/tick/` for monitor-driven scheduling; see [Scheduling without a cron](#scheduling-without-a-cron) |
 | `LICENSE_SIGNING_KEY` | empty | **vendor only** — base64 Ed25519 private key used by `issue_license`; see [Self-hosted licence keys](#self-hosted-licence-keys) |
 
 ## Tests and checks
@@ -795,6 +796,18 @@ Keep `min_machines_running = 1` for whichever group runs the loop, and note that
 `startCommand: python manage.py run_periodic` and a cron schedule of
 `*/15 * * * *` under the service's *Settings → Cron Schedule*. Railway runs the
 container to completion on each tick, so the command must exit (it does).
+
+### Scheduling without a cron
+
+Free hosting tiers have no scheduler. Set `CRON_TOKEN` and point any uptime
+monitor at `/internal/cron/tick/?token=<CRON_TOKEN>` every five minutes (or send
+the token as `X-Cron-Token`). Each call does a bounded slice inside the request
+timeout: the maintenance runner at most every 30 minutes, then as many due
+sources as fit in `CRON_TICK_BUDGET_SECONDS` (default 25), oldest first, none
+more than every four hours, plus 20 leads of model-tag backfill. Overlapping
+calls cannot double-run maintenance: the slot is claimed in `core.CronState`
+before work starts. Once a real cron exists, keep the endpoint or drop the
+monitor; the two do not conflict.
 
 ## Resume parsing and AI re-scoring
 
