@@ -285,37 +285,80 @@ def normalise(item, source):
     }
 
 
-def dedupe(fields):
-    """Upsert by ``content_hash``. Returns ``(lead, created)``.
+def existing_index(source, rows):
+    """Two lookups for a whole payload in one query: by (source, external_id) and by hash.
 
-    An existing lead is only *refreshed* (it is still live, we saw it again) —
-    its skills and contact are left alone so a re-run never re-pays for tagging.
+    Dedupe used to issue one or two SELECTs per posting. Against a database in
+    another region that was the entire runtime - a 250-item feed took four
+    minutes - so the runner now prefetches everything it might match against.
     """
+    by_ext, by_hash = {}, {}
+    if not rows:
+        return by_ext, by_hash
+    ext_ids = {r["external_id"] for r in rows if r.get("external_id")}
+    hashes = {r["content_hash"] for r in rows}
+    matches = Lead.objects.filter(
+        Q(source=source, external_id__in=ext_ids) | Q(content_hash__in=hashes)
+    )
+    for lead in matches:
+        if lead.source_id == source.pk and lead.external_id:
+            by_ext[lead.external_id] = lead
+        by_hash[lead.content_hash] = lead
+    return by_ext, by_hash
+
+
+REFRESH_FIELDS = [
+    "fetched_at",
+    "expires_at",
+    "is_active",
+    "title",
+    "snippet",
+    "url",
+    "company_name",
+    "content_hash",
+]
+
+
+def dedupe(fields, index=None, *, defer_save=False):
+    """Upsert by source id, then ``content_hash``. Returns ``(lead, created)``.
+
+    An existing lead is only *refreshed* (it is still live, we saw it again) -
+    its skills and contact are left alone so a re-run never re-pays for tagging.
+    ``index`` is the prefetched pair from :func:`existing_index`; with
+    ``defer_save`` the caller bulk-updates refreshed rows itself.
+    """
+    by_ext, by_hash = index if index is not None else ({}, {})
     existing = None
     if fields.get("external_id"):
         # The source's own id is the stable identity. Matching on the content
         # hash alone meant any change to how we derive a title re-created every
         # lead and let the ATS sweep expire the originals.
-        existing = Lead.objects.filter(
-            source=fields["source"], external_id=fields["external_id"]
-        ).first()
+        existing = by_ext.get(fields["external_id"])
+        if existing is None and index is None:
+            existing = Lead.objects.filter(
+                source=fields["source"], external_id=fields["external_id"]
+            ).first()
     if existing is None:
-        existing = Lead.objects.filter(content_hash=fields["content_hash"]).first()
+        existing = by_hash.get(fields["content_hash"])
+        if existing is None and index is None:
+            existing = Lead.objects.filter(content_hash=fields["content_hash"]).first()
     if existing:
         existing.fetched_at = fields["fetched_at"]
         existing.expires_at = fields["expires_at"]
         existing.is_active = True
-        changed = ["fetched_at", "expires_at", "is_active"]
-        if (
-            existing.content_hash != fields["content_hash"]
-            and not Lead.objects.filter(content_hash=fields["content_hash"])
-            .exclude(pk=existing.pk)
-            .exists()
-        ):
-            for name in ("title", "snippet", "url", "company_name", "content_hash"):
-                setattr(existing, name, fields[name])
-            changed += ["title", "snippet", "url", "company_name", "content_hash"]
-        existing.save(update_fields=changed)
+        if existing.content_hash != fields["content_hash"]:
+            taken = by_hash.get(fields["content_hash"])
+            if taken is None and index is None:
+                taken = (
+                    Lead.objects.filter(content_hash=fields["content_hash"])
+                    .exclude(pk=existing.pk)
+                    .first()
+                )
+            if taken is None or taken.pk == existing.pk:
+                for name in ("title", "snippet", "url", "company_name", "content_hash"):
+                    setattr(existing, name, fields[name])
+        if not defer_save:
+            existing.save(update_fields=REFRESH_FIELDS)
         return existing, False
     return Lead(**fields), True
 
@@ -336,7 +379,7 @@ def run_source(source):
         _finish(source, stats, "Credentials are not configured.")
         return stats
 
-    fresh = []
+    rows = []
     seen_hashes = set()
     try:
         for item in adapter.fetch(source):
@@ -347,18 +390,26 @@ def run_source(source):
             if fields["content_hash"] in seen_hashes:
                 continue  # the same posting twice inside one payload
             seen_hashes.add(fields["content_hash"])
-            lead, created = dedupe(fields)
-            if created:
-                fresh.append(lead)
+            rows.append(fields)
     except Exception as exc:
         logger.warning("Source %s failed: %s", source.slug, exc)
         stats["status"] = Source.ERROR
         _finish(source, stats, str(exc)[:1000])
         return stats
 
+    # One prefetch for the whole payload, then match in memory; refreshed rows
+    # go back in a single bulk_update rather than one save each.
+    index = existing_index(source, rows)
+    fresh, refreshed = [], []
+    for fields in rows:
+        lead, created = dedupe(fields, index, defer_save=True)
+        (fresh if created else refreshed).append(lead)
+
     tag_skills(fresh)
     with transaction.atomic():
         Lead.objects.bulk_create(fresh, ignore_conflicts=True)
+        if refreshed:
+            Lead.objects.bulk_update(refreshed, REFRESH_FIELDS, batch_size=500)
     stats["created"] = len(fresh)
     if source.kind == Source.ATS:
         # An ATS board is authoritative: a posting it stopped returning is closed.

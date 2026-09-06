@@ -358,3 +358,41 @@ def test_dedupe_matches_on_source_external_id_when_text_changes():
     same.refresh_from_db()
     assert same.title == "Acme | Senior Django dev"
     assert same.content_hash == second["content_hash"]
+
+
+@pytest.mark.django_db
+def test_rerun_of_a_source_uses_a_bounded_number_of_queries(
+    django_assert_max_num_queries, monkeypatch
+):
+    """Re-running a 60-item feed must not cost a SELECT per posting.
+
+    The first live run against a remote database spent four minutes on a
+    250-item feed doing exactly that; the runner now prefetches once.
+    """
+    from sources import services
+    from sources.adapters.base import Adapter, RawItem
+    from sources.models import Source
+
+    class Sixty(Adapter):
+        slug = "sixty"
+
+        def fetch(self, source):
+            for i in range(60):
+                yield RawItem(
+                    external_id=str(i),
+                    kind="JOB",
+                    title=f"Role {i}",
+                    url=f"https://x/{i}",
+                    company_name="Acme",
+                    snippet=f"Posting {i}",
+                )
+
+    monkeypatch.setitem(services.ADAPTERS, "sixty", Sixty())
+    monkeypatch.setattr(services, "tag_skills", lambda leads, vocabulary=None: leads)
+    src = Source.objects.create(slug="sixty", name="Sixty", kind=Source.API)
+
+    services.run_source(src)  # first run creates 60 rows
+    with django_assert_max_num_queries(12):
+        stats = services.run_source(src)  # second run only refreshes them
+
+    assert stats["created"] == 0 and stats["seen"] == 60

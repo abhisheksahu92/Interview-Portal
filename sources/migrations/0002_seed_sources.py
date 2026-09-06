@@ -36,6 +36,10 @@ LEVER = ["spotify", "binance", "tala", "nium"]
 ASHBY = ["ramp", "openai", "notion", "linear", "vanta", "cohere", "posthog", "replit", "modal"]
 SMARTRECRUITERS = ["BoschGroup"]
 
+# Shipped switched off, with the reason. WeWorkRemotely's robots.txt disallows
+# its RSS for non-browser agents and we honour that; flip it on if that changes.
+DISABLED = {"wwr_rss": "robots.txt disallows the RSS feed"}
+
 
 def ats_rows():
     for adapter, boards in (
@@ -51,7 +55,15 @@ def ats_rows():
 def seed(apps, schema_editor):
     Source = apps.get_model("sources", "Source")
     for slug, name, kind in PUBLIC:
-        Source.objects.get_or_create(slug=slug, defaults={"name": name, "kind": kind})
+        Source.objects.get_or_create(
+            slug=slug,
+            defaults={
+                "name": name,
+                "kind": kind,
+                "enabled": slug not in DISABLED,
+                "last_error": DISABLED.get(slug, ""),
+            },
+        )
     for slug, name, adapter, board in ats_rows():
         Source.objects.get_or_create(
             slug=slug,
