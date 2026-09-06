@@ -17,7 +17,7 @@ import time
 from datetime import UTC, timedelta
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils import timezone
 
 from core import llm
@@ -542,3 +542,34 @@ def _profile_skills(candidate_profile):
         return [str(s) for s in raw]
     values = getattr(raw, "values_list", None)
     return list(values("name", flat=True)) if values else []
+
+
+#: A source is not refetched more often than this by the tick loop.
+TICK_MIN_INTERVAL = timedelta(hours=4)
+
+
+def tick(budget_seconds=25, now=None):
+    """Run as many due sources as fit in ``budget_seconds``, oldest first.
+
+    Called from the tick endpoint every few minutes, this replaces the nightly
+    bulk fetch on hosting without a cron: 48 sources at one or two per call
+    means each is refreshed every few hours. Model tagging is skipped inside a
+    web request and picked up by :func:`backfill_tags` a few leads at a time.
+    """
+    now = now or timezone.now()
+    started = time.monotonic()
+    due = (
+        Source.objects.filter(enabled=True)
+        .filter(Q(last_run_at=None) | Q(last_run_at__lt=now - TICK_MIN_INTERVAL))
+        .order_by(F("last_run_at").asc(nulls_first=True))
+    )
+    ran = []
+    for source in due:
+        if ran and time.monotonic() - started > budget_seconds * 0.6:
+            break  # leave headroom: a big board can take ten seconds
+        stats = run_source(source, use_llm=False)
+        ran.append(f"{source.slug}:{stats['status']}:{stats['created']}")
+    backfilled = 0
+    if time.monotonic() - started < budget_seconds * 0.7:
+        backfilled = backfill_tags(limit=20)
+    return {"ran": ran, "backfilled": backfilled, "seconds": round(time.monotonic() - started, 1)}

@@ -127,9 +127,7 @@ class Membership(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="memberships")
-    company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="memberships"
-    )
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="memberships")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=RECRUITER)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -151,9 +149,7 @@ class Invitation(TokenMixin, models.Model):
     TOKEN_BYTES = 32
     EXPIRY_DAYS = 7
 
-    company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="invitations"
-    )
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="invitations")
     email = models.EmailField()
     role = models.CharField(
         max_length=20, choices=Membership.ROLE_CHOICES, default=Membership.RECRUITER
@@ -233,3 +229,18 @@ class Invitation(TokenMixin, models.Model):
         self.accepted_at = timezone.now()
         self.save(update_fields=["accepted_at"])
         return membership
+
+
+class CronState(models.Model):
+    """Last-run bookkeeping for work driven by the external tick endpoint.
+
+    One row per job name. Kept in the database rather than the cache because
+    the web tier runs several workers and the cache is per process.
+    """
+
+    key = models.CharField(max_length=64, unique=True)
+    last_run_at = models.DateTimeField(null=True, blank=True)
+    last_status = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return f"{self.key} @ {self.last_run_at:%Y-%m-%d %H:%M}" if self.last_run_at else self.key

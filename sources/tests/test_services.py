@@ -451,3 +451,31 @@ def test_backfill_tags_only_touches_untagged_live_leads(monkeypatch):
         lead.refresh_from_db()
     assert untagged.skills == ["python"] and untagged2.skills == ["python"]
     assert tagged.skills == ["go"] and dead.skills == []
+
+
+@pytest.mark.django_db
+def test_tick_runs_oldest_due_sources_within_budget(monkeypatch):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from sources import services
+    from sources.models import Source
+
+    Source.objects.update(enabled=False)  # the seed migration ships 50 live rows
+    now = timezone.now()
+    fresh = Source.objects.create(slug="fresh", name="F", kind=Source.API, last_run_at=now)
+    stale = Source.objects.create(
+        slug="stale", name="S", kind=Source.API, last_run_at=now - timedelta(days=1)
+    )
+    never = Source.objects.create(slug="never", name="N", kind=Source.API)
+    ran = []
+    monkeypatch.setattr(
+        services, "run_source", lambda s, **kw: ran.append(s.slug) or {"status": "OK", "created": 0}
+    )
+    monkeypatch.setattr(services, "backfill_tags", lambda limit=20: 0)
+
+    out = services.tick(budget_seconds=25, now=now)
+
+    assert ran == ["never", "stale"]  # never-run first, then oldest; fresh is not due
+    assert out["ran"] == ["never:OK:0", "stale:OK:0"]

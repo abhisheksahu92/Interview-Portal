@@ -433,3 +433,10 @@ POSTHOG_HOST = env.str("POSTHOG_HOST", default="https://eu.i.posthog.com")
 GEMINI_API_KEY = env.str("GEMINI_API_KEY", default="")
 GEMINI_MODEL = env.str("GEMINI_MODEL", default="gemini-2.5-flash")
 ANTHROPIC_MODEL = env.str("ANTHROPIC_MODEL", default="claude-sonnet-5")
+
+# --- Scheduled work without a scheduler -------------------------------------
+# The free hosting tier has no cron. /internal/cron/tick/?token=... does a
+# bounded slice of the periodic work per call and is hit every five minutes by
+# an external uptime monitor. Blank disables the endpoint.
+CRON_TOKEN = env.str("CRON_TOKEN", default="")
+CRON_TICK_BUDGET_SECONDS = env.int("CRON_TICK_BUDGET_SECONDS", default=25)

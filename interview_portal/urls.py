@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
 
+from core import cron
 from core import views as core_views
 
 
@@ -14,6 +15,7 @@ def healthz(request):
 
 urlpatterns = [
     path("healthz/", healthz, name="healthz"),
+    path("internal/cron/tick/", cron.tick, name="cron_tick"),
     path("admin/", admin.site.urls),
     path("accounts/", include("core.urls")),
     path("jobs/", include("jobs.urls")),
