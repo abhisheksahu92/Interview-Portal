@@ -797,6 +797,21 @@ Keep `min_machines_running = 1` for whichever group runs the loop, and note that
 `*/15 * * * *` under the service's *Settings → Cron Schedule*. Railway runs the
 container to completion on each tick, so the command must exit (it does).
 
+### Object storage
+
+Uploaded résumés and interview videos must not live on the container disk — it
+is wiped on every deploy. Set `AWS_STORAGE_BUCKET_NAME` and the app switches to
+S3-compatible storage with private ACLs and signed URLs.
+
+**Set `AWS_S3_ENDPOINT_URL` to the regional host** for any bucket outside
+us-east-1, e.g. `https://s3.ap-south-1.amazonaws.com`. Without it boto3 signs
+against `s3.amazonaws.com`, S3 answers with a redirect, and the signature no
+longer matches: every résumé download 403s. Cloudflare R2 uses the same field
+(`https://<account>.r2.cloudflarestorage.com` with `AWS_S3_REGION_NAME=auto`).
+
+The bucket needs public access blocked and a CORS rule allowing `PUT`/`GET`
+from your site's origin, or browser video uploads fail silently.
+
 ### Scheduling without a cron
 
 Free hosting tiers have no scheduler. Set `CRON_TOKEN` and point any uptime
