@@ -37,9 +37,12 @@ def pool(company, other_company, python_skill):
 
 
 @pytest.mark.django_db
-def test_search_uses_the_icontains_fallback_on_sqlite(company, pool):
-    assert connection.vendor == "sqlite"
+def test_search_finds_a_word_only_present_in_the_resume_text(company, pool):
+    """Matches on resume_text, which the substring branch and full text share.
 
+    This used to assert ``connection.vendor == "sqlite"``, which passed only
+    because tests ran on SQLite while production ran Postgres.
+    """
     results = services.search_profiles(company, "celery")
 
     assert [p.email for p in results] == ["asha@example.test"]

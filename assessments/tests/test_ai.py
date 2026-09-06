@@ -7,6 +7,7 @@ import pytest
 
 from assessments import ai
 from assessments.models import Question
+from core import llm
 
 
 class FakeMessages:
@@ -25,8 +26,14 @@ class FakeMessages:
 
 
 def fake_client(monkeypatch, payload, raises=False):
+    """Substitute the SDK client inside the shared provider layer.
+
+    The modules no longer build their own client, so patching
+    ``ai.get_client`` would silently no-op and let a real call escape.
+    """
     messages = FakeMessages(payload, raises)
-    monkeypatch.setattr(ai, "get_client", lambda: SimpleNamespace(messages=messages))
+    monkeypatch.setattr(llm, "_anthropic_key", lambda: "test-key")
+    monkeypatch.setattr(llm, "_anthropic_client", lambda: SimpleNamespace(messages=messages))
     return messages
 
 

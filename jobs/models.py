@@ -2,6 +2,7 @@
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models.functions import Lower
 
 from jobs.validators import validate_resume_file
 
@@ -13,8 +14,12 @@ class SkillQuerySet(models.QuerySet):
         Skills are per-company rows, so a candidate-facing picker would otherwise
         repeat "Python" once per tenant.
         """
+        # Order by the folded name, not the raw one: "Python" and "python" sort
+        # bytewise on SQLite but by collation on Postgres, so the raw ordering
+        # picked a different winner per backend and broke "lowest pk wins".
         seen, keep = set(), []
-        for pk, name in self.order_by("name", "pk").values_list("pk", "name"):
+        rows = self.order_by(Lower("name"), "pk").values_list("pk", "name")
+        for pk, name in rows:
             key = (name or "").strip().casefold()
             if key in seen:
                 continue

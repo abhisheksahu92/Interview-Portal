@@ -533,25 +533,33 @@ def search_profiles(
     return qs.order_by(ORDERINGS.get(ordering or "recent", "-updated_at"), "-id")
 
 
-def _apply_text_search(qs, query):
-    if connection.vendor == "postgresql":
-        try:
-            from django.contrib.postgres.search import SearchQuery, SearchVector
-
-            vector = SearchVector("name", "email", "headline", "resume_text")
-            return qs.annotate(search=vector).filter(
-                Q(search=SearchQuery(query, search_type="websearch"))
-                | Q(tags__icontains=query)
-            )
-        except Exception:  # pragma: no cover - falls back on any PG hiccup
-            logger.warning("Postgres full-text search failed; using icontains.", exc_info=True)
-    return qs.filter(
+def _substring_match(query):
+    return (
         Q(name__icontains=query)
         | Q(email__icontains=query)
         | Q(headline__icontains=query)
         | Q(resume_text__icontains=query)
         | Q(tags__icontains=query)
     )
+
+
+def _apply_text_search(qs, query):
+    substring = _substring_match(query)
+    if connection.vendor == "postgresql":
+        try:
+            from django.contrib.postgres.search import SearchQuery, SearchVector
+
+            vector = SearchVector("name", "email", "headline", "resume_text")
+            # Full text alone answers "developer" with "developers", but it only
+            # matches whole lexemes: a recruiter typing half a name or half an
+            # email ("asha@exam") would get nothing. OR in the substring match so
+            # partial queries keep working, which is how the box is actually used.
+            return qs.annotate(search=vector).filter(
+                Q(search=SearchQuery(query, search_type="websearch")) | substring
+            )
+        except Exception:  # pragma: no cover - falls back on any PG hiccup
+            logger.warning("Postgres full-text search failed; using icontains.", exc_info=True)
+    return qs.filter(substring)
 
 
 # --- bulk actions ---------------------------------------------------------

@@ -24,3 +24,4 @@ IP Important Data.txt
 envs/.env.local
 envs/.env.dev
 envs/.env.prod
+.neon

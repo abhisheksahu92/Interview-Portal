@@ -12,6 +12,8 @@ import re
 from django.conf import settings
 from django.utils import timezone
 
+from core import llm
+
 logger = logging.getLogger(__name__)
 
 MODEL = "claude-opus-5"
@@ -133,27 +135,14 @@ def _ask(prompt, schema=None):
     given, the response format is constrained server-side; otherwise we fall
     back to tolerant JSON extraction from the text response.
     """
-    client = get_client()
-    if client is None:
-        return None
-    extra = {}
-    if schema is not None and hasattr(getattr(client, "messages", None), "parse"):
-        extra["output_config"] = {
-            "format": {"type": "json_schema", "schema": schema},
-        }
-    try:
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=MAX_TOKENS,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-            **extra,
-        )
-        text = "".join(
-            block.text for block in response.content if getattr(block, "type", "") == "text"
-        )
-    except Exception:
-        logger.exception("Anthropic request failed; degrading gracefully.")
+    text = llm.complete(
+        prompt,
+        system=SYSTEM_PROMPT,
+        max_tokens=MAX_TOKENS,
+        schema=schema,
+        model=MODEL if llm.active_provider() == "anthropic" else "",
+    )
+    if text is None:
         return None
     return _extract_json(text)
 
@@ -216,9 +205,7 @@ def generate_questions(job, skill=None, n=5, kind="MCQ"):
                 text=str(item["text"]),
                 options=options,
                 correct_option=correct,
-                difficulty=(
-                    difficulty if difficulty in valid_difficulties else Question.MEDIUM
-                ),
+                difficulty=(difficulty if difficulty in valid_difficulties else Question.MEDIUM),
                 source=Question.AI,
             )
         )
@@ -230,9 +217,7 @@ def grade_text_answer(question, answer):
     if not answer:
         return None
     data = _ask(
-        GRADE_TEXT_PROMPT.format(
-            question=getattr(question, "text", str(question)), answer=answer
-        )
+        GRADE_TEXT_PROMPT.format(question=getattr(question, "text", str(question)), answer=answer)
     )
     if not isinstance(data, dict):
         return None
@@ -264,8 +249,9 @@ def extract_resume_text(profile, max_chars=None):
     try:
         text = resume_service.get_resume_text(profile)
     except Exception:  # pragma: no cover - best effort
-        logger.warning("Resume text unavailable for profile %s.", getattr(profile, "pk", "?"),
-                       exc_info=True)
+        logger.warning(
+            "Resume text unavailable for profile %s.", getattr(profile, "pk", "?"), exc_info=True
+        )
         return ""
     return text[:max_chars] if max_chars else text
 

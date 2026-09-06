@@ -13,6 +13,8 @@ import re
 
 from django.conf import settings
 
+from core import llm
+
 logger = logging.getLogger(__name__)
 
 MODEL = "claude-opus-5"
@@ -63,8 +65,8 @@ def get_client():
 
 
 def is_configured():
-    """True when an API key is present (no network call)."""
-    return bool(getattr(settings, "ANTHROPIC_API_KEY", "") or "")
+    """True when any model provider is configured (no network call)."""
+    return llm.is_configured()
 
 
 def _extract_json(text):
@@ -87,21 +89,13 @@ def _extract_json(text):
 
 
 def _ask(prompt):
-    client = get_client()
-    if client is None:
-        return None
-    try:
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=MAX_TOKENS,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = "".join(
-            block.text for block in response.content if getattr(block, "type", "") == "text"
-        )
-    except Exception:
-        logger.exception("Anthropic request failed; degrading gracefully.")
+    text = llm.complete(
+        prompt,
+        system=SYSTEM_PROMPT,
+        max_tokens=MAX_TOKENS,
+        model=MODEL if llm.active_provider() == "anthropic" else "",
+    )
+    if text is None:
         return None
     return _extract_json(text)
 
