@@ -19,6 +19,11 @@ class Command(BaseCommand):
         parser.add_argument(
             "--only", action="append", metavar="SLUG", help="Run only this source (repeatable)."
         )
+        parser.add_argument(
+            "--no-llm",
+            action="store_true",
+            help="Tag skills by keyword only (fast; use for a first bulk import).",
+        )
 
     def handle(self, *args, **options):
         only = options.get("only") or []
@@ -28,7 +33,7 @@ class Command(BaseCommand):
         if unknown:
             self.stderr.write(f"No source with slug {', '.join(map(repr, unknown))}.")
             return None
-        rows = services.run_all(only=only)
+        rows = services.run_all(only=only, use_llm=not options.get("no_llm"))
         for stats in rows:
             self.stdout.write(
                 f"{stats['source']}: {stats['status']} "

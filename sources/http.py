@@ -22,7 +22,7 @@ TIMEOUT = 30
 #: Minimum gap between two requests to the same host.
 RATE_LIMIT_SECONDS = 1.0
 #: Ashby boards can be many megabytes; nothing needs more than this.
-MAX_BYTES = 8 * 1024 * 1024
+MAX_BYTES = 48 * 1024 * 1024  # OpenAI's Ashby board alone is 13MB
 
 _lock = threading.Lock()
 _last_call = {}

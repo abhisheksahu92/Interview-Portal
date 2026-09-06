@@ -214,7 +214,7 @@ def _parse_tag_response(text, count):
     return [[str(s).lower() for s in row][:8] if isinstance(row, list) else [] for row in parsed]
 
 
-def tag_skills(leads, vocabulary=None):
+def tag_skills(leads, vocabulary=None, *, use_llm=True):
     """Fill ``skills`` on each lead, in batches. Returns the leads touched.
 
     Any LLM problem — no key, bad JSON, wrong length — degrades to keyword
@@ -226,7 +226,7 @@ def tag_skills(leads, vocabulary=None):
         return []
     vocabulary = vocabulary if vocabulary is not None else skill_vocabulary()
     for start in range(0, len(leads), TAG_BATCH_SIZE):
-        if start:
+        if start and use_llm:
             time.sleep(TAG_BATCH_PAUSE)  # stay under the provider's per-minute quota
         batch = leads[start : start + TAG_BATCH_SIZE]
         postings = [
@@ -238,9 +238,11 @@ def tag_skills(leads, vocabulary=None):
             f"Postings: {json.dumps(postings, ensure_ascii=False)}\n\n"
             f"Return a JSON array of {len(batch)} arrays of skill strings, in order."
         )
-        answer = _parse_tag_response(
-            llm.complete(prompt, system=TAG_SYSTEM, max_tokens=1500), len(batch)
-        )
+        answer = None
+        if use_llm:
+            answer = _parse_tag_response(
+                llm.complete(prompt, system=TAG_SYSTEM, max_tokens=1500), len(batch)
+            )
         for index, lead in enumerate(batch):
             allowed = set(vocabulary)
             if answer:
@@ -366,7 +368,7 @@ def dedupe(fields, index=None, *, defer_save=False):
 # --------------------------------------------------------------------------- #
 # Runners
 # --------------------------------------------------------------------------- #
-def run_source(source):
+def run_source(source, *, use_llm=True):
     """Fetch one source and persist its leads. Never raises — records instead."""
     stats = {"source": source.slug, "seen": 0, "created": 0, "status": Source.OK}
     adapter = ADAPTERS.get(source.adapter_slug)
@@ -405,7 +407,7 @@ def run_source(source):
         lead, created = dedupe(fields, index, defer_save=True)
         (fresh if created else refreshed).append(lead)
 
-    tag_skills(fresh)
+    tag_skills(fresh, use_llm=use_llm)
     with transaction.atomic():
         Lead.objects.bulk_create(fresh, ignore_conflicts=True)
         if refreshed:
@@ -426,13 +428,18 @@ def _finish(source, stats, error):
     source.save(update_fields=["last_run_at", "last_status", "last_error", "items_seen"])
 
 
-def run_all(only=None):
-    """Run every enabled source, or just ``only`` (a slug or list of slugs)."""
+def run_all(only=None, *, use_llm=True):
+    """Run every enabled source, or just ``only`` (a slug or list of slugs).
+
+    ``use_llm=False`` tags by keyword only. A first bulk import of thousands of
+    leads would otherwise spend an hour in model calls and rate-limit backoff;
+    the periodic run afterwards tags the trickle of new leads with the model.
+    """
     sources = Source.objects.filter(enabled=True)
     if only:
         slugs = [only] if isinstance(only, str) else list(only)
         sources = sources.filter(slug__in=slugs)
-    return [run_source(source) for source in sources]
+    return [run_source(source, use_llm=use_llm) for source in sources]
 
 
 def expire_missing(source, seen_hashes):

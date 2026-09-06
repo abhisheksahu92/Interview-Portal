@@ -310,7 +310,7 @@ def test_run_all_accepts_a_list_of_slugs(monkeypatch):
     for slug in ("a", "b", "c"):
         Source.objects.create(slug=slug, name=slug, kind=Source.API)
     ran = []
-    monkeypatch.setattr(services, "run_source", lambda s: ran.append(s.slug))
+    monkeypatch.setattr(services, "run_source", lambda s, **kw: ran.append(s.slug))
 
     services.run_all(only=["a", "c"])
 
@@ -388,7 +388,7 @@ def test_rerun_of_a_source_uses_a_bounded_number_of_queries(
                 )
 
     monkeypatch.setitem(services.ADAPTERS, "sixty", Sixty())
-    monkeypatch.setattr(services, "tag_skills", lambda leads, vocabulary=None: leads)
+    monkeypatch.setattr(services, "tag_skills", lambda leads, vocabulary=None, **kw: leads)
     src = Source.objects.create(slug="sixty", name="Sixty", kind=Source.API)
 
     services.run_source(src)  # first run creates 60 rows
@@ -396,3 +396,28 @@ def test_rerun_of_a_source_uses_a_bounded_number_of_queries(
         stats = services.run_source(src)  # second run only refreshes them
 
     assert stats["created"] == 0 and stats["seen"] == 60
+
+
+@pytest.mark.django_db
+def test_no_llm_tagging_never_calls_the_model(monkeypatch):
+    from core import llm
+    from sources import services
+    from sources.models import Lead, Source
+
+    called = []
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: called.append(1) or None)
+    src = Source.objects.create(slug="k", name="K", kind=Source.API)
+    leads = [
+        Lead(
+            source=src,
+            external_id="1",
+            title="Django developer",
+            snippet="Python and PostgreSQL",
+            content_hash="c1",
+        )
+    ]
+
+    services.tag_skills(leads, use_llm=False)
+
+    assert called == []
+    assert "django" in leads[0].skills and "python" in leads[0].skills

@@ -717,7 +717,12 @@ admin as a `Source` of kind ATS with `{"slug": "<board-slug>"}`.
 ```bash
 .venv/bin/python manage.py fetch_sources                 # every enabled source
 .venv/bin/python manage.py fetch_sources --only hn --only greenhouse-stripe
+.venv/bin/python manage.py fetch_sources --no-llm   # first bulk import: keyword tagging only
 ```
+
+Skill tagging calls the model in batches of 20 and is the slow part of a first
+import (thousands of leads means an hour of calls and rate-limit backoff), so
+seed with `--no-llm` and let the periodic run tag the trickle of new leads.
 
 **`seeker/`** is the candidate-side workspace at `/portal/opportunities/`: a
 feed ranked by skill overlap (falls back to recency for a new profile), a saved
