@@ -23,8 +23,18 @@ def analytics(request):
     """
     from django.conf import settings
 
+    # "Signed in" was not enough: candidates sign in too, and the candidate
+    # portal extends the same base template, so the tracker was loading for
+    # exactly the people this docstring says it must not. Require a workspace
+    # membership as well.
     user = getattr(request, "user", None)
-    enabled = bool(settings.POSTHOG_KEY) and bool(user and user.is_authenticated)
+    signed_in = bool(user and user.is_authenticated)
+    is_workspace_user = (
+        signed_in
+        and not getattr(user, "is_candidate", False)
+        and getattr(request, "company", None) is not None
+    )
+    enabled = bool(settings.POSTHOG_KEY) and is_workspace_user
     return {
         "posthog_key": settings.POSTHOG_KEY if enabled else "",
         "posthog_host": settings.POSTHOG_HOST,

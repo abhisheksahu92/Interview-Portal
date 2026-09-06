@@ -18,12 +18,30 @@ def user(db):
 
 
 @pytest.mark.django_db
-def test_key_is_exposed_to_a_signed_in_user(rf, settings, user):
+def test_key_is_exposed_to_a_signed_in_workspace_user(rf, settings, user):
+    from core.models import Company, Membership
+
+    company = Company.objects.create(name="Acme Staffing")
+    Membership.objects.create(user=user, company=company, role=Membership.RECRUITER)
     settings.POSTHOG_KEY = "phc_test"
     request = rf.get("/")
     request.user = user
+    request.company = company
 
     assert analytics(request)["posthog_key"] == "phc_test"
+
+
+@pytest.mark.django_db
+def test_signed_in_candidates_are_never_tracked(rf, settings, user):
+    """The candidate portal extends the same base template as the workspace."""
+    user.is_candidate = True
+    user.save()
+    settings.POSTHOG_KEY = "phc_test"
+    request = rf.get("/portal/")
+    request.user = user
+    request.company = None
+
+    assert analytics(request)["posthog_key"] == ""
 
 
 @pytest.mark.django_db
