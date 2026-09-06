@@ -428,6 +428,21 @@ def _finish(source, stats, error):
     source.save(update_fields=["last_run_at", "last_status", "last_error", "items_seen"])
 
 
+def backfill_tags(limit=100):
+    """Model-tag a slice of leads that only have keyword tags (or none).
+
+    A bulk import tags by keyword to stay fast; each periodic run then upgrades
+    ``limit`` of the oldest untagged live leads so the whole pool converges on
+    model tags without ever spending an hour in one go.
+    """
+    leads = list(Lead.objects.filter(is_active=True, skills=[]).order_by("fetched_at")[:limit])
+    if not leads:
+        return 0
+    tag_skills(leads, use_llm=True)
+    Lead.objects.bulk_update(leads, ["skills"], batch_size=200)
+    return len(leads)
+
+
 def run_all(only=None, *, use_llm=True):
     """Run every enabled source, or just ``only`` (a slug or list of slugs).
 

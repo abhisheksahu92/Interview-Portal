@@ -20,6 +20,13 @@ class Command(BaseCommand):
             "--only", action="append", metavar="SLUG", help="Run only this source (repeatable)."
         )
         parser.add_argument(
+            "--backfill",
+            type=int,
+            default=100,
+            metavar="N",
+            help="After fetching, model-tag up to N untagged leads (0 disables).",
+        )
+        parser.add_argument(
             "--no-llm",
             action="store_true",
             help="Tag skills by keyword only (fast; use for a first bulk import).",
@@ -34,6 +41,10 @@ class Command(BaseCommand):
             self.stderr.write(f"No source with slug {', '.join(map(repr, unknown))}.")
             return None
         rows = services.run_all(only=only, use_llm=not options.get("no_llm"))
+        if options.get("backfill") and not options.get("no_llm"):
+            done = services.backfill_tags(options["backfill"])
+            if done:
+                self.stdout.write(f"backfilled tags on {done} lead(s)")
         for stats in rows:
             self.stdout.write(
                 f"{stats['source']}: {stats['status']} "

@@ -421,3 +421,33 @@ def test_no_llm_tagging_never_calls_the_model(monkeypatch):
 
     assert called == []
     assert "django" in leads[0].skills and "python" in leads[0].skills
+
+
+@pytest.mark.django_db
+def test_backfill_tags_only_touches_untagged_live_leads(monkeypatch):
+    from core import llm
+    from sources import services
+    from sources.models import Lead, Source
+
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: '[["python"], ["python"]]')
+    monkeypatch.setattr(services.time, "sleep", lambda s: None)
+    src = Source.objects.create(slug="b", name="B", kind=Source.API)
+    untagged = Lead.objects.create(
+        source=src, external_id="1", title="Python dev", content_hash="u1"
+    )
+    untagged2 = Lead.objects.create(
+        source=src, external_id="2", title="Python dev 2", content_hash="u2"
+    )
+    tagged = Lead.objects.create(
+        source=src, external_id="3", title="X", content_hash="t1", skills=["go"]
+    )
+    dead = Lead.objects.create(
+        source=src, external_id="4", title="Y", content_hash="d1", is_active=False
+    )
+
+    assert services.backfill_tags(limit=10) == 2
+
+    for lead in (untagged, untagged2, tagged, dead):
+        lead.refresh_from_db()
+    assert untagged.skills == ["python"] and untagged2.skills == ["python"]
+    assert tagged.skills == ["go"] and dead.skills == []
