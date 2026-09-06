@@ -1,0 +1,85 @@
+# Scheduled maintenance, run from GitHub Actions.
+#
+# The Render free plan has no cron. Until the blueprint's cron jobs exist this
+# workflow is what expires trials, sends interview reminders, retries webhooks
+# and pulls new postings into the opportunity network. Minutes are free on a
+# public repository; the whole run is two to three minutes.
+#
+# Secrets (Settings ▸ Secrets and variables ▸ Actions):
+#   PROD_DATABASE_URL                 Neon pooled connection string
+#   PROD_SECRET_KEY                   the same value the Render service uses
+#   PROD_INTEGRATIONS_ENCRYPTION_KEY  MUST match Render, or stored connector
+#                                     credentials cannot be decrypted here
+#   GEMINI_API_KEY                    skill tagging and AI screening
+#   RESEND_KEY                        SMTP password for outbound mail
+#   RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET
+#   SENTRY_DSN                        optional
+#
+# GitHub may delay a schedule by several minutes under load; that is fine for
+# every job here.
+
+name: Periodic tasks
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # maintenance: trials, dunning, reminders, webhooks
+    - cron: "0 21 * * *"     # 02:30 IST: pull new postings, backfill model tags
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Management command to run
+        default: run_periodic --skip fetch_sources
+        required: true
+
+concurrency:
+  group: periodic
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      DEBUG: "False"
+      SITE_URL: https://interview.abhishreelabs.in
+      ALLOWED_HOSTS: interview.abhishreelabs.in
+      DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.PROD_SECRET_KEY }}
+      INTEGRATIONS_ENCRYPTION_KEY: ${{ secrets.PROD_INTEGRATIONS_ENCRYPTION_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      EMAIL_HOST: smtp.resend.com
+      EMAIL_PORT: "587"
+      EMAIL_USE_TLS: "True"
+      EMAIL_HOST_USER: resend
+      EMAIL_HOST_PASSWORD: ${{ secrets.RESEND_KEY }}
+      DEFAULT_FROM_EMAIL: Interview Portal <no-reply@growfarming.in>
+      RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+      RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_ENVIRONMENT: cron
+      BGV_PROVIDER: mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Refuse to run without a database
+        run: test -n "$DATABASE_URL" || { echo "PROD_DATABASE_URL secret is not set"; exit 1; }
+
+      # Every half hour: subscription state, reminders, offers, webhooks.
+      - name: Maintenance
+        if: github.event_name == 'schedule' && github.event.schedule == '*/30 * * * *'
+        run: python manage.py run_periodic --skip fetch_sources
+
+      # Nightly: new postings, then upgrade 200 keyword-tagged leads to model tags.
+      - name: Fetch sources
+        if: github.event_name == 'schedule' && github.event.schedule == '0 21 * * *'
+        run: python manage.py fetch_sources --backfill 200
+
+      - name: Manual run
+        if: github.event_name == 'workflow_dispatch'
+        run: python manage.py ${{ inputs.command }}
