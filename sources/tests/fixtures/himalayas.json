@@ -1,0 +1,137 @@
+{
+ "comments": "21/08/2026: Cursor pagination is now available and is the preferred way to page through the feed. Pass the nextCursor value from each response back as ?cursor=. It is faster than offset and will never return the same job twice. The offset parameter is deprecated and will be removed in a future release. 13/03/2026: The API has been updated to include the companySlug field in the response.",
+ "updatedAt": 1788694358,
+ "offset": 0,
+ "limit": 3,
+ "totalCount": 104056,
+ "nextCursor": "MjAyNi0wOS0wNlQxMTozMTo0Ni40NjIwMzFafDIxNjYyMDY",
+ "jobs": [
+  {
+   "title": "Medical Reviewer, Coder",
+   "excerpt": "Position: Medical Reviewer, Certified Coder Location: Remote *This role is a temporary position and that employment is expected to be for a limited duration (approx.",
+   "companyName": "J29, Inc",
+   "companySlug": "j29-inc",
+   "companyLogo": "https://cdn-images.himalayas.app/p5dp4ua7fhptyvok0ot60uqqn508",
+   "employmentType": "Temporary",
+   "minSalary": 40,
+   "maxSalary": 45,
+   "salaryPeriod": "hourly",
+   "seniority": [
+    "Mid-level"
+   ],
+   "currency": "USD",
+   "locationRestrictions": [
+    "United States"
+   ],
+   "timezoneRestrictions": [
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    14
+   ],
+   "categories": [
+    "Medical-Coding",
+    "Claims-Review",
+    "Healthcare-Compliance",
+    "Medical-Billing",
+    "RAC-Review",
+    "Medical-Coding-Reviewer",
+    "Medical-Reviewer",
+    "Medical-Documentation-Reviewer",
+    "Medical-Records-Reviewer",
+    "Medical-Review-Specialist",
+    "Medical-Coder",
+    "Medical-Review-Analyst",
+    "Healthcare-Documentation-Reviewer"
+   ],
+   "parentCategories": [
+    "Healthcare"
+   ],
+   "description": "<p><strong>Position: </strong>Medical Reviewer, Certified Coder<br><strong>Location: </strong>Remote<br>*This role is a temporary position and that employment is expected to be for a limited duration (approx. 3-6 months)<br><br><strong>About J29</strong></p><p><a href=\"https://himalayas.app/companies/j29-inc\">J29, Inc</a>. (J29) has been supporting commercial, State, and Federal health and human service programs since company inception in 2017 as an employee-centered healthcare management consulting company. Our team of 260 employees focuses on providing processing, review, and analysis of medical claims, records, data, and audits between areas of compliance, policy, and clinical expertise. Our team is experienced in program, payment, provider, and patient integrity as we continue to support advanced programs of policy, clinical requirements, and compliance measures at the commercial, State, and Federal levels.  </p><p> J29 was founded to be an employee-centric company that prioritizes the well-being and value of its employees. Our mission is to empower our employees to do great things for the benefit of those that need it most. The J29 mission supports not only our health and human service programs, but also the philanthropy efforts of our team. We are proud to continue our support to non-profit groups with critical missions as J29 continues to grow.   </p><h3>Key Responsibilities </h3><p>RVC Reviewers perform both automated and complex reviews of Medicare Fee-for-Service (FFS) claims\u2014including Part A/B, DMEPOS, and Home Health/Hospice\u2014to assess overpayments, underpayments, and proper payments as determined by Recovery Audit Contractors (RACs). They apply Medicare policies and guidelines, ensuring claims are evaluated according to National and Local Coverage Determinations and CMS rules, and document clear, accurate findings for each claim.  </p><p>Reviewers participate in dispute resolution by re-examining claims and providing supporting documentation, support quality assurance through audits and ongoing training, and maintain compliance with CMS security and privacy standards. They also collaborate closely with key personnel to ensure consistency, accuracy, and continuous process improvement in all review activities. </p><h3>Qualifications </h3><ul>\n<li>Experience with inpatient coding and DRG validation, including accuracy review, compliance monitoring, and reimbursement optimization.</li>\n<li>5+ years of direct medical coding or medical billing experience, specifically in a healthcare environment.  </li>\n<li>3+ years working in a productivity-based claims or case working environment, out of a queued case management system.  </li>\n<li>3+ years working remotely with various technology systems. Ideally, candidate will have 3+ years of Medicare Fee For Service (FFS) experience in a medical coding role or program.  </li>\n<li>Experience with low-code, no-code case management systems as an end-user is preferred but not required. </li>\n</ul><h3>Education/Certification </h3><ul><li>Certified from an accredited association such as the American Association of Professional Coders (AAPC) or American Health Information Management Association (AHIMA). May also be Registered Health Information Administrators (RHIA) and Registered Health Information Technicians (RHIT); credentialed by AHIMA in their field of health information </li></ul><strong>Hourly Rate: </strong>$40-45 hourly depending on years of experience<br><br><em><a href=\"https://himalayas.app/companies/j29-inc\">J29, Inc</a>. is committed to hiring and retaining a diverse workforce. We are proud to be an Equal Opportunity/Affirmative Action Employer, making decisions without regard to race, color, religion, creed, sex, sexual orientation, gender identity, marital status, national origin, age, veteran status, disability, or any other protected class.\u202f <a href=\"https://himalayas.app/companies/j29-inc\">J29, Inc</a>. is a proud Veteran friendly employer. </em><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+   "pubDate": 1788694358,
+   "expiryDate": 1793878358,
+   "applicationLink": "https://himalayas.app/companies/j29-inc/jobs/medical-reviewer-coder-1230802451",
+   "guid": "https://himalayas.app/companies/j29-inc/jobs/medical-reviewer-coder-1230802451"
+  },
+  {
+   "title": "Manager of Sales",
+   "excerpt": "Wir sind ein junges Team aus dem RWTH-Aachen-Umfeld, das die Energiewende pragmatisch macht: Mit Calvergy bauen wir eine KI-gest\u00fctzte Plattform, die Unternehmens-Energiesysteme als digitalen Zwilling abbildet, Optionen wie Abw\u00e4rmenutzung, BHKW, W\u00e4rmepumpe, KWK, PV oder Batterie vergleicht und daraus klare und nachhaltige Versorgungskonzepte ableitet.",
+   "companyName": "Calvergy",
+   "companySlug": "calvergy",
+   "companyLogo": "https://cdn-images.himalayas.app/r2njoanln7oukf7j9j646hngi4d1",
+   "employmentType": "Intern",
+   "minSalary": null,
+   "maxSalary": null,
+   "salaryPeriod": "annual",
+   "seniority": [
+    "Manager"
+   ],
+   "currency": null,
+   "locationRestrictions": [
+    "Germany"
+   ],
+   "timezoneRestrictions": [
+    1
+   ],
+   "categories": [
+    "Business-Development",
+    "Sales-Management",
+    "Startup-Business-Development",
+    "Energiewirtschaft",
+    "Account-Management",
+    "Manager-Sales",
+    "Sales-Manager",
+    "Business-Sales-Manager",
+    "General-Sales-Manager",
+    "Product-Sales-Manager",
+    "Retail-Sales-Manager"
+   ],
+   "parentCategories": [
+    "Sales"
+   ],
+   "description": "<p>Wir sind ein junges Team aus dem RWTH-Aachen-Umfeld, das die Energiewende</p><p>pragmatisch macht: Mit <strong><a href=\"https://himalayas.app/companies/calvergy\">Calvergy</a></strong> bauen wir eine <strong>KI-gest\u00fctzte Plattform</strong>, die</p><p>Unternehmens-Energiesysteme als <strong>digitalen Zwilling</strong> abbildet, Optionen wie</p><p>Abw\u00e4rmenutzung, BHKW, W\u00e4rmepumpe, KWK, PV oder Batterie vergleicht und daraus</p><p>klare und nachhaltige Versorgungskonzepte ableitet.</p><p><strong>Unsere Vision:</strong> ein Tool, das so einfach ist, dass man mit wenigen Klicks tragf\u00e4hige</p><p>L\u00f6sungen f\u00fcr komplexe Energiesysteme findet \u2013 intuitiv, schnell und zuverl\u00e4ssig. Damit</p><p>sparen Anwender:innen Zeit und Aufwand und finden optimale L\u00f6sungen, um</p><p>Energiekosten um bis zu <strong>25 %</strong> zu reduzieren und CO2-Emissionen deutlich zu senken.</p><p>Du arbeitest direkt mit dem Gr\u00fcnderteam, testest Ideen schnell mit echten</p><p>Anwender:innen und siehst deinen Impact sofort. Kurze Wege, viel Ownership, echtes</p><h3>Start-up-Tempo.</h3><h3>Aufgaben</h3><h3>Sales &amp; Kundeninteraktion</h3><ul>\n<li>Identifikation und Ansprache von Zielsegmenten (z. B. Energieberater, Ingenieurb\u00fcros, Industrieunternehmen)</li>\n<li>Aufbau und Pflege von Target-Account-Listen</li>\n<li>Unterst\u00fctzung bei Kundengespr\u00e4chen, Verhandlungen und Kooperationsanbahnungen</li>\n<li>Vorbereitung und Begleitung von <strong>Demos, Pitches und Follow-ups</strong>\n</li>\n<li>Unterst\u00fctzung bei Proof-of-Concepts und Angebotsprozessen</li>\n</ul><h3>Business Development &amp; Go-to-Market</h3><ul>\n<li>Analyse von Markttrends, Wettbewerbern und Kundenbed\u00fcrfnissen im Energiesektor</li>\n<li>Entwicklung und Test von <strong>GTM-Bausteinen</strong> (Messaging, Pitch-Decks, One-Pager, Case Studies)</li>\n<li>Unterst\u00fctzung beim Aufbau von Partnerschaften</li>\n<li>Recherche und Vorbereitung von Gespr\u00e4chen mit potenziellen Partnern und Kunden</li>\n</ul><h3>Finanzierung &amp; Business Development</h3><ul>\n<li>Vorbereitung und Durchf\u00fchrung von <strong>Fundraising-Runden</strong> (Pre-Seed / Seed / Series A)</li>\n<li>Kommunikation mit Investor:innen, F\u00f6rdermittelgebern und strategischen Partnern</li>\n<li>Entwicklung von <strong>Pricing-, Sales- und Revenue-Modellen</strong>\n</li>\n<li>Verantwortung f\u00fcr Budget, Cashflow und wirtschaftliche Steuerung</li>\n</ul><h3>CRM, Prozesse &amp; Feedback</h3><ul>\n<li>Pflege der Sales-Pipeline im CRM (z. B. HubSpot oder Pipedrive)</li>\n<li>Unterst\u00fctzung beim KPI-Tracking (z. B. Meetings, Opportunities, Win-Rates)</li>\n<li>Systematisches Sammeln von Kundenfeedback und R\u00fcckspiegelung in Produkt-Roadmap und Messaging</li>\n</ul><h3>Events &amp; Content</h3><ul>\n<li>Unterst\u00fctzung bei Messen, Webinaren und Branchen-Events</li>\n<li>Erstellung von Pr\u00e4sentationen, Vertriebsunterlagen und kurzen Case-Formaten</li>\n</ul><h3>Qualifikation</h3><h3>Dein Profil</h3><ul>\n<li>Studium in <strong>Wirtschaftsingenieurwesen, Energiewirtschaft, BWL, VWL, Management, Ingenieurwesen</strong> oder vergleichbar</li>\n<li>Interesse an <strong>Sales, Business Development und Startup-Arbeit</strong>\n</li>\n<li>Starke Kommunikations- und Zuh\u00f6rf\u00e4higkeiten, sicheres Auftreten</li>\n<li>Strukturierte, eigenst\u00e4ndige und proaktive Arbeitsweise</li>\n<li>Freude an Kundenkontakt, Recherche und strategischem Denken</li>\n<li>Begeisterung f\u00fcr <strong>Energiewende, innovative Technologien und nachhaltige L\u00f6sungen</strong>\n</li>\n</ul><h3>Nice-to-have (kein Muss):</h3><ul>\n<li>Erste Erfahrung mit CRM-Tools</li>\n<li>Erfahrung mit Pr\u00e4sentationen, Pitches oder Marktanalysen</li>\n<li>Grundverst\u00e4ndnis von Energiem\u00e4rkten oder industriellen Energiesystemen</li>\n</ul><h3>Benefits</h3><h3>Was wir dir bieten</h3><ul>\n<li>Zukunftsperspektive**:** bei guter Zusammenarbeit besteht die M\u00f6glichkeit f\u00fcr eine Festanstellung oder Unternehmensbeteiligung.</li>\n<li>Startup-Spirit: direkte Zusammenarbeit mit Gr\u00fcnderteam, flache Hierarchien, schnelle Entscheidungen</li>\n<li>M\u00f6glichkeit, Ideen von dir direkt in unser Produkt einzubringen</li>\n<li>Reale Wirkung: deine Arbeit flie\u00dft in Projekte mit Industrieunternehmen ein</li>\n<li>Arbeitsplatz in Aachener Co-working Spaces mit viel Gestaltungsspielraum oder remote only</li>\n<li>Flexibilit\u00e4t**:** freie Zeiteinteilung passend zum Studium und Pr\u00fcfungsphasen</li>\n</ul><p>Klingt nach dir? Dann meld dich bei uns, wir sind gespannt auf deine Bewerbung!</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+   "pubDate": 1788694328,
+   "expiryDate": 1793878327,
+   "applicationLink": "https://himalayas.app/companies/calvergy/jobs/manager-of-sales-535414867",
+   "guid": "https://himalayas.app/companies/calvergy/jobs/manager-of-sales-535414867"
+  },
+  {
+   "title": "SMS Data Collector - English (Ethiopia)",
+   "excerpt": "SMS Data Collection Participant - English (Ethiopia)Rate: $1.",
+   "companyName": "Productive Playhouse",
+   "companySlug": "productive-playhouse",
+   "companyLogo": "https://cdn-images.himalayas.app/7do0c1ozd8hmfy8j6yz4j0yyu6r6",
+   "employmentType": "Temporary",
+   "minSalary": 1.5,
+   "maxSalary": 1.5,
+   "salaryPeriod": "hourly",
+   "seniority": [
+    "Entry-level"
+   ],
+   "currency": "USD",
+   "locationRestrictions": [
+    "Ethiopia"
+   ],
+   "timezoneRestrictions": [
+    3
+   ],
+   "categories": [
+    "Data-Collection",
+    "Language-Services",
+    "Gig-Work",
+    "Mobile-Data-Collection",
+    "Short-term-Projects",
+    "English-Language-Data-Collector"
+   ],
+   "parentCategories": [],
+   "description": "<h3>SMS Data Collection Participant - English (Ethiopia)</h3><h3>Rate: $1.50 USD per qualified message</h3><p>Location: Remote: Participants must be based in <strong>Ethiopia</strong></p><h3>Schedule: Flexible</h3><h3>Project type: Short-term/project-based</h3><p>Device requirement(s): You must use your own mobile phone and <strong>Ethiopia phone number</strong></p><h3>The Project</h3><p><a href=\"https://himalayas.app/companies/productive-playhouse\">Productive Playhouse</a> is seeking English-speaking participants for a mobile messaging data collection project. Participants will submit authentic scam and spam SMS messages received on their personal mobile phones to help improve technology designed to identify fraudulent and unwanted communications.</p><p>This is a flexible, remote opportunity. Participants may submit eligible messages whenever they receive them, provided all submissions meet project requirements..</p><p>Your contributions will support the development of tools designed to make mobile messaging safer for users around the world.</p><h3>Why Participate?</h3><ul>\n<li>Earn $1.50 USD for each qualified message you submit</li>\n<li>Participate remotely on a flexible schedule</li>\n<li>Help improve scam-detection technology by showing how real messages appear in <strong>English</strong>.</li>\n</ul><h3>Duties </h3><ul>\n<li>Submit authentic SMS messages that meet project guidelines</li>\n<li>Identify each message as either Scam or Spam</li>\n<li>Categorize submissions according to the appropriate message type</li>\n<li>Ensure all submissions are complete, accurate, and meet quality standards</li>\n<li>Follow all project instructions and submission requirements</li>\n</ul><p>Please note: Messages collected from email or other platforms are not eligible. Submissions must be SMS messages received directly on your mobile phone.</p><p>Only submissions that meet requirements will be eligible for payment</p><h3>Project Requirements</h3><h3>You may be a good fit if you:</h3><ul>\n<li>Are a native or expert-level fluency in <strong>English</strong>, as spoken in <strong>Ethiopia</strong>\n</li>\n<li>Currently located in <strong>Ethiopia</strong>\n</li>\n<li>Have access to your own mobile device</li>\n<li>You must have access to your own <strong>Ethiopia</strong> phone number</li>\n<li>Can follow project guidelines and quality standards</li>\n</ul><h3>Why PPH?</h3><ul>\n<li>Your language skills are the whole point \u2014 and this project pays for them</li>\n<li>Apply once, get contacted directly when a spot opens \u2014 no chasing</li>\n<li>Work from anywhere, on your own schedule, alongside any other work you do</li>\n<li>Clear task specs, no ongoing oversight, no micromanagement<br>Real project experience with a global data and language services company</li>\n<li>Work that actually improves how AI understands your language</li>\n</ul><h3>About <a href=\"https://himalayas.app/companies/productive-playhouse\">Productive Playhouse</a>\n</h3><p>We started by teaching kids through award-winning programming. We grew into a global data and language services company trusted by clients worldwide. But the mission never changed: keep language alive.</p><p>Transcription, translation, localization, linguistic analysis, AI evaluation \u2014 it all comes back to preserving languages and the cultures they carry.</p><p>All engagements are contingent upon successful completion of identity verification. <a href=\"https://himalayas.app/companies/productive-playhouse\">Productive Playhouse</a> is an equal opportunity organization headquartered in California and committed to diversity and inclusion across our global workforce. We welcome applicants of all backgrounds and abilities, regardless of location or engagement type. For accommodations or inquiries, please contact .</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+   "pubDate": 1788694306,
+   "expiryDate": 1793878305,
+   "applicationLink": "https://himalayas.app/companies/productive-playhouse/jobs/sms-data-collector-english-ethiopia",
+   "guid": "https://himalayas.app/companies/productive-playhouse/jobs/sms-data-collector-english-ethiopia"
+  }
+ ]
+}

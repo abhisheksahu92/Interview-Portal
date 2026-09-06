@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Seeker Pro{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-page-head"><div><h1>Seeker Pro</h1>
+  <p>Unlimited outreach from your own mailbox, and priority matching on the feed.</p></div></div>
+<div class="ip-section">
+  <ul>
+    <li>No monthly send cap (the free plan allows 10).</li>
+    <li>Bulk drafting and sending, still one recipient per mail.</li>
+    <li>Earlier access to freshly fetched leads.</li>
+  </ul>
+  {% if seeker.upgrade_requested_at %}
+    <p class="text-success">We have your interest — we will be in touch.</p>
+  {% else %}
+    <form method="post">{% csrf_token %}
+      <button class="btn btn-primary" type="submit">I am interested</button>
+    </form>
+    <p class="ip-muted small mt-2">This records your interest only; nothing is charged.</p>
+  {% endif %}
+</div>
+{% endblock %}

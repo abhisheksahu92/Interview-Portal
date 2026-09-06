@@ -1,0 +1,13 @@
+{# Careers settings switch: list this company's open roles on the public board. #}
+<form method="post" action="{% url 'board:network_toggle' %}" class="d-flex align-items-center gap-3">
+  {% csrf_token %}
+  <div>
+    <p class="mb-0 fw-semibold">List on the job network</p>
+    <p class="cx-muted small mb-0">
+      {% if site.list_in_network %}Your open roles appear on <a href="{% url 'board:list' %}">the public job board</a>.{% else %}Your roles are hidden from the public job board.{% endif %}
+    </p>
+  </div>
+  <button class="btn btn-sm btn-outline-secondary ms-auto" type="submit">
+    {% if site.list_in_network %}Remove from network{% else %}List on network{% endif %}
+  </button>
+</form>

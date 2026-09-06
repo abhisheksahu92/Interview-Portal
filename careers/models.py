@@ -34,6 +34,10 @@ class CareersSite(models.Model):
     logo = models.ImageField(upload_to="careers/logos/", blank=True)
     hero_image = models.ImageField(upload_to="careers/heroes/", blank=True)
     published = models.BooleanField(default=False)
+    list_in_network = models.BooleanField(
+        default=True,
+        help_text="Also list this site's open roles on the public cross-tenant job board.",
+    )
     seo_title = models.CharField(max_length=70, blank=True)
     seo_description = models.CharField(max_length=200, blank=True)
     show_salary = models.BooleanField(default=False)

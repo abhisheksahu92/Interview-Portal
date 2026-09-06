@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Send limit reached{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-section text-center py-5">
+  <h1 class="h3">That is your free sends for this month</h1>
+  <p class="ip-muted">{{ reason }}</p>
+  <p>Pro lifts the monthly cap so you can keep reaching out.</p>
+  <a class="btn btn-primary btn-lg" href="{% url 'seeker:upgrade' %}">See Pro</a>
+  <p class="mt-3"><a href="{% url 'seeker:saved' %}">Back to saved</a></p>
+</div>
+{% endblock %}

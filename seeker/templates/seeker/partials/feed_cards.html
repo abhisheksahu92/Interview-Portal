@@ -1,0 +1,34 @@
+<div id="feed-results" class="d-grid gap-3">
+  {% for card in cards %}
+    <article class="ip-section ip-section--tight">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div class="flex-grow-1">
+          <h2 class="h6 mb-1">
+            {% if card.url %}<a href="{{ card.url }}" target="_blank" rel="noopener">{{ card.title }}</a>
+            {% else %}{{ card.title }}{% endif %}
+          </h2>
+          <p class="ip-muted small mb-2">
+            {% if card.company %}<span>{{ card.company }}</span><span class="ip-meta-dot"></span>{% endif %}
+            <span class="ip-badge">{{ card.source|default:"Link" }}</span>
+            {% if card.remote %}<span class="ip-meta-dot"></span><span>Remote</span>{% endif %}
+            {% if card.match %}<span class="ip-meta-dot"></span><span>{{ card.match }}% match</span>{% endif %}
+          </p>
+          <p class="mb-0 small">{{ card.snippet|truncatechars:280 }}</p>
+        </div>
+        <div class="text-nowrap">
+          {% if card.saved %}
+            {% include "seeker/partials/saved_button.html" %}
+          {% else %}
+            <button class="btn btn-sm btn-outline-primary" type="button"
+                    hx-post="{% url 'seeker:save' card.kind card.id %}"
+                    hx-target="this" hx-swap="outerHTML">
+              <i class="bi bi-bookmark" aria-hidden="true"></i> Save</button>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <p class="ip-muted">Nothing to show yet. Add skills to your profile, or
+      <a href="{% url 'seeker:add_lead' %}">paste a posting you found</a>.</p>
+  {% endfor %}
+</div>

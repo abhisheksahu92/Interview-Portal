@@ -1,0 +1,30 @@
+{
+ "count": 2,
+ "mean": 1450000.0,
+ "results": [
+  {
+   "id": "4901234567",
+   "title": "Senior Python Developer",
+   "created": "2026-09-04T09:12:31Z",
+   "redirect_url": "https://www.adzuna.in/details/4901234567",
+   "description": "We are looking for a Senior Python Developer with Django and PostgreSQL experience to join our Bengaluru team. Remote-friendly, 5+ years.",
+   "salary_min": 1800000.0,
+   "salary_max": 2800000.0,
+   "company": {"display_name": "Acme Technologies"},
+   "location": {"display_name": "Bengaluru, Karnataka", "area": ["India", "Karnataka", "Bengaluru"]},
+   "category": {"label": "IT Jobs", "tag": "it-jobs"}
+  },
+  {
+   "id": "4901234568",
+   "title": "React Front End Engineer",
+   "created": "2026-09-03T14:02:00Z",
+   "redirect_url": "https://www.adzuna.in/details/4901234568",
+   "description": "React and TypeScript engineer for a product team in Pune. Hybrid.",
+   "salary_min": 1200000.0,
+   "salary_max": 1900000.0,
+   "company": {"display_name": "Globex Software"},
+   "location": {"display_name": "Pune, Maharashtra", "area": ["India", "Maharashtra", "Pune"]},
+   "category": {"label": "IT Jobs", "tag": "it-jobs"}
+  }
+ ]
+}

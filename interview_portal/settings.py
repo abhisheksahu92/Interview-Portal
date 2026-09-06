@@ -109,6 +109,9 @@ LOCAL_APPS = [
     "exchange",
     "bgv",
     "benchmarks",
+    "sources",
+    "seeker",
+    "board",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -142,6 +145,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.tenant",
+                "core.context_processors.analytics",
                 "billing.context_processors.billing",
             ],
         },
@@ -397,3 +401,35 @@ LOGGING = {
         "billing": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
+
+# --- Error tracking (Sentry) ----------------------------------------------
+# Off unless SENTRY_DSN is set, so dev and CI never ship events.
+SENTRY_DSN = env.str("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        environment=env.str("SENTRY_ENVIRONMENT", default="production"),
+        release=env.str("RENDER_GIT_COMMIT", default=""),
+        # This app stores resumes, salaries and bank details. Sending PII to a
+        # third party would leak candidate data into error reports, so keep it
+        # off and scrub request bodies as well.
+        send_default_pii=False,
+        max_request_body_size="never",
+        traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.0),
+    )
+
+# --- Product analytics (PostHog) ------------------------------------------
+# The browser snippet needs the project key (phc_...), never a personal key.
+POSTHOG_KEY = env.str("POSTHOG_PROJECT_KEY", default="")
+POSTHOG_HOST = env.str("POSTHOG_HOST", default="https://eu.i.posthog.com")
+
+# --- Language model providers ---------------------------------------------
+# Anthropic is preferred when both are set; Gemini is the fallback so the AI
+# features (screening, grading, resume extraction, video review) still work.
+GEMINI_API_KEY = env.str("GEMINI_API_KEY", default="")
+GEMINI_MODEL = env.str("GEMINI_MODEL", default="gemini-2.5-flash")
+ANTHROPIC_MODEL = env.str("ANTHROPIC_MODEL", default="claude-sonnet-5")

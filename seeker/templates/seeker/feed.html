@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Find work{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-page-head">
+  <div>
+    <h1>Find work</h1>
+    <p>Openings and freelance briefs matched to your skills, plus jobs from the network.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'seeker:add_lead' %}">Add a lead</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'seeker:saved' %}">Saved ({{ saved_count }})</a>
+  </div>
+</div>
+{% include "seeker/_nav.html" with page="feed" %}
+
+<form class="ip-section ip-section--tight mb-4" role="search"
+      hx-get="{% url 'seeker:feed' %}" hx-target="#feed-results" hx-swap="outerHTML"
+      hx-push-url="true" hx-indicator="#feed-indicator">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-5">
+      <label class="form-label" for="q">Search</label>
+      <input class="form-control" type="search" id="q" name="q" value="{{ q }}"
+             placeholder="e.g. Django, contract, Bengaluru">
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="form-label" for="kind">Type</label>
+      <select class="form-select" id="kind" name="kind">
+        <option value="">Any</option>
+        <option value="JOB"{% if kind == "JOB" %} selected{% endif %}>Jobs</option>
+        <option value="FREELANCE"{% if kind == "FREELANCE" %} selected{% endif %}>Freelance</option>
+        <option value="GIG"{% if kind == "GIG" %} selected{% endif %}>Gigs</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-2 form-check ms-2 mb-2">
+      <input class="form-check-input" type="checkbox" id="remote" name="remote"
+             value="1"{% if remote %} checked{% endif %}>
+      <label class="form-check-label" for="remote">Remote only</label>
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-2">
+      <button class="btn btn-primary w-100" type="submit">Filter</button>
+      <span class="ip-spinner htmx-indicator align-self-center" id="feed-indicator"
+            role="status" aria-label="Searching"></span>
+    </div>
+  </div>
+</form>
+
+{% include "seeker/partials/feed_cards.html" %}
+{% endblock %}

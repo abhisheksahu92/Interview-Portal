@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Your mailbox{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-page-head">
+  <div>
+    <h1>Your mailbox</h1>
+    <p>Outreach always leaves from your own address, so replies come straight back to you.</p>
+  </div>
+</div>
+{% include "seeker/_nav.html" with page="mailbox" %}
+
+<div class="row g-3">
+  <div class="col-12 col-lg-7">
+    <section class="ip-section">
+      <h2 class="h6">Status</h2>
+      {% if seeker.mailbox_ready %}
+        <p class="mb-2">Connected: <strong>{{ seeker.mailbox_email }}</strong>
+          via {{ seeker.get_mailbox_kind_display }}.</p>
+        <form method="post" action="{% url 'seeker:mailbox_disconnect' %}">{% csrf_token %}
+          <button class="btn btn-sm btn-outline-danger" type="submit">Disconnect</button>
+        </form>
+      {% else %}
+        <p class="ip-muted">No mailbox connected yet. Nothing can be sent until there is one.</p>
+      {% endif %}
+    </section>
+
+    <section class="ip-section mt-3">
+      <h2 class="h6">SMTP with an app password</h2>
+      <p class="ip-muted small">Use an app password, not your account password. It is stored encrypted.</p>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3{% if field.field.widget.input_type == 'checkbox' %} form-check{% endif %}">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">Save mailbox</button>
+      </form>
+    </section>
+
+    <section class="ip-section mt-3">
+      <h2 class="h6">Gmail</h2>
+      {% if gmail_available %}
+        <p class="ip-muted small">We ask only for permission to send mail as you — never to read your inbox.</p>
+        <a class="btn btn-outline-primary" href="{% url 'seeker:gmail_connect' %}">Connect Gmail</a>
+      {% else %}
+        <p class="ip-muted small">Gmail sending is not configured on this install. Use SMTP above.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-12 col-lg-5">
+    <section class="ip-section">
+      <h2 class="h6">Preferences</h2>
+      <form method="post" action="{% url 'seeker:preferences' %}">
+        {% csrf_token %}
+        {% for field in preferences %}
+          <div class="mb-3{% if field.field.widget.input_type == 'checkbox' %} form-check{% endif %}">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-outline-primary" type="submit">Save preferences</button>
+      </form>
+    </section>
+    <section class="ip-section mt-3">
+      <h2 class="h6">This month</h2>
+      <p class="mb-0">
+        {% if seeker.is_pro %}Pro — unlimited sends.
+        {% else %}{{ seeker.sends_left }} of 10 sends left.
+          <a href="{% url 'seeker:upgrade' %}">Go Pro</a>{% endif %}</p>
+    </section>
+  </div>
+</div>
+{% endblock %}

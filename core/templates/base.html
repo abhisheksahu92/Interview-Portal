@@ -84,6 +84,8 @@
                href="{% url 'web:job_browse' %}">Browse openings</a>
             <a class="ip-navbar__link {% if vn == 'web:candidate_profile' %}is-active{% endif %}"
                href="{% url 'web:candidate_profile' %}">My profile</a>
+            <a class="ip-navbar__link {% if vn|slice:":7" == 'seeker:' %}is-active{% endif %}"
+               href="{% url 'seeker:feed' %}">Opportunities</a>
           </div>
           <div class="ms-auto d-flex align-items-center gap-2">
             <button class="btn btn-sm btn-outline-secondary ip-icon-btn d-md-none" type="button"
@@ -133,6 +135,8 @@
                href="{% url 'web:job_browse' %}">Browse openings</a>
             <a class="ip-navbar__link {% if vn == 'web:candidate_profile' %}is-active{% endif %}"
                href="{% url 'web:candidate_profile' %}">My profile</a>
+            <a class="ip-navbar__link {% if vn|slice:":7" == 'seeker:' %}is-active{% endif %}"
+               href="{% url 'seeker:feed' %}">Opportunities</a>
             <a class="ip-navbar__link" href="{% url 'core:account_home' %}">Account</a>
           </div>
         </div>
@@ -293,5 +297,6 @@
   })();
 </script>
 {% block scripts %}{% endblock %}
+{% include "_analytics.html" %}
 </body>
 </html>

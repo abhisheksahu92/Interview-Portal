@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:ns0="http://search.yahoo.com/mrss" version="2.0">
+  <channel>
+    <title>We Work Remotely: Remote jobs in design, programming, marketing and more</title>
+    <link>https://weworkremotely.com/categories/remote-programming-jobs.rss</link>
+    <description>We Work Remotely: Remote jobs in design, programming, marketing and more</description>
+    <language>en-US</language>
+    <ttl>60</ttl>
+    <item>
+      <ns0:content url="https://wwr-pro.s3.amazonaws.com/logos/0171/6209/logo.gif" type="image/png" />
+      <title>Edfinity: Senior Software Engineer, remote</title>
+      <region>Anywhere in the World</region>
+      <category>Full-Stack Programming</category>
+      <description>&lt;img src="https://we-work-remotely.imgix.net/logos/0171/6209/logo.gif?ixlib=rails-4.0.0&amp;w=50&amp;h=50&amp;dpr=2&amp;fit=fill&amp;auto=compress" /&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Headquarters:&lt;/strong&gt; Austin, TX
+    &lt;br /&gt;&lt;strong&gt;URL:&lt;/strong&gt; &lt;a href="https://edfinity.com"&gt;https://edfinity.com&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;About Edfinity&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Edfinity is the category leader in courseware and assessment technology for higher-ed STEM. We're NSF-supported, bootstrapped, and built by a close-knit remote team of senior engineers. We're growing fast and leading the field in AI-powered courseware that moves the needle on educator productivity and student outcomes. Your work will reach hundreds of institutions, and you will help decide how it gets built.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;How we work&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;We're fully remote, with team members distributed across the US, and with that comes personal flexibility and accountability.&lt;/li&gt;
+&lt;li&gt;AI agents produce most of our code. We move fast, but we temper velocity with quality and stability above all else.&lt;/li&gt;
+&lt;li&gt;Engineers frame the problems, direct the work, and are accountable for everything that ships. If you already work this way and have opinions about it, you'll feel at home.&lt;/li&gt;
+&lt;li&gt;Everyone has opportunities to work across different areas of the platform, and team members are expected to develop deep technical expertise over time. This is particularly important as we step away from hands-on coding.&lt;/li&gt;
+&lt;li&gt;We're a small team of collaborative senior engineers. Your opinion matters.&lt;/li&gt;
+&lt;li&gt;The pace of change is real. More than ever, we're continually evolving our tooling and workflows as LLMs become more capable.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;What you’ll be doing&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Our stack is Ruby on Rails, MongoDB, Elasticearch, ClickHouse, Redis/Sidekiq, and React.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Full-stack product development in areas like assessment authoring, delivery, and grading; educator and student-facing features; LMS integrations&lt;/li&gt;
+&lt;li&gt;LLM-powered features, from prompt architecture to auto-grading to eval infrastructure&lt;/li&gt;
+&lt;li&gt;Performance optimization and reliability refactoring to handle both day-to-day load and high-stakes spikes&lt;/li&gt;
+&lt;li&gt;Stewardship of a mature codebase: upgrades, migrations, and paying down technical debt methodically&lt;/li&gt;
+&lt;li&gt;Part-time technical support rotation. Customer happiness is extremely important to us.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;What you'll need&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;8-15 years building and running scalable production web applications and services&lt;/li&gt;
+&lt;li&gt;Deep experience with Rails&lt;/li&gt;
+&lt;li&gt;Experience with web front-ends such as React&lt;/li&gt;
+&lt;li&gt;Recent experience in an SDLC revolving around the use of AI agents&lt;/li&gt;
+&lt;li&gt;Strong CS fundamentals in systems, data modeling, and complexity&lt;/li&gt;
+&lt;li&gt;Excellent communication hygiene, collaborative skills, and strong sense of self-direction.&lt;/li&gt;
+&lt;li&gt;Interest in a long-term seat on a close-knit team.&lt;/li&gt;
+&lt;li&gt;Authorization to work in the United States. We are not able to sponsor or transfer work visas at this time.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Compensation&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$135,000-$195,000, plus eligibility for an annual discretionary bonus, retirement plan, and PTO&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;To apply:&lt;/strong&gt; &lt;a href="https://weworkremotely.com/remote-jobs/edfinity-senior-software-engineer-remote"&gt;https://weworkremotely.com/remote-jobs/edfinity-senior-software-engineer-remote&lt;/a&gt;&lt;/p&gt;
+</description>
+      <pubDate>Mon, 17 Aug 2026 19:21:19 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/edfinity-senior-software-engineer-remote</guid>
+      <link>https://weworkremotely.com/remote-jobs/edfinity-senior-software-engineer-remote</link>
+    </item>
+    <item>
+      <title>Toptal: AI/ML Engineer for an AI-Driven E-Commerce Platform</title>
+      <region>Anywhere in the World</region>
+      <category>Full-Stack Programming</category>
+      <description>
+
+&lt;p&gt;
+  &lt;strong&gt;Headquarters:&lt;/strong&gt; 
+&lt;/p&gt;
+
+&lt;p&gt;We are seeking an AI Engineer to develop AI-first applications and integrate custom models and infrastructure into an existing e-commerce platform. The role focuses on building agent-led product experiences, including internal automation, dynamic site customization, and customer-facing conversational commerce workflows.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;General information&lt;/strong&gt;&lt;br&gt;This engagement supports an e-commerce startup building a platform around conversational design and intelligent automation. The current objective is to extend the existing product with AI-native capabilities while building on top of the current backend and application stack.&lt;/p&gt;&lt;p&gt;The work includes three core initiative areas: an internal AI employee for operational tasks, a fluid site customizer, and a customer-facing commerce agent designed to support one-prompt checkout experiences. The role will involve model integration, infrastructure setup, and product-facing implementation across both backend and UI surfaces.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Tasks and Deliverables&lt;/strong&gt;&lt;br&gt;- Develop AI-first applications for an existing e-commerce platform.&lt;br&gt;- Architect and implement autonomous e-commerce AI agents using open-source and proprietary foundation models.&lt;br&gt;- Establish GPU infrastructure and data pipelines for model fine-tuning and deployment.&lt;br&gt;- Integrate AI workflows with the existing stack, including MongoDB, Node.js, Express, React, and third-party APIs.&lt;br&gt;- Build conversational UI components and backend logic for one-prompt checkouts and dynamic site customization.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Required Experience&lt;/strong&gt;&lt;br&gt;- Strong expertise in AI/ML engineering and LLM integration.&lt;br&gt;- Hands-on experience fine-tuning open-source models such as Llama or Mistral.&lt;br&gt;- Experience building autonomous agents and conversational AI workflows.&lt;br&gt;- Solid background in GPU infrastructure setup and optimization for training or inference.&lt;br&gt;- Full-stack proficiency with MongoDB, Express, React, and Node.js.&lt;br&gt;- Experience integrating REST APIs into production applications.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Nice to have:&lt;/strong&gt;&lt;br&gt;- Familiarity with Stripe, Twilio, or OpenAI API integrations.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;To apply:&lt;/strong&gt; &lt;a href="https://weworkremotely.com/remote-jobs/toptal-ai-ml-engineer-for-an-ai-driven-e-commerce-platform"&gt;https://weworkremotely.com/remote-jobs/toptal-ai-ml-engineer-for-an-ai-driven-e-commerce-platform&lt;/a&gt;&lt;/p&gt;
+</description>
+      <pubDate>Mon, 17 Aug 2026 14:10:09 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/toptal-ai-ml-engineer-for-an-ai-driven-e-commerce-platform</guid>
+      <link>https://weworkremotely.com/remote-jobs/toptal-ai-ml-engineer-for-an-ai-driven-e-commerce-platform</link>
+    </item>
+    <item>
+      <title>Samsara: Staff Software Engineer</title>
+      <region>Anywhere in the World</region>
+      <category>Full-Stack Programming</category>
+      <description>
+
+&lt;p&gt;
+  &lt;strong&gt;Headquarters:&lt;/strong&gt; Remote
+    &lt;br /&gt;&lt;strong&gt;URL:&lt;/strong&gt; &lt;a href="https://www.samsara.com/"&gt;https://www.samsara.com/&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;About the role:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Samsara (NYSE: IOT) sits at the center of hardware, software, AI, and the physical world. The platform processes 25+ trillion data points annually from IoT sensors, cameras, and connected devices across thousands of organizations, and that dataset is compounding: it grew from 4 trillion to 25+ trillion in four years. We're still early in turning that data into the products that will define how physical operations run, and we're hiring the engineers who will build what comes next.&lt;/p&gt;
+&lt;p&gt;We're approaching ~$2B ARR growing 30%+ year over year, with 96% of our largest customers on two or more products. The fastest-growing divisions at Samsara are tackling the hardest, most ambiguous problems at the company: building new products from scratch, applying AI and ML to massive real-world datasets, and shipping capabilities that change how organizations maintain equipment, manage fleets, and run day-to-day operations. Most of this work is zero-to-one, at billion-dollar scale.&lt;/p&gt;
+&lt;p&gt;We're looking for software engineers who want to define what ships next. Leveling is broad and flexible: we're hiring from Senior through Staff+, across platform and product, and we're open to shaping scope around the right person's strengths and interests. That window won't stay open long.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;This role is remote and open to candidates residing in the US. Relocation assistance will not be provided for this role.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;You should apply if:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;You want to impact the industries that run our world.&lt;/strong&gt;&amp;nbsp;The software you build will have real-world stakes: helping keep the lights on, getting food into grocery stores, keeping workers safe. What ships here isn't metrics on a dashboard. It shows up on the loading dock, the job site, and the dispatch floor.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;You want to build, not maintain.&lt;/strong&gt;&amp;nbsp;Samsara is in full growth mode. We're building new systems from scratch, not babysitting old ones. You'd own entire problem spaces end to end, with the autonomy to set direction from day one.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;You want to work where AI meets the physical world.&lt;/strong&gt;&amp;nbsp;Samsara has spent a decade building the largest proprietary dataset for physical operations. More connected assets generate more data, more data trains better models, better models drive more value, and more value wins more assets. The market and the opportunity here are what set us apart, not just the models.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;You believe customers are more than a number.&lt;/strong&gt;&amp;nbsp;Samsara engineers have a rare closeness to end users. You'll participate in customer interviews, collaborate with product managers and customer success, and use that context to build products that solve real problems operators face every day.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;You have the curiosity and drive to figure it out.&lt;/strong&gt;&amp;nbsp;We're looking for people who take pride in their work and get things done at all costs. The engineers who thrive here don't wait to be told what to build. They define it, ship it, and own the outcome. The rate-limiting step on our teams isn't tooling or process. It's ambition.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;In this role, you will:&lt;/strong&gt;&amp;nbsp;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Take ownership of technically complex, mission-critical areas and run with them. We want to point you in a direction and show up to the demo meeting impressed, not spend our weeks managing the details.&lt;/li&gt;
+&lt;li&gt;Define and drive technical strategy for new products and platform capabilities, from backend services and APIs to the customer-facing UI.&lt;/li&gt;
+&lt;li&gt;Design and ship full-stack features end to end. You'll work across backend, frontend, and potentially mobile to deliver AI-powered products that solve real operational problems.&lt;/li&gt;
+&lt;li&gt;Partner with product, design, and customer-facing teams to translate ambiguous, real-world problems into clear technical plans and measurable outcomes.&lt;/li&gt;
+&lt;li&gt;Build and scale the systems behind AI-driven products, including data ingestion, APIs, and the workflows that put intelligence into the hands of operators.&lt;/li&gt;
+&lt;li&gt;Raise the bar for the engineers around you through code reviews, design reviews, technical mentorship, and by setting a standard for quality, velocity, and craft.&lt;/li&gt;
+&lt;li&gt;Champion, role model, and embed Samsara’s cultural principles (Focus on Customer Success, Build for the Long Term, Adopt a Growth Mindset, Be Inclusive, Win as a Team) as we scale globally and across new offices&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Minimum requirements for the role:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Bachelor's degree in Computer Science, Engineering, or equivalent practical experience.&lt;/li&gt;
+&lt;li&gt;8+ years of experience in software design and development, including building and operating production systems at scale.&lt;/li&gt;
+&lt;li&gt;Strong full-stack fundamentals. You're comfortable working across backend services, APIs, and frontend (web or mobile) to ship complete products.&lt;/li&gt;
+&lt;li&gt;Proficiency in modern languages and frameworks (Go, Python, TypeScript/JavaScript, React, or similar).&lt;/li&gt;
+&lt;li&gt;Demonstrated experience leading cross-team or cross-org projects from inception through rollout, including managing ambiguity, driving alignment, and delivering measurable impact.&lt;/li&gt;
+&lt;li&gt;Experience building AI-powered or data-driven products. You don't need to train models, but you know how to take AI capabilities and turn them into products customers love.&lt;/li&gt;
+&lt;li&gt;Strong communication skills and the ability to translate between technical and non-technical stakeholders.&lt;/li&gt;
+&lt;li&gt;A track record of building: zero-to-one products, systems you left in a meaningfully better place, or hard problems you refused to let stay unsolved.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;An ideal candidate also has:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Experience shipping AI-powered features in production, whether that's LLM-based products, agentic workflows, recommendation systems, or other customer-facing AI.&lt;/li&gt;
+&lt;li&gt;Comfort with modern AI-augmented development workflows (Cursor, LLMs, etc.) to multiply your output and accelerate delivery.&lt;/li&gt;
+&lt;li&gt;Background working with real-world operational data (telematics, sensor data, work orders, inspections) or a strong interest in learning the domain.&lt;/li&gt;
+&lt;li&gt;A proven track record of mentoring senior engineers and influencing engineering culture, standards, and best practices beyond a single team.&lt;/li&gt;
+&lt;li&gt;Side projects, open-source contributions, or other signals of curiosity and drive outside the scope of your day job.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="content-pay-transparency"&gt;
+&lt;div class="pay-input"&gt;
+&lt;div class="description"&gt;
+&lt;p&gt;The range of annual base salary for full-time employees for this position is below. Please note that base pay offered may vary depending on factors including your city of residence, job-related knowledge, skills, and experience. This role is also eligible for an initial RSU grant with no vesting cliff, and ongoing refresh opportunities tied to performance, subject to plan terms and conditions. Learn more about our total rewards and benefits below.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="title"&gt;Annual Base Salary&lt;/div&gt;
+&lt;div class="pay-range"&gt;$162,400&lt;span class="divider"&gt;—&lt;/span&gt;$290,000 USD&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="content-conclusion"&gt;
+&lt;p&gt;&lt;strong&gt;Total Rewards&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;At Samsara, we build for the people who keep the global economy moving. We want owners, not passengers, which is why&amp;nbsp;&lt;a href="https://www.samsara.com/company/careers/benefits"&gt;our rewards&lt;/a&gt;&amp;nbsp;are designed to fuel high-impact builders. Our compensation program delivers above-market total compensation through a combination of base salary, performance-based bonus/variable pay, and equity (for eligible roles) in a high-growth public company. We meaningfully differentiate pay for our top performers, who have the opportunity to earn above-market compensation that can outpace the broader market over time.&lt;/p&gt;
+&lt;p&gt;Beyond compensation, we provide the foundations that enable long-term success: a flexible, employee-led remote model, a professional development stipend, comprehensive health and parental leave plans, and more. If you’re ready to build for the long term and own the outcome, your journey starts here.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Flexible Working&amp;nbsp;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;At Samsara, we embrace a flexible working model that caters to the diverse needs of our teams. Our offices are open for those who prefer to work in-person and we also support remote work where it aligns with our operational requirements. For certain positions, being close to one of our offices or within a specific geographic area is important to facilitate collaboration, access to resources, or alignment with our service regions. In these cases, the job description will clearly indicate any working location requirements. Our goal is to ensure that all members of our team can contribute effectively, whether they are working on-site, in a hybrid model, or fully remotely. All offers of employment are contingent upon an individual’s ability to secure and maintain the legal right to work at the company and in the specified work location, if applicable.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Belonging at Samsara&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;At Samsara, we welcome everyone regardless of their background. All qualified applicants will receive consideration for employment without regard to race, color, religion, national origin, sex, gender, gender identity, sexual orientation, protected veteran status, disability, age, and other characteristics protected by law. We depend on the unique approaches of our team members to help us solve complex problems and want to ensure that Samsara is a place where people from all backgrounds can make an impact.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;To apply:&lt;/strong&gt; &lt;a href="https://weworkremotely.com/remote-jobs/samsara-staff-software-engineer"&gt;https://weworkremotely.com/remote-jobs/samsara-staff-software-engineer&lt;/a&gt;&lt;/p&gt;
+</description>
+      <pubDate>Mon, 17 Aug 2026 13:57:14 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/samsara-staff-software-engineer</guid>
+      <link>https://weworkremotely.com/remote-jobs/samsara-staff-software-engineer</link>
+    </item>
+    </channel>
+</rss>

@@ -1,0 +1,32 @@
+{
+ "kind": "Listing",
+ "data": {
+  "after": "t3_1abcdef",
+  "children": [
+   {"kind": "t3", "data": {
+     "id": "1abcd01",
+     "subreddit": "forhire",
+     "title": "[Hiring] Django backend developer for a 3-month contract",
+     "author": "acme_founder",
+     "permalink": "/r/forhire/comments/1abcd01/hiring_django_backend_developer/",
+     "selftext": "We need a Django + Postgres developer for a 3 month contract, roughly 20 hours a week, fully remote. Stack is Django 5, Celery and React on the front. Budget is $30/hour. Mail jobs@acmelabs.dev with a short note and two links.",
+     "created_utc": 1788600000.0}},
+   {"kind": "t3", "data": {
+     "id": "1abcd02",
+     "subreddit": "forhire",
+     "title": "[For Hire] Senior React developer available immediately",
+     "author": "somebody",
+     "permalink": "/r/forhire/comments/1abcd02/for_hire_senior_react/",
+     "selftext": "10 years of React and TypeScript, open to contract work.",
+     "created_utc": 1788600100.0}},
+   {"kind": "t3", "data": {
+     "id": "1abcd03",
+     "subreddit": "forhire",
+     "title": "[Task] One-off Figma to Tailwind landing page",
+     "author": "designshop",
+     "permalink": "/r/forhire/comments/1abcd03/task_figma_to_tailwind/",
+     "selftext": "Single landing page, Figma file ready, needs Tailwind CSS markup. Reply here with a quote.",
+     "created_utc": 1788600200.0}}
+  ]
+ }
+}

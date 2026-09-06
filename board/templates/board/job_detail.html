@@ -1,0 +1,55 @@
+{% extends "board/public_base.html" %}
+{% load web_money %}
+
+{% block title %}{{ job.title }} · {{ company.name }}{% endblock %}
+{% block og_title %}{{ job.title }} · {{ company.name }}{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">{{ job_ld|safe }}</script>
+{% endblock %}
+
+{% block hero %}
+  <p class="ip-eyebrow">{{ company.name }}</p>
+  <h1>{{ job.title }}</h1>
+  <p class="ip-lede mb-0 mt-3">{{ job.location|default:"Remote" }} · {{ job.get_employment_type_display }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-12 col-lg-8">
+    <div class="cx-prose">
+      {% if description_html %}<section class="mb-4"><h2 class="h5">About the role</h2>{{ description_html }}</section>{% endif %}
+      {% if requirements_html %}<section class="mb-4"><h2 class="h5">Requirements</h2>{{ requirements_html }}</section>{% endif %}
+    </div>
+  </div>
+  <aside class="col-12 col-lg-4">
+    <div class="cx-card p-4">
+      <form method="post" action="{% url 'board:job_apply' job.pk %}">
+        {% csrf_token %}
+        <button class="btn cx-btn w-100 mb-4" type="submit" {% if already_applied %}disabled{% endif %}>
+          {% if already_applied %}Already applied{% else %}Apply for this role{% endif %}
+        </button>
+      </form>
+      <dl class="ip-factlist mb-0">
+        <div><dt>Company</dt><dd><a href="{% url 'careers:site' site.slug %}">{{ company.name }}</a></dd></div>
+        <div><dt>Location</dt><dd>{{ job.location|default:"Remote" }}{% if is_remote %} · remote{% endif %}</dd></div>
+        <div><dt>Employment type</dt><dd>{{ job.get_employment_type_display }}</dd></div>
+        {% if job.salary_published %}
+          <div><dt>Salary</dt><dd>{% salary_range job %}</dd></div>
+        {% endif %}
+        {% if job.closes_at %}<div><dt>Applications close</dt><dd>{{ job.closes_at }}</dd></div>{% endif %}
+        {% if job.skills.all %}
+          <div>
+            <dt>Skills</dt>
+            <dd class="d-flex flex-wrap gap-1">
+              {% for skill in job.skills.all %}<span class="cx-chip">{{ skill.name }}</span>{% endfor %}
+            </dd>
+          </div>
+        {% endif %}
+      </dl>
+    </div>
+    <p class="mt-3 mb-0"><a href="{% url 'board:list' %}">← All open roles</a></p>
+  </aside>
+</div>
+{% endblock %}

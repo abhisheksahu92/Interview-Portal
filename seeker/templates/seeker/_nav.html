@@ -1,0 +1,9 @@
+{# Shared sub-nav so every seeker page shows where it sits. #}
+<nav class="mb-4" aria-label="Opportunity network">
+  <ul class="nav nav-pills gap-1 flex-wrap">
+    <li class="nav-item"><a class="nav-link{% if page == 'feed' %} active{% endif %}" href="{% url 'seeker:feed' %}">Feed</a></li>
+    <li class="nav-item"><a class="nav-link{% if page == 'saved' %} active{% endif %}" href="{% url 'seeker:saved' %}">Saved</a></li>
+    <li class="nav-item"><a class="nav-link{% if page == 'add' %} active{% endif %}" href="{% url 'seeker:add_lead' %}">Add a lead</a></li>
+    <li class="nav-item"><a class="nav-link{% if page == 'mailbox' %} active{% endif %}" href="{% url 'seeker:mailbox' %}">Mailbox</a></li>
+  </ul>
+</nav>

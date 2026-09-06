@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Write to them{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-page-head">
+  <div>
+    <h1>Write to them</h1>
+    <p>One mail per person, from your own mailbox. Edit anything before it goes.</p>
+  </div>
+</div>
+
+{% if not seeker.mailbox_ready %}
+  <div class="alert alert-warning">
+    You have not connected a mailbox yet, so nothing can be sent.
+    <a href="{% url 'seeker:mailbox' %}">Connect one</a>.</div>
+{% endif %}
+
+<form method="post" action="{% url 'seeker:compose' %}">
+  {% csrf_token %}
+  <div class="d-grid gap-3">
+    {% for draft in drafts %}
+      <article class="ip-section ip-section--tight">
+        <input type="hidden" name="outreach_id" value="{{ draft.pk }}">
+        <h2 class="h6">{{ draft.saved_item.title }}</h2>
+        <div class="mb-2">
+          <label class="form-label" for="to-{{ draft.pk }}">To</label>
+          <input class="form-control" type="email" id="to-{{ draft.pk }}"
+                 name="to_{{ draft.pk }}" value="{{ draft.to_email }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="subject-{{ draft.pk }}">Subject</label>
+          <input class="form-control" type="text" id="subject-{{ draft.pk }}"
+                 name="subject_{{ draft.pk }}" value="{{ draft.subject }}" maxlength="300" required>
+        </div>
+        <div>
+          <label class="form-label" for="body-{{ draft.pk }}">Message</label>
+          <textarea class="form-control" id="body-{{ draft.pk }}" name="body_{{ draft.pk }}"
+                    rows="10" required>{{ draft.body }}</textarea>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
+    <button class="btn btn-primary" type="submit">Send {{ drafts|length }}</button>
+    <a class="btn btn-outline-secondary" href="{% url 'seeker:saved' %}">Back</a>
+    <span class="ip-muted small">
+      {% if resume %}Your résumé is attached to each mail.{% else %}
+        No résumé on file — <a href="{% url 'web:candidate_profile' %}">upload one</a>.{% endif %}</span>
+  </div>
+</form>
+{% endblock %}

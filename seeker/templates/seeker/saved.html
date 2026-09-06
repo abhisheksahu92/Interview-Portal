@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Saved opportunities{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-page-head">
+  <div>
+    <h1>Saved</h1>
+    <p>Tick a few, then apply, open them, or write to whoever posted them.</p>
+  </div>
+  <div class="ip-page-head__actions">
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'seeker:mailbox' %}">Mailbox</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'seeker:feed' %}">Find more</a>
+  </div>
+</div>
+{% include "seeker/_nav.html" with page="saved" %}
+
+<form class="mb-3 d-flex flex-wrap gap-2 align-items-end" method="get">
+  <div>
+    <label class="form-label" for="status">Status</label>
+    <select class="form-select" id="status" name="status" onchange="this.form.submit()">
+      <option value="">All</option>
+      {% for value, label in statuses %}
+        <option value="{{ value }}"{% if status == value %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<form method="post" action="{% url 'seeker:bulk' %}" id="saved-form">
+  {% csrf_token %}
+  <div class="ip-section ip-section--tight mb-3 d-flex flex-wrap gap-2 align-items-center position-sticky top-0"
+       style="z-index: 5;">
+    <strong class="me-2">Bulk actions</strong>
+    <button class="btn btn-sm btn-primary" type="submit" name="action" value="apply">Apply</button>
+    <button class="btn btn-sm btn-outline-primary" type="submit" name="action" value="open">Open &amp; track</button>
+    <button class="btn btn-sm btn-outline-primary" type="submit" name="action" value="draft">Draft emails</button>
+    <button class="btn btn-sm btn-outline-secondary" type="submit" name="action" value="archive">Archive</button>
+    <span class="ip-muted small ms-auto">
+      {% if seeker.is_pro %}Pro — unlimited sends{% else %}{{ seeker.sends_left }} of 10 sends left this month{% endif %}
+      · max {{ max_bulk }} per action</span>
+  </div>
+
+  <div class="d-grid gap-2">
+    {% for item in items %}
+      <article class="ip-section ip-section--tight">
+        <div class="d-flex gap-3 align-items-start">
+          <input class="form-check-input mt-1" type="checkbox" name="item" value="{{ item.pk }}"
+                 id="item-{{ item.pk }}" aria-label="Select {{ item.title }}">
+          <div class="flex-grow-1">
+            <h2 class="h6 mb-1">
+              <label for="item-{{ item.pk }}">{{ item.title }}</label>
+            </h2>
+            <p class="ip-muted small mb-1">
+              {% if item.company_name %}<span>{{ item.company_name }}</span><span class="ip-meta-dot"></span>{% endif %}
+              <span class="ip-badge">{{ item.get_status_display }}</span>
+              {% if item.job_id %}<span class="ip-meta-dot"></span><span>Network job</span>{% endif %}
+              {% if item.contact_email %}<span class="ip-meta-dot"></span><span>{{ item.contact_email }}</span>{% endif %}
+            </p>
+            {% if item.url %}<a class="small" href="{{ item.url }}" target="_blank" rel="noopener">Open the posting</a>{% endif %}
+            {% for mail in item.outreach.all %}
+              {% if mail.status == "FAILED" %}<p class="small text-danger mb-0">Send failed: {{ mail.error }}</p>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+    {% empty %}
+      <p class="ip-muted">Nothing saved yet. <a href="{% url 'seeker:feed' %}">Browse the feed</a>.</p>
+    {% endfor %}
+  </div>
+</form>
+{% endblock %}

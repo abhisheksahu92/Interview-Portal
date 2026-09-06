@@ -1,0 +1,162 @@
+{
+ "jobs": [
+  {
+   "absolute_url": "https://job-boards.greenhouse.io/checkr/jobs/8132600",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 3521541,
+   "location": {
+    "name": "Denver, Colorado, United States; San Francisco, California, United States"
+   },
+   "metadata": null,
+   "id": 8132600,
+   "updated_at": "2026-08-21T16:14:06-04:00",
+   "requisition_id": "R4119",
+   "title": "Accounts Receivable Lead",
+   "company_name": "Checkr",
+   "first_published": "2026-08-21T16:14:06-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;span style=&quot;font-weight: 400;&quot;&gt;&lt;strong&gt;About Checkr&lt;br&gt;&lt;/strong&gt;&lt;/span&gt;Checkr is building the data platform to power safe and fair decisions. Over 140,000 companies and millions of people rely on Checkr for AI verification in the moments that matter most: getting a new job, a new place to live, a car ride, childcare, even a date. Customers include Uber, Pennymac, Airbnb, Doordash, and Anthropic.&lt;br&gt;&lt;br&gt;We\u2019re a team that thrives on solving complex problems with innovative solutions that advance our mission. Checkr is recognized on &lt;a href=&quot;https://www.forbes.com/lists/cloud100/&quot; target=&quot;_blank&quot;&gt;Forbes Cloud 100 2025 List&lt;/a&gt; and is a Y Combinator 2024 &lt;a href=&quot;https://www.ycombinator.com/blog/yc-top-companies-2024&quot;&gt;Breakthrough Company&lt;/a&gt;.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;Reporting to the Director of Billing Operations &amp;amp; AR, the Accounts Receivable Lead will oversee the accuracy, scalability, and automation of our global Accounts Receivable process. This role owns cash application, reconciliations, unapplied cash resolution, and dispute management, while managing an offshore AR team operating mostly in U.S. hours.&lt;/p&gt;\n&lt;p&gt;You\u2019ll be the bridge between accounting and systems, driving automation and ensuring the company\u2019s AR subledger, bank activity, and general ledger remain perfectly aligned. This is a high-impact role for someone who thrives at the intersection of accounting precision and process innovation.&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What you\u2019ll do&lt;/strong&gt;&lt;/p&gt;\n&lt;h3&gt;&lt;strong&gt;&lt;em&gt;Close, Reconciliation, and Accounting&lt;/em&gt;&lt;/strong&gt;&lt;/h3&gt;\n&lt;ul&gt;\n&lt;li&gt;Own the monthly AR close end-to-end: subledger-to-GL tie-out, cash application clearing, unapplied and on-account cash, aging roll-forward, and flux commentary against both prior period and expectation.&lt;/li&gt;\n&lt;li&gt;Own the allowance for credit losses: maintain the reserve methodology, refresh the loss-rate inputs each quarter, document the judgments applied, and defend the estimate to external audit.&lt;/li&gt;\n&lt;li&gt;Prepare and review AR reconciliations, including aging of reconciling items, root-cause classification, and a documented clearing plan for anything past threshold. Unexplained reconciling items do not roll forward.&lt;/li&gt;\n&lt;li&gt;Reconcile third-party payment processor activity, including Stripe and other PSPs, to the general ledger: gross settlement, processing fees, refunds, chargebacks, and reserve balances.&lt;/li&gt;\n&lt;li&gt;Prepare and review AR journal entries, including write-offs, credit and debit memos, reclasses, and reserve true-ups, with support attached at the time of posting rather than assembled later.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h3&gt;&lt;strong&gt;&lt;em&gt;Controls, Review, and Audit&lt;/em&gt;&lt;/strong&gt;&lt;/h3&gt;\n&lt;ul&gt;\n&lt;li&gt;Own the design, documentation, and operating effectiveness of the AR control set: cash application, credit memo and adjustment approval, write-off authorization, customer master changes, and dunning exceptions.&lt;/li&gt;\n&lt;li&gt;Serve as reviewer of record for the AR team&#39;s work. Review is a documented control activity with evidence of what was reviewed, what was tested, and what was concluded; it is not an informal second read.&lt;/li&gt;\n&lt;li&gt;Own the AR scope of SOX 404 readiness: process narratives, walkthroughs, control matrices, PBC responses, and remediation of any deficiency identified.&lt;/li&gt;\n&lt;li&gt;Maintain AR accounting policies, SOPs, and desktop procedures, and keep them current as systems, processes, and monetization models change.&lt;/li&gt;\n&lt;li&gt;Act as the primary AR point of contact for external and internal audit, delivering audit-ready documentation on request.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h3&gt;&lt;strong&gt;&lt;em&gt;Operations, Team, and Systems&lt;/em&gt;&lt;/strong&gt;&lt;/h3&gt;\n&lt;ul&gt;\n&lt;li&gt;Manage the AR operation: collections strategy, dispute resolution, escalation paths, and reduction of stale balances, with clear ownership boundaries between in-house staff and Shared Services or BPO partners.&lt;/li&gt;\n&lt;li&gt;Establish and maintain disputes and chargeback resolution in Stripe and other payment service providers, including both the accounting treatment and the control over who is authorized to concede a dispute.&lt;/li&gt;\n&lt;li&gt;Build and mentor a high-performing AR team through hiring, training, SOPs, and knowledge transfer, with enough bench depth that the close does not depend on any one person.&lt;/li&gt;\n&lt;li&gt;Publish AR KPIs and dashboards with a documented definition and source system for each metric: DSO, aging buckets, unapplied cash, reserve coverage, and collections forecast accuracy.&lt;/li&gt;\n&lt;li&gt;Design and implement scalable automation across the AR and close workflow using Excel, SQL, NetSuite, or Oracle, prioritizing changes that remove manual touches without weakening the control.&lt;/li&gt;\n&lt;li&gt;Partner cross-functionally with Billing, Revenue Accounting, Data Engineering, Sales Ops, Legal, and Product to support new monetization models, ensuring accounting and control requirements are designed in at the start rather than retrofitted after launch.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;What you bring&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;8+ years of accounting experience with meaningful ownership of receivables, billing, or the order-to-cash cycle in a tech-enabled or services environment; 2\u20133 years in a lead or manager capacity.&lt;/li&gt;\n&lt;li&gt;Demonstrated ownership of a monthly close: reconciliations, journal entries, flux analysis, and review of work prepared by others.&lt;/li&gt;\n&lt;li&gt;Proven experience managing offshore/BPO accounting teams.&lt;/li&gt;\n&lt;li&gt;Deep understanding of GAAP principles, SOX controls, and audit readiness.&lt;/li&gt;\n&lt;li&gt;Strong systems mindset \u2014 hands-on experience with Oracle Fusion, NetSuite, Alteryx, Snowflake, or similar tools. (preferred)&lt;/li&gt;\n&lt;li&gt;Demonstrated success in automation or process transformation within AR or finance operations.&lt;/li&gt;\n&lt;li&gt;Excellent communication and cross-functional collaboration skills; able to partner with Billing, Revenue, and Engineering teams.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;#LI-TD1&lt;/span&gt;&lt;/p&gt;&lt;div class=&quot;content-pay-transparency&quot;&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;description&quot;&gt;&lt;p&gt;&lt;strong&gt;Pay Transparency Disclosure&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;We use geographic cost of labor as an input to develop ranges for our roles and as such, each location where we hire may have a different range. If this role is remote, we have listed the top to the bottom of the possible range, but we will specify the target range for an exact location when you are selected for a recruiting discussion. For more information on our compensation philosophy, see&lt;/em&gt;&lt;a href=&quot;https://checkr.com/company/careers&quot;&gt;&lt;em&gt; &lt;/em&gt;&lt;em&gt;our website&lt;/em&gt;&lt;/a&gt;&lt;em&gt;.&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;title&quot;&gt;On-target Earnings OR Base Salary range (San Francisco, CA)&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$133,000&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$156,000 USD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;title&quot;&gt;On-target Earnings OR Base Salary range (Denver, CO)&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$112,000&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$132,000 USD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;p&gt;&lt;strong&gt;What We Offer&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;A fast-paced and collaborative environment&lt;/li&gt;\n&lt;li&gt;Learning and development allowance&lt;/li&gt;\n&lt;li&gt;Competitive cash and equity compensation, and opportunity for advancement&lt;/li&gt;\n&lt;li&gt;100% medical, dental, and vision coverage&lt;/li&gt;\n&lt;li&gt;Up to $25K reimbursement for fertility, adoption, and parental planning services&lt;/li&gt;\n&lt;li&gt;Flexible PTO policy&lt;/li&gt;\n&lt;li&gt;Monthly wellness stipend&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;At Checkr, we believe an in office work environment strengthens collaboration, drives innovation, and encourages connection. Our hub locations are Denver, CO; San Francisco, CA; Nashville, TN; and Santiago, Chile. Individuals are expected to work from the office 3+ days a week. In-office perks are provided, such as lunch five times a week, a commuter stipend, and an abundance of snacks and beverages. A relocation stipend may be available for those willing to relocate to a Checkr hub location.&lt;/em&gt;&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Equal Employment Opportunities at Checkr&lt;/strong&gt;&lt;br&gt;&lt;em&gt;Checkr is committed to building the best product and company, which requires hiring talented and qualified individuals with a diverse set of perspectives and lived experiences. Checkr believes in hiring people of all backgrounds, including those whose histories are impacted by the justice system in accordance with local, state, and/or federal laws, including the &lt;/em&gt;&lt;a href=&quot;https://www.sf.gov/worker-rights-san-francisco&quot;&gt;&lt;em&gt;San Francisco\u2019s Fair Chance Ordinance&lt;/em&gt;&lt;/a&gt;&lt;em&gt;.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Applicant Privacy Policy&lt;/strong&gt;&lt;br&gt;If you are a California resident or are located in Alberta or British Columbia, our &lt;a href=&quot;https://checkr.com/legal/applicant-privacy-policy&quot; target=&quot;_blank&quot;&gt;Applicant Privacy Policy&lt;/a&gt; applies to our collection and processing of your personal information when you apply for a role with us or otherwise participate in our recruitment process.&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;*Legitimate Checkr emails will always include our official domain name after the @ symbol (e.g., &lt;a href=&quot;mailto:name@checkr.com&quot;&gt;name@checkr.com&lt;/a&gt; or &lt;a href=&quot;mailto:name@ext.checkr.com&quot;&gt;name@ext.checkr.com&lt;/a&gt;).&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;",
+   "departments": [
+    {
+     "id": 9557,
+     "name": "Finance",
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "offices": [
+    {
+     "id": 63152,
+     "name": "Denver",
+     "location": "Denver, Colorado, United States",
+     "child_ids": [],
+     "parent_id": null
+    },
+    {
+     "id": 5439,
+     "name": "San Francisco",
+     "location": "San Francisco, California, United States",
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  },
+  {
+   "absolute_url": "https://job-boards.greenhouse.io/checkr/jobs/7958414",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 3373717,
+   "location": {
+    "name": "Denver, Colorado, United States; Nashville, Tennessee, United States"
+   },
+   "metadata": null,
+   "id": 7958414,
+   "updated_at": "2026-07-30T17:54:08-04:00",
+   "requisition_id": "R3773",
+   "title": "AI Conversation Designer",
+   "company_name": "Checkr",
+   "first_published": "2026-05-26T14:47:37-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;span style=&quot;font-weight: 400;&quot;&gt;&lt;strong&gt;About Checkr&lt;br&gt;&lt;/strong&gt;&lt;/span&gt;Checkr is building the data platform to power safe and fair decisions. Over 140,000 companies and millions of people rely on Checkr for AI verification in the moments that matter most: getting a new job, a new place to live, a car ride, childcare, even a date. Customers include Uber, Pennymac, Airbnb, Doordash, and Anthropic.&lt;br&gt;&lt;br&gt;We\u2019re a team that thrives on solving complex problems with innovative solutions that advance our mission. Checkr is recognized on &lt;a href=&quot;https://www.forbes.com/lists/cloud100/&quot; target=&quot;_blank&quot;&gt;Forbes Cloud 100 2025 List&lt;/a&gt; and is a Y Combinator 2024 &lt;a href=&quot;https://www.ycombinator.com/blog/yc-top-companies-2024&quot;&gt;Breakthrough Company&lt;/a&gt;.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;About the team/role&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;We are seeking a skilled and detail-oriented AI Conversation Designer to join our Service Design team. This role is central to managing and optimizing our conversational AI agents across multiple modalities, directly impacting customer experience and operational efficiency. The ideal candidate will have hands-on experience with conversational AI platforms, a strong understanding of conversation design principles, and the ability to analyze performance data to drive continuous improvement. This role requires someone who is curious, adaptable, and passionate about leveraging AI to deliver seamless, human-centered support experiences.&lt;/p&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What you\u2019ll do&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Lead the development, optimization, and ongoing management of conversational AI agents across modalities, ensuring consistent performance and user experience.&lt;/li&gt;\n&lt;li&gt;Own the end-to-end lifecycle of assigned AI agents, including prompt engineering, conversation design, testing, and deployment.&lt;/li&gt;\n&lt;li&gt;Drive measurable improvements in agent performance through analysis of key performance indicators and conversation analytics.&lt;/li&gt;\n&lt;li&gt;Partner with cross-functional teams to identify automation opportunities and implement solutions that reduce contact volume while maintaining service quality.&lt;/li&gt;\n&lt;li&gt;Develop and maintain comprehensive documentation for AI agent workflows and processes.&lt;/li&gt;\n&lt;li&gt;Monitor and troubleshoot AI agent behavior, diagnosing issues across conversation flows and escalating technical issues as needed.&lt;/li&gt;\n&lt;li&gt;Implement and iterate on dynamic response content, including conditional logic, personalization, and multimedia elements within conversational interfaces.&lt;/li&gt;\n&lt;li&gt;Lead special projects as required to support evolving AI capabilities and business needs.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What you bring&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;3-5 years of experience in conversational AI, knowledge management, chatbot administration, or similar roles managing customer-facing digital channels.&lt;/li&gt;\n&lt;li&gt;Hands-on experience with conversational AI platforms and understanding of NLU/NLP concepts.&lt;/li&gt;\n&lt;li&gt;Proficiency in conversation design principles, including intent mapping, utterance training, and fallback strategies.&lt;/li&gt;\n&lt;li&gt;Strong analytical skills with the ability to interpret conversation logs, performance dashboards, and customer feedback to drive optimization.&lt;/li&gt;\n&lt;li&gt;Excellent written communication skills and ability to craft clear, concise bot responses for diverse audiences.&lt;/li&gt;\n&lt;li&gt;Proven ability to collaborate cross-functionally and translate business requirements into actionable solutions.&lt;/li&gt;\n&lt;li&gt;Comfort navigating ambiguity and managing multiple priorities in a fast-paced environment.&lt;/li&gt;\n&lt;li&gt;An A-player mindset with a strong bias for action: you raise the bar, move with urgency, stay resilient through ambiguity, and take ownership to deliver meaningful outcomes.&lt;/li&gt;\n&lt;/ul&gt;&lt;div class=&quot;content-pay-transparency&quot;&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;description&quot;&gt;&lt;p&gt;&lt;strong&gt;Pay Transparency Disclosure&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;We use geographic cost of labor as an input to develop ranges for our roles and as such, each location where we hire may have a different range. If this role is remote, we have listed the top to the bottom of the possible range, but we will specify the target range for an exact location when you are selected for a recruiting discussion. For more information on our compensation philosophy, see&lt;/em&gt;&lt;a href=&quot;https://checkr.com/company/careers&quot;&gt;&lt;em&gt; &lt;/em&gt;&lt;em&gt;our website&lt;/em&gt;&lt;/a&gt;&lt;em&gt;.&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;title&quot;&gt;On-target Earnings OR Base Salary range (Denver, CO)&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$90,000&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$112,000 USD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;title&quot;&gt;On-target Earnings OR Base Salary range (Nashville, TN)&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$82,000&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$102,000 USD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;p&gt;&lt;strong&gt;What We Offer&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;A fast-paced and collaborative environment&lt;/li&gt;\n&lt;li&gt;Learning and development allowance&lt;/li&gt;\n&lt;li&gt;Competitive cash and equity compensation, and opportunity for advancement&lt;/li&gt;\n&lt;li&gt;100% medical, dental, and vision coverage&lt;/li&gt;\n&lt;li&gt;Up to $25K reimbursement for fertility, adoption, and parental planning services&lt;/li&gt;\n&lt;li&gt;Flexible PTO policy&lt;/li&gt;\n&lt;li&gt;Monthly wellness stipend&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;At Checkr, we believe an in office work environment strengthens collaboration, drives innovation, and encourages connection. Our hub locations are Denver, CO; San Francisco, CA; Nashville, TN; and Santiago, Chile. Individuals are expected to work from the office 3+ days a week. In-office perks are provided, such as lunch five times a week, a commuter stipend, and an abundance of snacks and beverages. A relocation stipend may be available for those willing to relocate to a Checkr hub location.&lt;/em&gt;&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Equal Employment Opportunities at Checkr&lt;/strong&gt;&lt;br&gt;&lt;em&gt;Checkr is committed to building the best product and company, which requires hiring talented and qualified individuals with a diverse set of perspectives and lived experiences. Checkr believes in hiring people of all backgrounds, including those whose histories are impacted by the justice system in accordance with local, state, and/or federal laws, including the &lt;/em&gt;&lt;a href=&quot;https://www.sf.gov/worker-rights-san-francisco&quot;&gt;&lt;em&gt;San Francisco\u2019s Fair Chance Ordinance&lt;/em&gt;&lt;/a&gt;&lt;em&gt;.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Applicant Privacy Policy&lt;/strong&gt;&lt;br&gt;If you are a California resident or are located in Alberta or British Columbia, our &lt;a href=&quot;https://checkr.com/legal/applicant-privacy-policy&quot; target=&quot;_blank&quot;&gt;Applicant Privacy Policy&lt;/a&gt; applies to our collection and processing of your personal information when you apply for a role with us or otherwise participate in our recruitment process.&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;*Legitimate Checkr emails will always include our official domain name after the @ symbol (e.g., &lt;a href=&quot;mailto:name@checkr.com&quot;&gt;name@checkr.com&lt;/a&gt; or &lt;a href=&quot;mailto:name@ext.checkr.com&quot;&gt;name@ext.checkr.com&lt;/a&gt;).&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;",
+   "departments": [
+    {
+     "id": 9303,
+     "name": "Operations",
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "offices": [
+    {
+     "id": 63152,
+     "name": "Denver",
+     "location": "Denver, Colorado, United States",
+     "child_ids": [],
+     "parent_id": null
+    },
+    {
+     "id": 272673,
+     "name": "Nashville",
+     "location": "Nashville, Tennessee, United States",
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  },
+  {
+   "absolute_url": "https://job-boards.greenhouse.io/checkr/jobs/7913718",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 3440362,
+   "location": {
+    "name": "San Francisco, California, United States"
+   },
+   "metadata": null,
+   "id": 7913718,
+   "updated_at": "2026-07-08T17:11:17-04:00",
+   "requisition_id": "R3970",
+   "title": "Chief of Staff",
+   "company_name": "Checkr",
+   "first_published": "2026-05-11T15:39:53-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;span style=&quot;font-weight: 400;&quot;&gt;&lt;strong&gt;About Checkr&lt;br&gt;&lt;/strong&gt;&lt;/span&gt;Checkr is building the data platform to power safe and fair decisions. Over 140,000 companies and millions of people rely on Checkr for AI verification in the moments that matter most: getting a new job, a new place to live, a car ride, childcare, even a date. Customers include Uber, Pennymac, Airbnb, Doordash, and Anthropic.&lt;br&gt;&lt;br&gt;We\u2019re a team that thrives on solving complex problems with innovative solutions that advance our mission. Checkr is recognized on &lt;a href=&quot;https://www.forbes.com/lists/cloud100/&quot; target=&quot;_blank&quot;&gt;Forbes Cloud 100 2025 List&lt;/a&gt; and is a Y Combinator 2024 &lt;a href=&quot;https://www.ycombinator.com/blog/yc-top-companies-2024&quot;&gt;Breakthrough Company&lt;/a&gt;.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;The Chief of Staff Role&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Reporting to and as a strategic extension of the CEO, you will collaborate with Checkr\u2019s executive team to drive strategic alignment, set priorities, and help increase the speed and ambition of the business. You will lead a range of initiatives, from accelerating company-level AI transformations, to shaping new product lines, supporting M&amp;amp;A, and supporting enterprise sales.&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What you bring&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;Leadership and execution&lt;/em&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;A bias towards action, equally effective at setting direction and independently executing initiatives from start to finish&lt;/li&gt;\n&lt;li&gt;Proven experience leading cross-functional teams and bootstrapping initiatives from zero to one&lt;/li&gt;\n&lt;li&gt;Track record of planning and executing complex initiatives with world class project management&lt;/li&gt;\n&lt;li&gt;Track record of using AI to deliver impact&lt;/li&gt;\n&lt;li&gt;Earns trust quickly with customers, executives, board members, and investors&lt;/li&gt;\n&lt;li&gt;10+ years of experience working at an executive level or equivalent track record&lt;/li&gt;\n&lt;li&gt;Startup founder experience strongly preferred&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;em&gt;Strategic thinking&lt;/em&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Strong business experience and acumen. You love business as a science&lt;/li&gt;\n&lt;li&gt;Strong data analysis and problem-solving skills&lt;/li&gt;\n&lt;li&gt;Exceptional, concise written and verbal communication&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Responsibilities&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;Lead strategic initiatives&lt;/em&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Lead the CEO&#39;s highest-priority initiatives, end to end, from planning through execution&lt;/li&gt;\n&lt;li&gt;Pressure-test strategy with customer, competitive, and market research&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;em&gt;Extend the CEO&lt;/em&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Serve as a proxy for the CEO in internal and external meetings&lt;/li&gt;\n&lt;li&gt;Collaborate tightly with other executive direct reports with a one team mentality&lt;/li&gt;\n&lt;li&gt;Lead functions or initiatives during transitions or while key roles are being hired&lt;/li&gt;\n&lt;li&gt;Take the pulse of the company and surface what the CEO needs to hear&lt;/li&gt;\n&lt;li&gt;Collaborate with and coach other Checkr leaders&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;em&gt;Drive operational excellence&lt;/em&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Optimize current processes and drive efficiency&lt;/li&gt;\n&lt;li&gt;Improve communication and coordination across strategic initiatives&lt;/li&gt;\n&lt;li&gt;Effectively communicate complex topics to junior and executive audiences alike&lt;/li&gt;\n&lt;li&gt;Build presentations and financial models that frame critical decisions, including investor pitch decks and company narratives for external communications&lt;/li&gt;\n&lt;/ul&gt;&lt;div class=&quot;content-pay-transparency&quot;&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;description&quot;&gt;&lt;p&gt;&lt;strong&gt;Pay Transparency Disclosure&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;We use geographic cost of labor as an input to develop ranges for our roles and as such, each location where we hire may have a different range. If this role is remote, we have listed the top to the bottom of the possible range, but we will specify the target range for an exact location when you are selected for a recruiting discussion. For more information on our compensation philosophy, see&lt;/em&gt;&lt;a href=&quot;https://checkr.com/company/careers&quot;&gt;&lt;em&gt; &lt;/em&gt;&lt;em&gt;our website&lt;/em&gt;&lt;/a&gt;&lt;em&gt;.&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;title&quot;&gt;On-target Earnings OR Base Salary range (San Francisco, CA)&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$238,000&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$280,000 USD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;p&gt;&lt;strong&gt;What We Offer&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;A fast-paced and collaborative environment&lt;/li&gt;\n&lt;li&gt;Learning and development allowance&lt;/li&gt;\n&lt;li&gt;Competitive cash and equity compensation, and opportunity for advancement&lt;/li&gt;\n&lt;li&gt;100% medical, dental, and vision coverage&lt;/li&gt;\n&lt;li&gt;Up to $25K reimbursement for fertility, adoption, and parental planning services&lt;/li&gt;\n&lt;li&gt;Flexible PTO policy&lt;/li&gt;\n&lt;li&gt;Monthly wellness stipend&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;At Checkr, we believe an in office work environment strengthens collaboration, drives innovation, and encourages connection. Our hub locations are Denver, CO; San Francisco, CA; Nashville, TN; and Santiago, Chile. Individuals are expected to work from the office 3+ days a week. In-office perks are provided, such as lunch five times a week, a commuter stipend, and an abundance of snacks and beverages. A relocation stipend may be available for those willing to relocate to a Checkr hub location.&lt;/em&gt;&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Equal Employment Opportunities at Checkr&lt;/strong&gt;&lt;br&gt;&lt;em&gt;Checkr is committed to building the best product and company, which requires hiring talented and qualified individuals with a diverse set of perspectives and lived experiences. Checkr believes in hiring people of all backgrounds, including those whose histories are impacted by the justice system in accordance with local, state, and/or federal laws, including the &lt;/em&gt;&lt;a href=&quot;https://www.sf.gov/worker-rights-san-francisco&quot;&gt;&lt;em&gt;San Francisco\u2019s Fair Chance Ordinance&lt;/em&gt;&lt;/a&gt;&lt;em&gt;.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Applicant Privacy Policy&lt;/strong&gt;&lt;br&gt;If you are a California resident or are located in Alberta or British Columbia, our &lt;a href=&quot;https://checkr.com/legal/applicant-privacy-policy&quot; target=&quot;_blank&quot;&gt;Applicant Privacy Policy&lt;/a&gt; applies to our collection and processing of your personal information when you apply for a role with us or otherwise participate in our recruitment process.&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;*Legitimate Checkr emails will always include our official domain name after the @ symbol (e.g., &lt;a href=&quot;mailto:name@checkr.com&quot;&gt;name@checkr.com&lt;/a&gt; or &lt;a href=&quot;mailto:name@ext.checkr.com&quot;&gt;name@ext.checkr.com&lt;/a&gt;).&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;",
+   "departments": [
+    {
+     "id": 68439,
+     "name": "Office of the CEO",
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "offices": [
+    {
+     "id": 5439,
+     "name": "San Francisco",
+     "location": "San Francisco, California, United States",
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  }
+ ],
+ "meta": {
+  "total": 3
+ }
+}

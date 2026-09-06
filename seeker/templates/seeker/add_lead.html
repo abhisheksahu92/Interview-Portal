@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Add a lead{% endblock %}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-page-head">
+  <div>
+    <h1>Add a lead</h1>
+    <p>Found something on a site we cannot fetch? Paste it here and it joins your list.</p>
+  </div>
+</div>
+{% include "seeker/_nav.html" with page="add" %}
+
+<div class="row g-3">
+  <div class="col-12 col-lg-7">
+    <form class="ip-section" method="post">
+      {% csrf_token %}
+      {% for error in form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+          {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit">Save it</button>
+    </form>
+  </div>
+  <div class="col-12 col-lg-5">
+    <section class="ip-section">
+      <h2 class="h6">One-click bookmarklet</h2>
+      <p class="ip-muted small">Drag this to your bookmarks bar. On any posting, select the
+        interesting part and click it — the link, title and selection come across.</p>
+      <p><a class="btn btn-outline-primary" href="{{ bookmarklet }}">Save to Interview Portal</a></p>
+      <p class="ip-muted small">Some browsers block dragging a link from a page. If so, make a new
+        bookmark by hand and paste this as its address:</p>
+      <textarea class="form-control" rows="4" readonly aria-label="Bookmarklet code">{{ bookmarklet }}</textarea>
+    </section>
+  </div>
+</div>
+{% endblock %}

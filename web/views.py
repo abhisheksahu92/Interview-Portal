@@ -39,6 +39,7 @@ from web.forms import (
     SkillForm,
     StageForm,
 )
+from web.services.apply import apply_to_job
 
 STAFF_ROLES = (Membership.OWNER, Membership.RECRUITER)
 
@@ -943,7 +944,7 @@ def job_public_detail(request, pk):
 @login_required
 def job_apply(request, pk):
     """Handle the apply POST. Always ends on a redirect so the job URL stays shareable."""
-    profile = _candidate_profile(request)
+    _candidate_profile(request)  # raises for company members; also creates the profile
     job = get_object_or_404(Job, pk=pk, status=Job.OPEN)
     if request.method != "POST":
         return redirect("web:job_public_detail", pk=job.pk)
@@ -952,12 +953,8 @@ def job_apply(request, pk):
         errors = [e for field in form for e in field.errors] or ["Please try again."]
         messages.error(request, errors[0])
         return redirect("web:job_public_detail", pk=job.pk)
-    application, created = Application.objects.get_or_create(
-        job=job,
-        candidate=profile,
-        defaults={"current_stage": job.first_stage},
-    )
-    if created:
+    application = apply_to_job(request.user, job)
+    if application.was_created:
         # AI fit scoring runs off a post_save signal in assessments/.
         messages.success(request, f"Applied to {job.title}.")
     else:

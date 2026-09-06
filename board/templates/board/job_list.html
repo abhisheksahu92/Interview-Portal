@@ -1,0 +1,75 @@
+{% extends "board/public_base.html" %}
+{% load web_money %}
+
+{% block title %}Open roles · Job network{% endblock %}
+{% block og_title %}Open roles · Job network{% endblock %}
+
+{% block hero %}
+  <p class="ip-eyebrow">Job network</p>
+  <h1>Open roles across every hiring company</h1>
+  <p class="ip-lede mb-0 mt-3">{{ total }} open role{{ total|pluralize }}</p>
+{% endblock %}
+
+{% block content %}
+<form class="cx-filters mb-4" method="get" role="search" aria-label="Search roles">
+  <div class="row g-3 align-items-end">
+    <div class="col-12 col-sm-7">
+      <label class="form-label" for="bd-q">Title, skill or location</label>
+      <input class="form-control" id="bd-q" type="search" name="q" value="{{ filters.q }}"
+             placeholder="e.g. Python, Pune">
+    </div>
+    <div class="col-6 col-sm-2 form-check mt-4">
+      <input class="form-check-input" type="checkbox" id="bd-remote" name="remote" value="1"
+             {% if filters.remote %}checked{% endif %}>
+      <label class="form-check-label" for="bd-remote">Remote only</label>
+    </div>
+    <div class="col-12 col-sm-3 d-flex gap-2">
+      <button class="btn cx-btn flex-grow-1" type="submit">Search</button>
+      <a class="btn btn-outline-secondary" href="{% url 'board:list' %}">Clear</a>
+    </div>
+  </div>
+</form>
+
+<div class="row g-3">
+  {% for job in jobs %}
+    <div class="col-12 col-lg-6">
+      <article class="cx-card h-100 p-4">
+        <h2 class="h5 mb-1">
+          <a class="text-decoration-none" href="{% url 'board:job_detail' job.pk %}">{{ job.title }}</a>
+        </h2>
+        <p class="cx-muted small mb-2">
+          {{ job.company.name }} · {{ job.location|default:"Remote" }} · {{ job.get_employment_type_display }}
+        </p>
+        {% if job.salary_published %}
+          <p class="fw-semibold small mb-2">{% salary_range job %}</p>
+        {% endif %}
+        {% if job.skills.all %}
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            {% for skill in job.skills.all %}<span class="cx-chip">{{ skill.name }}</span>{% endfor %}
+          </div>
+        {% endif %}
+        <a class="btn btn-sm cx-btn mt-3" href="{% url 'board:job_detail' job.pk %}">View role</a>
+      </article>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="cx-card p-5 text-center">
+        <span class="ip-empty__icon" aria-hidden="true"><i class="bi bi-search"></i></span>
+        <p class="cx-muted mb-0">No open roles match your search right now.</p>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+  <nav class="mt-4 d-flex justify-content-between" aria-label="Pagination">
+    {% if page_obj.has_previous %}
+      <a class="btn btn-outline-secondary" href="?q={{ filters.q|urlencode }}{% if filters.remote %}&remote=1{% endif %}&page={{ page_obj.previous_page_number }}">← Newer</a>
+    {% else %}<span></span>{% endif %}
+    <span class="cx-muted small align-self-center">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a class="btn btn-outline-secondary" href="?q={{ filters.q|urlencode }}{% if filters.remote %}&remote=1{% endif %}&page={{ page_obj.next_page_number }}">Older →</a>
+    {% else %}<span></span>{% endif %}
+  </nav>
+{% endif %}
+{% endblock %}

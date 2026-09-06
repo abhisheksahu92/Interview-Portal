@@ -28,6 +28,7 @@ PERIODIC_COMMANDS = [
     "compute_commissions",
     "expire_video_invites",
     "deliver_webhooks",
+    "fetch_sources",
 ]
 
 
