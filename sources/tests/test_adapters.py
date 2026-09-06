@@ -191,3 +191,11 @@ def test_hn_headline_is_the_first_line_not_the_first_sentence():
 
     assert item.title == "VLM Run (https://vlm.run) | ML Engineer | Remote"
     assert item.company_name == "VLM Run (https://vlm.run)"
+
+
+def test_strip_html_handles_entity_encoded_markup():
+    from sources.adapters.base import strip_html
+
+    encoded = "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;At Anaplan, we build &amp; ship.&lt;/p&gt;"
+    assert strip_html(encoded) == "At Anaplan, we build & ship."
+    assert strip_html("<p>Plain <b>markup</b> still works</p>") == "Plain markup still works"

@@ -52,8 +52,14 @@ class Adapter:
 
 
 def strip_html(value):
-    """HTML to a single line of text. Feeds mix HTML and plain text freely."""
-    text = _TAG_RE.sub(" ", value or "")
+    """HTML to a single line of text. Feeds mix HTML and plain text freely.
+
+    Unescape before stripping as well as after: Arbeitnow ships descriptions
+    with the markup itself entity-encoded (``&lt;div&gt;``), so stripping first
+    left ``<div class="content-intro">`` in the seeker's feed as visible text.
+    """
+    text = html.unescape(value or "")
+    text = _TAG_RE.sub(" ", text)
     return _WS_RE.sub(" ", html.unescape(text)).strip()
 
 
