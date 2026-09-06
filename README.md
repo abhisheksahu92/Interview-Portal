@@ -170,6 +170,10 @@ Copy `.env.example` to `.env`; everything is read from the environment.
 | `ESIGN_API_BASE` / `ESIGN_ACCOUNT_ID` / `ESIGN_API_KEY` | empty | external e-sign provider; unset = built-in click-to-sign |
 | `LINKEDIN_JOBS_TOKEN` / `NAUKRI_API_KEY` | empty | job-board distribution; unset = "connect account" prompt (the Indeed feed needs no key) |
 | `INTEGRATIONS_ENCRYPTION_KEY` | empty | optional override: urlsafe-base64 Fernet key encrypting connector credentials. Blank derives one from `SECRET_KEY` — set it explicitly if you ever rotate `SECRET_KEY` |
+| `GEMINI_API_KEY` / `GEMINI_MODEL` | empty / `gemini-2.5-flash` | fallback model provider for screening, grading, résumé extraction and video review when `ANTHROPIC_API_KEY` is unset; either key turns the AI features on |
+| `SENTRY_DSN` / `SENTRY_ENVIRONMENT` | empty | error tracking; off when blank, never sends PII or request bodies |
+| `POSTHOG_PROJECT_KEY` / `POSTHOG_HOST` | empty / EU | product analytics for signed-in workspace users only; the `phc_` project key, never a personal `phx_` key |
+| `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET`, `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` | empty | optional opportunity-network sources; the adapters skip themselves when blank |
 | `LICENSE_SIGNING_KEY` | empty | **vendor only** — base64 Ed25519 private key used by `issue_license`; see [Self-hosted licence keys](#self-hosted-licence-keys) |
 
 ## Tests and checks
@@ -695,10 +699,44 @@ Columns: `application_id, candidate_name, candidate_email, candidate_phone,
 job_title, job_location, employment_type, client, hired_on, offer_status,
 salary, currency, joining_date`.
 
+## Opportunity network
+
+Three apps added in Phase 5 turn the platform into a two-sided network without
+scraping anyone who forbids it.
+
+**`sources/`** aggregates public postings: Hacker News hiring threads, Remotive,
+Arbeitnow, RemoteOK, Jobicy, Himalayas, WeWorkRemotely, Freelancer.com and ~40
+verified company boards on Greenhouse, Lever, Ashby and SmartRecruiters. Reddit
+and Adzuna adapters activate when their keys are set. LinkedIn, Upwork, Naukri
+and Wellfound are deliberately absent — their terms prohibit it and Upwork's
+feed is gone — so those enter only through the seeker's paste form or
+bookmarklet. Every lead stores a snippet and a link, never the full posting,
+and a contact email only when the poster wrote it. Add a company board in the
+admin as a `Source` of kind ATS with `{"slug": "<board-slug>"}`.
+
+```bash
+.venv/bin/python manage.py fetch_sources                 # every enabled source
+.venv/bin/python manage.py fetch_sources --only hn --only greenhouse-stripe
+```
+
+**`seeker/`** is the candidate-side workspace at `/portal/opportunities/`: a
+feed ranked by skill overlap (falls back to recency for a new profile), a saved
+list with bulk apply / open-and-track / draft-emails, AI-drafted outreach, and
+a mailbox page. Mail leaves **only** from the seeker's own Gmail (OAuth,
+`gmail.send` scope, needs `GOOGLE_OAUTH_*`) or SMTP app password, never from
+`DEFAULT_FROM_EMAIL`, so one careless user cannot damage the platform's sending
+reputation. One recipient per message, 25 per bulk action, 10 sends a month on
+the free tier (`SeekerProfile.is_pro` lifts it; payment wiring is a stub).
+
+**`board/`** is the public cross-tenant job board at `/jobs/board/` with
+search, JSON-LD `JobPosting`, `sitemap.xml`, `feed.xml` and one-click apply for
+signed-in candidates. Every published careers site is listed unless the tenant
+turns off "List on the network" in Careers settings.
+
 ## Periodic tasks
 
-Nine maintenance commands keep subscriptions, reminders, offers, video
-processing and webhook deliveries moving. Run them all with **one** entry point, which executes them in
+Ten maintenance commands keep subscriptions, reminders, offers, video
+processing, webhook deliveries and the opportunity-network fetch moving. Run them all with **one** entry point, which executes them in
 dependency order and logs a failure instead of letting it stop the rest:
 
 ```bash
@@ -719,6 +757,7 @@ dependency order and logs a failure instead of letting it stop the rest:
 | 7 | `compute_commissions` | Turns paid invoices into reseller commission entries |
 | 8 | `expire_video_invites` | Closes video invites past their deadline |
 | 9 | `deliver_webhooks` | Retries due webhook deliveries (1 m, 5 m, 30 m, 2 h, 12 h) |
+| 10 | `fetch_sources` | pulls new postings from every enabled source, tags skills, expires stale leads (`--only hn` runs one) |
 
 Every command is idempotent, so a missed or repeated run is harmless. Quarter-hourly
 is a good cadence:
