@@ -264,9 +264,7 @@ def test_revoke_deletes_the_invitation(client, owner, company):
 
 
 @pytest.mark.django_db
-def test_cannot_revoke_another_companys_invitation(
-    client, owner, other_company, other_owner
-):
+def test_cannot_revoke_another_companys_invitation(client, owner, other_company, other_owner):
     from core.models import Invitation
 
     invitation = Invitation.objects.create(
@@ -276,9 +274,7 @@ def test_cannot_revoke_another_companys_invitation(
     response = client.post(reverse("web:invite_revoke", args=[invitation.pk]))
     assert response.status_code == 404
     assert Invitation.objects.filter(pk=invitation.pk).exists()
-    assert (
-        client.post(reverse("web:invite_resend", args=[invitation.pk])).status_code == 404
-    )
+    assert client.post(reverse("web:invite_resend", args=[invitation.pk])).status_code == 404
 
 
 @pytest.mark.django_db

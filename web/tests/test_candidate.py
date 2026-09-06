@@ -102,11 +102,9 @@ def test_public_job_detail_requires_open_status(client, company, make_job):
 
 
 @pytest.mark.django_db
-def test_apply_validation_error_returns_to_the_job_url(
-    client, candidate, company, make_job
-):
+def test_apply_validation_error_returns_to_the_job_url(client, candidate, listed_company, make_job):
     """A missing confirmation redirects back to the shareable job URL."""
-    job = make_job(company, title="Platform Engineer")
+    job = make_job(listed_company, title="Platform Engineer")
     client.force_login(candidate)
     response = client.post(reverse("web:job_apply", args=[job.pk]), {})
     assert response.status_code == 302

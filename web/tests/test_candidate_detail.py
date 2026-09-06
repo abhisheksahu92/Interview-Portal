@@ -36,9 +36,7 @@ def profile(application):
 
 
 @pytest.mark.django_db
-def test_a_candidate_of_another_tenant_is_404(
-    client, other_owner, other_company, profile
-):
+def test_a_candidate_of_another_tenant_is_404(client, other_owner, other_company, profile):
     """The profile exists, but not for this workspace."""
     client.force_login(other_owner)
     assert client.get(detail_url(profile)).status_code == 404
@@ -86,9 +84,7 @@ def test_uninvolved_interviewer_is_denied(client, interviewer, profile):
 
 
 @pytest.mark.django_db
-def test_interviewer_who_reviewed_gets_read_only_access(
-    client, interviewer, application, profile
-):
+def test_interviewer_who_reviewed_gets_read_only_access(client, interviewer, application, profile):
     StageReview.objects.create(
         application=application,
         stage=application.current_stage,
@@ -124,9 +120,7 @@ def test_interviewer_on_a_scheduled_interview_gets_access(
 
 @pytest.mark.django_db
 def test_resume_is_streamed_as_an_attachment(client, owner, profile):
-    profile.resume = SimpleUploadedFile(
-        "cv.pdf", b"%PDF-1.4 hello", content_type="application/pdf"
-    )
+    profile.resume = SimpleUploadedFile("cv.pdf", b"%PDF-1.4 hello", content_type="application/pdf")
     profile.save()
     client.force_login(owner)
     response = client.get(resume_url(profile))
@@ -137,9 +131,7 @@ def test_resume_is_streamed_as_an_attachment(client, owner, profile):
 
 @pytest.mark.django_db
 def test_resume_page_links_the_view_not_the_media_path(client, owner, profile):
-    profile.resume = SimpleUploadedFile(
-        "cv.pdf", b"%PDF-1.4 hello", content_type="application/pdf"
-    )
+    profile.resume = SimpleUploadedFile("cv.pdf", b"%PDF-1.4 hello", content_type="application/pdf")
     profile.save()
     client.force_login(owner)
     body = client.get(detail_url(profile)).content.decode()
@@ -325,16 +317,12 @@ def test_read_only_interviewer_gets_no_notes_form(
 
 
 @pytest.mark.django_db
-def test_kanban_card_links_the_candidate_display_name(
-    client, owner, application, profile
-):
+def test_kanban_card_links_the_candidate_display_name(client, owner, application, profile):
     user = profile.user
     user.first_name, user.last_name = "Asha", "Rao"
     user.save()
     client.force_login(owner)
-    body = client.get(
-        reverse("web:job_detail", args=[application.job_id])
-    ).content.decode()
+    body = client.get(reverse("web:job_detail", args=[application.job_id])).content.decode()
     assert detail_url(profile) in body
     assert "Asha Rao" in body
 
@@ -342,9 +330,7 @@ def test_kanban_card_links_the_candidate_display_name(
 @pytest.mark.django_db
 def test_kanban_card_falls_back_to_the_email(client, owner, application, profile):
     client.force_login(owner)
-    body = client.get(
-        reverse("web:job_detail", args=[application.job_id])
-    ).content.decode()
+    body = client.get(reverse("web:job_detail", args=[application.job_id])).content.decode()
     assert profile.user.email in body
 
 
@@ -374,9 +360,7 @@ def test_talent_profile_detail_links_the_candidate_profile(
 ):
     talent = _full_history(company, application, interviewer)
     client.force_login(owner)
-    body = client.get(
-        reverse("talent:profile_detail", args=[talent.pk])
-    ).content.decode()
+    body = client.get(reverse("talent:profile_detail", args=[talent.pk])).content.decode()
     assert detail_url(profile) in body
 
 

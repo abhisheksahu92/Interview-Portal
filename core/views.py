@@ -239,6 +239,7 @@ def robots_txt(request):
         "/talent/",
         "/video/",
         "/assessments/",
+        "/openings/",  # noindex duplicate of /jobs/board/
     ]
     lines = ["User-agent: *"]
     lines += [f"Disallow: {path}" for path in disallowed]

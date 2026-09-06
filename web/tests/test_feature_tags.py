@@ -15,32 +15,24 @@ class FakeRequest:
         self.company = company
 
 
-
-
 @pytest.mark.django_db
 def test_feature_enabled_reads_request_company(company):
     paid(company)
-    out = _render(
-        '{% feature_enabled "video" as ok %}{{ ok }}', request=FakeRequest(company)
-    )
+    out = _render('{% feature_enabled "video" as ok %}{{ ok }}', request=FakeRequest(company))
     assert out == "True"
 
 
 @pytest.mark.django_db
 def test_feature_enabled_is_false_for_a_free_expired_company(company):
     free_expired(company)
-    out = _render(
-        '{% feature_enabled "video" as ok %}{{ ok }}', request=FakeRequest(company)
-    )
+    out = _render('{% feature_enabled "video" as ok %}{{ ok }}', request=FakeRequest(company))
     assert out == "False"
 
 
 @pytest.mark.django_db
 def test_feature_enabled_falls_back_to_current_company(company):
     paid(company)
-    out = _render(
-        '{% feature_enabled "offers" as ok %}{{ ok }}', current_company=company
-    )
+    out = _render('{% feature_enabled "offers" as ok %}{{ ok }}', current_company=company)
     assert out == "True"
 
 

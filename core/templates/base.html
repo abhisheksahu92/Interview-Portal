@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Interview Portal{% endblock %}</title>
+{# The public pages that share this shell - landing, sign-in, sign-up - had a  #}
+{# title and nothing else: no description, canonical or social tags. Signed-in #}
+{# pages inherit harmless defaults and are robots-disallowed anyway.           #}
+<meta name="description" content="{% block meta_description %}Hiring pipelines, AI screening and placement billing for Indian IT services and staffing firms.{% endblock %}">
+<link rel="canonical" href="{% block canonical %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+<meta property="og:type" content="{% block og_type %}website{% endblock %}">
+<meta property="og:site_name" content="Interview Portal">
+<meta property="og:title" content="{% block og_title %}Interview Portal{% endblock %}">
+<meta property="og:description" content="{% block og_description %}Hiring pipelines, AI screening and placement billing for Indian IT services and staffing firms.{% endblock %}">
+<meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+<meta name="twitter:card" content="summary_large_image">
+{% block robots %}{% endblock %}
 <script>
   (function () {
     try {

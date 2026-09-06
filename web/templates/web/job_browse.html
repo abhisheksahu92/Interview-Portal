@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Open roles{% endblock %}
+{# The board serves the same content with full SEO markup: keep one canonical. #}
+{% block robots %}<meta name="robots" content="noindex,follow">{% endblock %}
+{% block canonical %}{{ request.scheme }}://{{ request.get_host }}{% url 'board:list' %}{% endblock %}
 {% block body_attrs %} class="ip-warm"{% endblock %}
 {% block content %}
 <div class="ip-page-head">

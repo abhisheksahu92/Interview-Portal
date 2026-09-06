@@ -113,9 +113,7 @@ def home(request):
 @role_required(*STAFF_ROLES)
 def dashboard(request):
     company = request.company
-    jobs = _company_jobs(request).annotate(
-        application_count=Count("applications", distinct=True)
-    )
+    jobs = _company_jobs(request).annotate(application_count=Count("applications", distinct=True))
     applications = _company_applications(request)
     now = timezone.now()
     kpis = {
@@ -201,9 +199,7 @@ def _job_client_form(request, job=None):
         return None
     from clients.forms import JobClientForm
 
-    return JobClientForm(
-        request.POST or None, company=request.company, job=job
-    )
+    return JobClientForm(request.POST or None, company=request.company, job=job)
 
 
 @login_required
@@ -362,16 +358,12 @@ def _board_response(request, application, notice=None, success=""):
     return redirect("web:job_detail", pk=application.job_id)
 
 
-STALE_STAGE_NOTICE = (
-    "That application already moved on — the board below is up to date."
-)
+STALE_STAGE_NOTICE = "That application already moved on — the board below is up to date."
 
 
 def _locked_application(request, pk):
     """Re-read the application inside the transaction, locked for update."""
-    return get_object_or_404(
-        _company_applications(request).select_for_update(), pk=pk
-    )
+    return get_object_or_404(_company_applications(request).select_for_update(), pk=pk)
 
 
 def _expected_stage_matches(request, application):
@@ -542,18 +534,14 @@ def interviewer_queue(request):
 @role_required(*STAFF_ROLES)
 def settings_members(request):
     company = request.company
-    form = InviteForm(
-        request.POST or None, company=company, invited_by=request.user
-    )
+    form = InviteForm(request.POST or None, company=company, invited_by=request.user)
     if request.method == "POST":
         if request.user.role_in(company) != Membership.OWNER:
             raise PermissionDenied("Only owners can manage members.")
         if form.is_valid():
             invitation = form.save()
             send_invitation(invitation, request)
-            messages.success(
-                request, f"Invitation sent to {invitation.email}."
-            )
+            messages.success(request, f"Invitation sent to {invitation.email}.")
             return redirect("web:settings_members")
     memberships = (
         Membership.objects.filter(company=company)
@@ -596,9 +584,7 @@ def invite_resend(request, pk):
 @role_required(Membership.OWNER)
 @require_POST
 def invite_revoke(request, pk):
-    invitation = get_object_or_404(
-        Invitation.objects.filter(company=request.company), pk=pk
-    )
+    invitation = get_object_or_404(Invitation.objects.filter(company=request.company), pk=pk)
     email = invitation.email
     invitation.delete()
     messages.success(request, f"Invitation for {email} revoked.")
@@ -609,9 +595,7 @@ def invite_revoke(request, pk):
 @role_required(Membership.OWNER)
 @require_POST
 def member_remove(request, pk):
-    membership = get_object_or_404(
-        Membership.objects.filter(company=request.company), pk=pk
-    )
+    membership = get_object_or_404(Membership.objects.filter(company=request.company), pk=pk)
     if membership.user_id == request.user.pk:
         messages.error(request, "You cannot remove yourself.")
     else:
@@ -740,9 +724,7 @@ def stage_move(request, pk, direction):
         with transaction.atomic():
             stage_order, neighbour_order = stage.order, neighbour.order
             # unique (job, order): park one stage out of the way first.
-            parked = (
-                siblings.aggregate(m=Max("order"))["m"] or stage_order
-            ) + 1
+            parked = (siblings.aggregate(m=Max("order"))["m"] or stage_order) + 1
             stage.order = parked
             stage.save(update_fields=["order"])
             neighbour.order = stage_order
@@ -870,9 +852,7 @@ def candidate_home(request):
     rows = []
     for application in applications:
         stages = list(application.job.stages.all())
-        current_order = (
-            application.current_stage.order if application.current_stage else 0
-        )
+        current_order = application.current_stage.order if application.current_stage else 0
         rows.append(
             {
                 "application": application,
@@ -892,9 +872,7 @@ def candidate_home(request):
 @login_required
 def candidate_profile(request):
     profile = _candidate_profile(request)
-    form = CandidateProfileForm(
-        request.POST or None, request.FILES or None, instance=profile
-    )
+    form = CandidateProfileForm(request.POST or None, request.FILES or None, instance=profile)
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Profile saved.")
@@ -902,10 +880,26 @@ def candidate_profile(request):
     return render(request, "web/candidate_profile.html", {"form": form, "profile": profile})
 
 
+def _publicly_listable_jobs():
+    """Open jobs whose company actually consented to a public listing.
+
+    ``status=OPEN`` only means the requisition is open in the tenant's own
+    pipeline; it is not permission to publish. Consent is the pair of switches
+    the board already honours - a published careers site that is listed on the
+    network - so this surface uses the same rule instead of showing every
+    tenant's roles, including those of companies that opted out.
+    """
+    return Job.objects.filter(
+        status=Job.OPEN,
+        company__careers_site__published=True,
+        company__careers_site__list_in_network=True,
+    ).select_related("company")
+
+
 def job_browse(request):
-    """Public list of open jobs across all companies."""
+    """Public list of open jobs across every company that opted in."""
     query = request.GET.get("q", "").strip()
-    jobs = Job.objects.filter(status=Job.OPEN).select_related("company")
+    jobs = _publicly_listable_jobs()
     if query:
         jobs = jobs.filter(
             Q(title__icontains=query)
@@ -923,13 +917,11 @@ def job_browse(request):
         template = "web/partials/job_results.html"
     else:
         template = "web/job_browse.html"
-    return render(
-        request, template, {"jobs": jobs, "q": query, "applied_ids": applied_ids}
-    )
+    return render(request, template, {"jobs": jobs, "q": query, "applied_ids": applied_ids})
 
 
 def job_public_detail(request, pk):
-    job = get_object_or_404(Job.objects.select_related("company"), pk=pk, status=Job.OPEN)
+    job = get_object_or_404(_publicly_listable_jobs(), pk=pk)
     already_applied = (
         request.user.is_authenticated
         and Application.objects.filter(job=job, candidate__user=request.user).exists()
@@ -987,18 +979,14 @@ def _interviewer_may_see(user, company, applications):
     asked about: someone they reviewed, or someone they are on an interview
     for. Everyone else on the interviewer role gets a 403.
     """
-    if StageReview.objects.filter(
-        application__in=applications, reviewer=user
-    ).exists():
+    if StageReview.objects.filter(application__in=applications, reviewer=user).exists():
         return True
     from billing.entitlements import has_feature
 
     if has_feature(company, "scheduling"):
         from scheduling.models import Interview
 
-        return Interview.objects.filter(
-            application__in=applications, interviewers=user
-        ).exists()
+        return Interview.objects.filter(application__in=applications, interviewers=user).exists()
     return False
 
 
@@ -1019,26 +1007,21 @@ def _candidate_page_access(request, pk):
     role = request.user.role_in(company)
     if role in STAFF_ROLES:
         return company, profile, applications, False
-    if role == Membership.INTERVIEWER and _interviewer_may_see(
-        request.user, company, applications
-    ):
+    if role == Membership.INTERVIEWER and _interviewer_may_see(request.user, company, applications):
         return company, profile, applications, True
     raise PermissionDenied("You do not have access to this candidate.")
 
 
 def _stage_steps(application):
     """The job's stages plus a done/current flag, for the stepper."""
-    current_order = (
-        application.current_stage.order if application.current_stage else 0
-    )
+    current_order = application.current_stage.order if application.current_stage else 0
     steps = []
     for stage in application.job.stages.all():
         steps.append(
             {
                 "stage": stage,
                 "is_current": application.current_stage_id == stage.pk,
-                "is_done": stage.order < current_order
-                or application.status == Application.HIRED,
+                "is_done": stage.order < current_order or application.status == Application.HIRED,
             }
         )
     return steps
@@ -1128,9 +1111,7 @@ def _timeline(applications, attempts, interviews, offers, submissions, invites):
     def add(when, kind, label, detail="", icon="bi-dot"):
         if when is None:
             return
-        events.append(
-            {"when": when, "kind": kind, "label": label, "detail": detail, "icon": icon}
-        )
+        events.append({"when": when, "kind": kind, "label": label, "detail": detail, "icon": icon})
 
     for application in applications:
         add(
@@ -1246,9 +1227,7 @@ def candidate_detail(request, pk):
             "video_invites": invites,
             "talent_profile": talent_profile,
             "note_form": note_form,
-            "timeline": _timeline(
-                applications, attempts, interviews, offers, submissions, invites
-            ),
+            "timeline": _timeline(applications, attempts, interviews, offers, submissions, invites),
         },
     )
 

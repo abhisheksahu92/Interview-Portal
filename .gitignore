@@ -11,7 +11,9 @@ media/
 staticfiles/
 
 # Secrets
-.env
+# Every .env variant, including backups - .env alone missed .env.backup-*
+.env*
+!.env.example
 "IP Important Data.txt"
 IP Important Data.txt
 

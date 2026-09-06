@@ -1,5 +1,7 @@
 """Issue the monthly invoice for every company (or one), idempotently."""
 
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
@@ -19,14 +21,23 @@ class Command(BaseCommand):
         parser.add_argument("--company", help="Company id or exact name")
         parser.add_argument("--year", type=int)
         parser.add_argument("--month", type=int)
-        parser.add_argument(
-            "--pdf", action="store_true", help="Also render each invoice PDF"
-        )
+        parser.add_argument("--pdf", action="store_true", help="Also render each invoice PDF")
 
     def handle(self, *args, **options):
+        # Default to the month that just ENDED, not the current one. This runs
+        # from a cron on the 1st: billing "now" produced an invoice for a month
+        # a few hours old, containing only the plan fee, and the unique
+        # (company, period_start) constraint then froze that empty invoice - so
+        # the finished month's success fees, AI overage, BGV and exchange
+        # charges were never billed at all.
         now = timezone.now()
-        year = options.get("year") or now.year
-        month = options.get("month") or now.month
+        previous = (
+            (now.replace(day=1) - timedelta(days=1))
+            if not (options.get("year") and options.get("month"))
+            else now
+        )
+        year = options.get("year") or previous.year
+        month = options.get("month") or previous.month
         if not 1 <= int(month) <= 12:
             raise CommandError("--month must be between 1 and 12")
 
@@ -48,9 +59,9 @@ class Command(BaseCommand):
         )
 
     def _companies(self, selector):
-        qs = Company.objects.filter(
-            pk__in=Subscription.objects.values("company_id")
-        ).order_by("name")
+        qs = Company.objects.filter(pk__in=Subscription.objects.values("company_id")).order_by(
+            "name"
+        )
         if not selector:
             return list(qs)
         company = None

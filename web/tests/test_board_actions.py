@@ -96,9 +96,7 @@ def test_double_clicked_advance_only_moves_one_stage(
 
 
 @pytest.mark.django_db
-def test_double_clicked_reject_is_idempotent(
-    client, owner, company, make_job, make_application
-):
+def test_double_clicked_reject_is_idempotent(client, owner, company, make_job, make_application):
     job = make_job(company)
     application = make_application(job, "race2@example.test")
     stage = application.current_stage
@@ -188,9 +186,7 @@ def test_set_stage_rejects_a_stage_from_another_job(
 
 
 @pytest.mark.django_db
-def test_board_url_opened_directly_redirects_to_the_job_page(
-    client, owner, company, make_job
-):
+def test_board_url_opened_directly_redirects_to_the_job_page(client, owner, company, make_job):
     job = make_job(company)
     client.force_login(owner)
     response = client.get(reverse("web:job_kanban", args=[job.pk]))
@@ -202,8 +198,6 @@ def test_board_url_opened_directly_redirects_to_the_job_page(
 def test_board_url_still_serves_the_partial_to_htmx(client, owner, company, make_job):
     job = make_job(company)
     client.force_login(owner)
-    response = client.get(
-        reverse("web:job_kanban", args=[job.pk]), HTTP_HX_REQUEST="true"
-    )
+    response = client.get(reverse("web:job_kanban", args=[job.pk]), HTTP_HX_REQUEST="true")
     assert response.status_code == 200
     assert 'id="kanban"' in response.content.decode()

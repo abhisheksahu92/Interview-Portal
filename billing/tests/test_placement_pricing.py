@@ -7,7 +7,7 @@ window, ``bill_month`` idempotency, the running projection and the two new
 feature flags.
 """
 
-from datetime import timedelta
+from datetime import UTC, timedelta
 from decimal import Decimal
 
 import pytest
@@ -223,9 +223,7 @@ def test_ai_overage_is_billed_on_the_monthly_invoice(company, owner):
 def test_charges_from_other_months_are_not_billed(company, owner):
     _on_plan(company, Plan.STARTER)
     last_month = timezone.now() - timedelta(days=40)
-    ledger.add_charge(
-        company, ledger.BGV, "Old BGV", 999, ref="bgv:old", occurred_at=last_month
-    )
+    ledger.add_charge(company, ledger.BGV, "Old BGV", 999, ref="bgv:old", occurred_at=last_month)
     now = timezone.now()
     invoice = invoicing.build_monthly_invoice(company, now.year, now.month)
     assert "BGV" not in _lines(invoice)
@@ -319,9 +317,7 @@ def test_overage_charge_accumulates_within_a_period(company):
 def test_the_eighty_percent_warning_still_fires(company, monkeypatch):
     _on_plan(company, Plan.STARTER)
     seen = []
-    monkeypatch.setattr(
-        "billing.usage._warn", lambda *args: seen.append(args), raising=True
-    )
+    monkeypatch.setattr("billing.usage._warn", lambda *args: seen.append(args), raising=True)
     usage_module.consume(company, usage_module.AI_SCREEN, qty=45)
     assert seen and seen[0][2] == 45
 
@@ -414,3 +410,53 @@ def test_subscription_is_prorated_in_the_month_the_trial_ends(company, owner):
     )
     assert Decimal(line["total_inr"]) == expected
     assert "after trial" in line["label"]
+
+
+@pytest.mark.django_db
+def test_bill_month_without_arguments_bills_the_month_that_just_ended(company, owner, monkeypatch):
+    """Run from cron on the 1st, it must invoice the finished month.
+
+    Defaulting to "now" produced an invoice for a month a few hours old holding
+    only the plan fee, and the unique (company, period_start) constraint then
+    made that empty invoice permanent - the finished month's success fees,
+    AI overage, BGV and exchange charges were never billed.
+    """
+    from datetime import datetime
+
+    from django.core.management import call_command
+
+    from billing.management.commands import bill_month as command_module
+
+    billed = []
+    monkeypatch.setattr(
+        command_module,
+        "build_monthly_invoice",
+        lambda company, year, month, with_pdf=False: billed.append((year, month)),
+    )
+    monkeypatch.setattr(
+        command_module.timezone,
+        "now",
+        lambda: datetime(2026, 10, 1, 20, 30, tzinfo=UTC),
+    )
+
+    call_command("bill_month")
+
+    assert billed and {(y, m) for y, m in billed} == {(2026, 9)}
+
+
+@pytest.mark.django_db
+def test_explicit_year_and_month_are_still_honoured(company, owner, monkeypatch):
+    from django.core.management import call_command
+
+    from billing.management.commands import bill_month as command_module
+
+    billed = []
+    monkeypatch.setattr(
+        command_module,
+        "build_monthly_invoice",
+        lambda company, year, month, with_pdf=False: billed.append((year, month)),
+    )
+
+    call_command("bill_month", year=2026, month=3)
+
+    assert {(y, m) for y, m in billed} == {(2026, 3)}

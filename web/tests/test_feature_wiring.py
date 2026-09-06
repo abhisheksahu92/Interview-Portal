@@ -30,11 +30,7 @@ UNGATED_NAV = ["talent:index", "marketplace:index", "partners:settings"]
 
 def _locks(html):
     """The features whose sidebar item rendered a "Pro" lock badge."""
-    return {
-        feature
-        for feature, _ in GATED_NAV
-        if f'data-ip-lock="{feature}"' in html
-    }
+    return {feature for feature, _ in GATED_NAV if f'data-ip-lock="{feature}"' in html}
 
 
 @pytest.mark.django_db
@@ -56,9 +52,7 @@ def test_agency_sidebar_has_no_locks_and_links_every_feature(client, owner, comp
 
 
 @pytest.mark.django_db
-def test_free_expired_sidebar_locks_every_paid_feature_but_keeps_it_visible(
-    client, owner, company
-):
+def test_free_expired_sidebar_locks_every_paid_feature_but_keeps_it_visible(client, owner, company):
     free_expired(company)
     client.force_login(owner)
     html = client.get(reverse("web:dashboard")).content.decode()
@@ -85,9 +79,7 @@ def test_pages_reachable_on_every_plan_are_linked_not_locked(client, owner, comp
 
 
 @pytest.mark.django_db
-def test_gated_page_returns_the_branded_403_for_a_free_company(
-    client, owner, company
-):
+def test_gated_page_returns_the_branded_403_for_a_free_company(client, owner, company):
     free_expired(company)
     client.force_login(owner)
     response = client.get(reverse("analytics:index"))
@@ -99,9 +91,7 @@ def test_gated_page_returns_the_branded_403_for_a_free_company(
 
 
 @pytest.mark.django_db
-def test_card_dropdown_offers_every_paid_action(
-    client, owner, company, make_job, make_application
-):
+def test_card_dropdown_offers_every_paid_action(client, owner, company, make_job, make_application):
     paid(company)
     job = make_job(company)
     application = make_application(job, "cand1@x.test")
@@ -157,9 +147,7 @@ def test_video_action_links_to_screen_setup_when_the_job_has_none(
 
 
 @pytest.mark.django_db
-def test_inactive_video_screens_are_ignored(
-    client, owner, company, make_job, make_application
-):
+def test_inactive_video_screens_are_ignored(client, owner, company, make_job, make_application):
     from video.models import VideoScreen
 
     paid(company)
@@ -190,15 +178,11 @@ def _interview(company, application, **kwargs):
 
 
 @pytest.mark.django_db
-def test_card_shows_the_next_upcoming_interview(
-    client, owner, company, make_job, make_application
-):
+def test_card_shows_the_next_upcoming_interview(client, owner, company, make_job, make_application):
     paid(company)
     job = make_job(company)
     application = make_application(job, "cand6@x.test")
-    soonest = _interview(
-        company, application, start=timezone.now() + timedelta(days=1)
-    )
+    soonest = _interview(company, application, start=timezone.now() + timedelta(days=1))
     _interview(company, application, start=timezone.now() + timedelta(days=9))
     client.force_login(owner)
     html = client.get(reverse("web:job_detail", args=[job.pk])).content.decode()
@@ -271,9 +255,7 @@ def test_job_action_bar_carries_every_paid_action(client, owner, company, make_j
 
 
 @pytest.mark.django_db
-def test_job_action_bar_hides_gated_actions_for_a_free_company(
-    client, owner, company, make_job
-):
+def test_job_action_bar_hides_gated_actions_for_a_free_company(client, owner, company, make_job):
     free_expired(company)
     job = make_job(company)
     client.force_login(owner)
@@ -299,9 +281,7 @@ def test_job_form_shows_the_end_client_field_when_entitled(client, owner, compan
 
 
 @pytest.mark.django_db
-def test_job_form_omits_the_end_client_field_for_a_free_company(
-    client, owner, company
-):
+def test_job_form_omits_the_end_client_field_for_a_free_company(client, owner, company):
     free_expired(company)
     client.force_login(owner)
     html = client.get(reverse("web:job_create")).content.decode()
@@ -334,9 +314,7 @@ def test_creating_a_job_sets_its_end_client(client, owner, company):
 
 
 @pytest.mark.django_db
-def test_editing_a_job_can_change_and_clear_its_end_client(
-    client, owner, company, make_job
-):
+def test_editing_a_job_can_change_and_clear_its_end_client(client, owner, company, make_job):
     from clients.models import Client as EndClient
     from jobs.models import Job
 

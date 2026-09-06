@@ -111,9 +111,7 @@ def test_stage_delete_refused_while_applications_sit_on_it(
 
 
 @pytest.mark.django_db
-def test_stage_delete_refused_while_an_assessment_points_at_it(
-    client, owner, company, make_job
-):
+def test_stage_delete_refused_while_an_assessment_points_at_it(client, owner, company, make_job):
     from assessments.models import Assessment
 
     job = make_job(company)
@@ -164,17 +162,13 @@ def test_stage_delete_button_asks_for_confirmation(client, owner, company, make_
 
 
 @pytest.mark.django_db
-def test_stages_are_scoped_to_the_active_company(
-    client, owner, other_company, make_job
-):
+def test_stages_are_scoped_to_the_active_company(client, owner, other_company, make_job):
     job = make_job(other_company)
     stage = job.stages.first()
     client.force_login(owner)
     assert client.get(reverse("web:stage_edit", args=[stage.pk])).status_code == 404
     assert client.post(reverse("web:stage_delete", args=[stage.pk])).status_code == 404
-    assert (
-        client.post(reverse("web:stage_move", args=[stage.pk, "up"])).status_code == 404
-    )
+    assert client.post(reverse("web:stage_move", args=[stage.pk, "up"])).status_code == 404
 
 
 @pytest.mark.django_db

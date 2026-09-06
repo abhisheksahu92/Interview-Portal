@@ -10,6 +10,20 @@ def company(db):
 
 
 @pytest.fixture
+def listed_company(db):
+    """A company that consented to public listing: published + on the network.
+
+    ``/openings/`` and the board both require this pair, so a plain ``company``
+    fixture is deliberately invisible to the public surfaces.
+    """
+    from careers.models import CareersSite
+
+    company = Company.objects.create(name="Listed Staffing")
+    CareersSite.objects.create(company=company, published=True, list_in_network=True)
+    return company
+
+
+@pytest.fixture
 def other_company(db):
     return Company.objects.create(name="Globex Tech")
 
@@ -60,9 +74,7 @@ def make_job(db):
 @pytest.fixture
 def make_application(db):
     def factory(job, user_email, stage=None):
-        user = User.objects.create_user(
-            email=user_email, password="pw12345678", is_candidate=True
-        )
+        user = User.objects.create_user(email=user_email, password="pw12345678", is_candidate=True)
         profile = CandidateProfile.objects.create(user=user, experience_years=2)
         return Application.objects.create(
             job=job,

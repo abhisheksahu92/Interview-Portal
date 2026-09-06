@@ -40,16 +40,14 @@ def test_indian_grouping(digits, expected):
 
 
 def test_inr_filter_renders_indian_groups_and_symbol():
-    out = Template(
-        "{% load web_money %}{{ code|currency_symbol }}{{ amount|inr }}"
-    ).render(Context({"code": "INR", "amount": Decimal("1250000.50")}))
+    out = Template("{% load web_money %}{{ code|currency_symbol }}{{ amount|inr }}").render(
+        Context({"code": "INR", "amount": Decimal("1250000.50")})
+    )
     assert out == "₹12,50,000.50"
 
 
 def test_inr_filter_is_blank_for_none():
-    out = Template("{% load web_money %}[{{ amount|inr }}]").render(
-        Context({"amount": None})
-    )
+    out = Template("{% load web_money %}[{{ amount|inr }}]").render(Context({"amount": None}))
     assert out == "[]"
 
 
@@ -92,8 +90,8 @@ def test_job_form_saves_without_any_salary(company):
 
 
 @pytest.mark.django_db
-def test_public_job_detail_shows_and_hides_the_salary(client, company, make_job):
-    job = make_job(company)
+def test_public_job_detail_shows_and_hides_the_salary(client, listed_company, make_job):
+    job = make_job(listed_company)
     job.salary_min, job.salary_max, job.show_salary = (
         Decimal("1200000"),
         Decimal("1800000"),
