@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
@@ -71,9 +71,7 @@ def company_signup(request):
 @require_http_methods(["POST"])
 def switch_company(request):
     company_id = request.POST.get("company_id")
-    company = Company.objects.filter(
-        id=company_id, memberships__user=request.user
-    ).first()
+    company = Company.objects.filter(id=company_id, memberships__user=request.user).first()
     if company is None:
         messages.error(request, "You are not a member of that company.")
     else:
@@ -122,9 +120,7 @@ def invite_accept(request, token):
     invitation = resolution.obj
 
     if invitation.is_accepted:
-        return _invite_error(
-            request, invitation, "This invitation has already been used."
-        )
+        return _invite_error(request, invitation, "This invitation has already been used.")
     if resolution.state is TokenState.EXPIRED:
         return _invite_error(
             request,
@@ -212,32 +208,92 @@ def _site_base(request):
 
 
 def robots_txt(request):
-    """Allow every crawler and point at the sitemap."""
-    body = "\n".join(
-        [
-            "User-agent: *",
-            "Allow: /",
-            f"Sitemap: {_site_base(request)}{reverse('sitemap_xml')}",
-            "",
-        ]
-    )
-    return HttpResponse(body, content_type="text/plain")
+    """Open the public surface to crawlers and keep them out of the app.
+
+    Only four things here are for the public: the landing page, the
+    cross-tenant job board, tenant careers sites, and the sign-in/sign-up
+    pages. Everything else is a signed-in workspace or a tokenised link
+    (offers, BGV consent, client portals). Those return 302s or 403s to a
+    crawler anyway, so letting bots walk them only wastes crawl budget on a
+    site whose real value is a few thousand job pages.
+    """
+    disallowed = [
+        "/admin/",
+        "/api/",
+        "/internal/",
+        "/portal/",
+        "/workspace/",
+        "/billing/",
+        "/analytics/",
+        "/benchmarks/",
+        "/bgv/",
+        "/clients/",
+        "/contracting/",
+        "/exchange/",
+        "/integrations/",
+        "/marketplace/",
+        "/notifications/",
+        "/offers/",
+        "/partners/",
+        "/scheduling/",
+        "/talent/",
+        "/video/",
+        "/assessments/",
+    ]
+    lines = ["User-agent: *"]
+    lines += [f"Disallow: {path}" for path in disallowed]
+    lines += [
+        "Allow: /",
+        "",
+        f"Sitemap: {_site_base(request)}{reverse('sitemap_xml')}",
+        "",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
 
 
 def sitemap_xml(request):
-    """Root sitemap: the landing page plus every published careers site.
+    """A sitemap index over every public sitemap on the site.
 
-    Each careers site keeps its own per-site sitemap (jobs included); this
-    document points crawlers at all of them from one place.
+    This used to be a ``urlset`` that listed child sitemaps alongside pages,
+    which is invalid: a crawler reading it treats each child sitemap as a page.
+    It also predated the cross-tenant job board, so the board's few thousand
+    job pages - the only real organic surface here - were never announced.
     """
     base = _site_base(request)
+    children = [base + reverse("sitemap_pages_xml")]
+    try:
+        children.append(base + reverse("board:sitemap"))
+    except NoReverseMatch:  # pragma: no cover - board is optional
+        pass
+    try:
+        from careers.models import CareersSite
+
+        for site in CareersSite.objects.filter(published=True).order_by("slug"):
+            children.append(base + reverse("careers:sitemap", args=[site.slug]))
+    except Exception:  # pragma: no cover - careers is optional
+        pass
+    entries = "".join(f"<sitemap><loc>{escape(loc)}</loc></sitemap>" for loc in children)
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"{entries}</sitemapindex>"
+    )
+    return HttpResponse(body, content_type="application/xml")
+
+
+def sitemap_pages_xml(request):
+    """The handful of static public pages, plus every published careers site."""
+    base = _site_base(request)
     locs = [base + reverse("web:home")]
+    try:
+        locs.append(base + reverse("board:list"))
+    except NoReverseMatch:  # pragma: no cover - board is optional
+        pass
     try:
         from careers.models import CareersSite
 
         for site in CareersSite.objects.filter(published=True).order_by("slug"):
             locs.append(base + reverse("careers:site", args=[site.slug]))
-            locs.append(base + reverse("careers:sitemap", args=[site.slug]))
     except Exception:  # pragma: no cover - careers is optional
         pass
     entries = "".join(f"<url><loc>{escape(loc)}</loc></url>" for loc in locs)

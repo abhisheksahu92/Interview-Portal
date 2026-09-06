@@ -41,6 +41,7 @@ urlpatterns = [
     path("jobs/board/", include("board.urls")),
     path("robots.txt", core_views.robots_txt, name="robots_txt"),
     path("sitemap.xml", core_views.sitemap_xml, name="sitemap_xml"),
+    path("sitemap-pages.xml", core_views.sitemap_pages_xml, name="sitemap_pages_xml"),
     path("", include("web.urls")),
 ]
 
