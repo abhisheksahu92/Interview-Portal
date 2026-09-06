@@ -59,3 +59,59 @@ def test_applications_scoped_by_job_company(auth, recruiter_b, application):
 def test_skill_list_scoped(auth, recruiter_a, recruiter_b, skill_a):
     assert auth(recruiter_a).get("/api/v1/skills/").data["count"] == 1
     assert auth(recruiter_b).get("/api/v1/skills/").data["count"] == 0
+
+
+@pytest.mark.django_db
+def test_cannot_attach_another_companys_questions_to_an_assessment(
+    auth, recruiter_a, company_a, company_b, job_a
+):
+    """Writable relations were unscoped: only get_queryset() filtered by company.
+
+    A recruiter could POST another tenant's question primary keys and get them
+    back serialised - including ``correct_option``, the answer key - which is a
+    full exfiltration of a rival's question bank, marketplace packs included.
+    """
+    from assessments.models import Question
+
+    theirs = Question.objects.create(
+        company=company_b, kind=Question.MCQ, text="Their secret question",
+        options=["a", "b", "c", "d"], correct_option=2,
+    )
+
+    resp = auth(recruiter_a).post(
+        "/api/v1/assessments/",
+        {"job": job_a.pk, "title": "Screen", "question_ids": [theirs.pk]},
+        format="json",
+    )
+
+    assert resp.status_code == 400
+    assert b"Their secret question" not in resp.content
+    assert b"correct_option" not in resp.content
+
+
+@pytest.mark.django_db
+def test_cannot_attach_another_companys_skills_to_a_job(
+    auth, recruiter_a, company_b
+):
+    from jobs.models import Skill
+
+    theirs = Skill.objects.create(company=company_b, name="TheirSkill")
+
+    resp = auth(recruiter_a).post(
+        "/api/v1/jobs/",
+        {"title": "SRE", "description": "d", "skill_ids": [theirs.pk]},
+        format="json",
+    )
+
+    assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+def test_cannot_point_an_assessment_at_another_companys_job(
+    auth, recruiter_a, job_b
+):
+    resp = auth(recruiter_a).post(
+        "/api/v1/assessments/", {"job": job_b.pk, "title": "Screen"}, format="json"
+    )
+
+    assert resp.status_code == 400
