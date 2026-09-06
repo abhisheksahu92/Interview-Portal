@@ -233,7 +233,8 @@
             <caption class="visually-hidden">Tax invoices for this workspace</caption>
             <thead>
               <tr><th scope="col">Number</th><th scope="col">Issued</th>
-                <th scope="col" class="text-end">Total</th><th scope="col">Tax</th><th scope="col"></th></tr>
+                <th scope="col" class="text-end">Total</th><th scope="col">Tax</th>
+                <th scope="col">Status</th><th scope="col"></th></tr>
             </thead>
             <tbody>
               {% for inv in invoices %}
@@ -244,7 +245,21 @@
                   <td class="ip-muted text-nowrap">
                     {% if inv.is_intra_state %}CGST+SGST{% else %}IGST{% endif %} {{ inv.gst_rate|floatformat:0 }}%
                   </td>
-                  <td class="text-end">
+                  <td class="text-nowrap">
+                    <span class="ip-badge ip-badge--{{ inv.status_kind }}">
+                      {% if inv.is_paid %}Paid{% elif inv.is_overdue %}Overdue{% else %}{{ inv.get_status_display }}{% endif %}
+                    </span>
+                    {% if not inv.is_paid and inv.due_at %}
+                      <span class="ip-muted small d-block">due {{ inv.due_at|date:"j M Y" }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end text-nowrap">
+                    {% if inv.is_payable and is_owner and razorpay_ready %}
+                      <form method="post" action="{% url 'billing:invoice_pay' inv.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-primary" type="submit">Pay now</button>
+                      </form>
+                    {% endif %}
                     <a class="btn btn-sm btn-outline-secondary"
                        href="{% url 'billing:invoice_download' inv.pk %}">Download</a>
                   </td>

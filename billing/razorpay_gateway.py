@@ -100,6 +100,46 @@ def create_order(*, company, plan, interval):
     )
 
 
+def create_invoice_order(*, company, invoice):
+    """A one-time order that collects an invoice we already issued.
+
+    ``notes["invoice_id"]`` is what tells the webhook this payment settles an
+    existing bill rather than buying a plan, so no second invoice is minted.
+    """
+    from decimal import Decimal
+
+    client = get_client()
+    return client.order.create(
+        {
+            "amount": int(Decimal(invoice.total) * 100),
+            "currency": "INR",
+            "receipt": f"invoice-{invoice.pk}",
+            "notes": {
+                "company_id": str(company.pk),
+                "invoice_id": str(invoice.pk),
+                "invoice_number": invoice.number,
+            },
+        }
+    )
+
+
+def invoice_checkout_options(*, company, invoice, ref):
+    """Checkout JS options for the "Pay now" button on an invoice."""
+    from decimal import Decimal
+
+    return {
+        "key": settings.RAZORPAY_KEY_ID,
+        "name": "Interview Portal",
+        "description": f"Invoice {invoice.number}",
+        "order_id": ref,
+        "amount": int(Decimal(invoice.total) * 100),
+        "currency": "INR",
+        "notes": {"company_id": str(company.pk), "invoice_id": str(invoice.pk)},
+        "prefill": {},
+        "theme": {"color": "#4f46e5"},
+    }
+
+
 def _sign(message, secret):
     return hmac.new(
         secret.encode("utf-8"), message.encode("utf-8"), hashlib.sha256

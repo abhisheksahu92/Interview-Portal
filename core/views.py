@@ -6,6 +6,7 @@ from django.contrib.auth.views import LoginView
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import NoReverseMatch, reverse
+from django.utils import timezone
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
@@ -18,6 +19,7 @@ from core.forms import (
 from core.middleware import set_active_company
 from core.models import Company, Invitation, Membership
 from core.tokens import TokenState, resolve_token, token_invalid_response
+from web.legal import POLICY_VERSION
 
 
 class EmailLoginView(LoginView):
@@ -38,10 +40,18 @@ def logout_view(request):
     return redirect("core:login")
 
 
+def _stamp_policy_consent(user):
+    """Record which published policy version the signup form was ticked for."""
+    user.policy_version = POLICY_VERSION
+    user.policy_accepted_at = timezone.now()
+    user.save(update_fields=["policy_version", "policy_accepted_at"])
+
+
 def candidate_signup(request):
     form = CandidateSignupForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         user = form.save()
+        _stamp_policy_consent(user)
         auth_login(request, user)
         messages.success(request, "Welcome! Your candidate account is ready.")
         return redirect("/")
@@ -56,6 +66,7 @@ def company_signup(request):
     form = CompanySignupForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         user = form.save()
+        _stamp_policy_consent(user)
         auth_login(request, user)
         set_active_company(request, form.company)
         messages.success(request, f"Company '{form.company.name}' created.")

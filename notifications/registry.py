@@ -38,6 +38,7 @@ ESSENTIAL_EVENTS = frozenset(
         "interview_cancelled",
         "invitation",
         "payment_failed",
+        "invoice_issued",
         "usage_warning",
     }
 )
@@ -117,6 +118,8 @@ for _event in (
     Event("talent_pool_invite", "Talent pool invite", "Invites a pooled candidate to apply for a role."),
     Event("usage_warning", "Usage warning", "Plan quota nearly exhausted.", channels=(EMAIL,)),
     Event("payment_failed", "Payment failed", "A subscription payment could not be taken.", channels=(EMAIL,)),
+    Event("invoice_issued", "Invoice issued", "A monthly tax invoice is ready to pay.", channels=(EMAIL,)),
+    Event("trial_ending", "Trial ending", "The free trial ends in a few days.", channels=(EMAIL,)),
     Event("invitation", "Team invitation", "Invite a teammate to the company.", channels=(EMAIL,)),
     # --- contracting (staffing back office) ---
     Event("timesheet_submitted", "Timesheet submitted", "A contractor submitted a timesheet for approval."),

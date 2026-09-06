@@ -1,0 +1,203 @@
+{% extends "web/legal/_policy_base.html" %}
+{% block title %}Terms of Service · {{ business_name }}{% endblock %}
+{% block meta_description %}The terms on which Indian IT services and staffing firms use Interview Portal: workspaces, AI screening, subscription and placement fees, and acceptable use.{% endblock %}
+{% block og_description %}The terms on which Indian IT services and staffing firms use Interview Portal: workspaces, AI screening, subscription and placement fees, and acceptable use.{% endblock %}
+{% block og_title %}Terms of Service · Interview Portal{% endblock %}
+{% block heading %}Terms of Service{% endblock %}
+{% block policy %}
+
+<p>
+  These terms govern your use of {{ business_name }} (the “Service”), a multi-tenant
+  hiring platform for IT services, recruitment and staffing firms operating in India.
+  By creating a workspace, joining one, or applying to a role through the Service, you
+  agree to them. If you do not agree, do not use the Service.
+</p>
+
+<h2 class="h4 mt-4">1. Who is who</h2>
+<ul>
+  <li><strong>We / us</strong> — {{ business_name }}, the operator of the Service.</li>
+  <li><strong>Customer</strong> — the company that registers a workspace (a “tenant”).
+      Every job, candidate, interview and invoice belongs to exactly one workspace.</li>
+  <li><strong>Workspace user</strong> — an owner, recruiter or interviewer who has been
+      given a seat in a Customer’s workspace.</li>
+  <li><strong>Candidate</strong> — a person who applies to a role, records a video
+      answer, takes an assessment, signs an offer, or is added to a Customer’s talent
+      database.</li>
+</ul>
+
+<h2 class="h4 mt-4">2. Accounts and workspaces</h2>
+<p>
+  You must give an accurate email address and keep your password confidential; you are
+  responsible for everything done under your account. Workspace owners control who is
+  invited, what role they get, and when access is removed. Data is scoped to the
+  workspace it belongs to — a user in one workspace cannot read another workspace’s
+  candidates, jobs, invoices or reports.
+</p>
+<p>
+  Candidate accounts are separate: a candidate profile and résumé belong to the
+  candidate and are reused across the roles they apply to.
+</p>
+
+<h2 class="h4 mt-4">3. What the Customer is responsible for</h2>
+<p>
+  You upload other people’s personal data — résumés, phone numbers, interview
+  recordings, assessment answers, salary expectations. For that data you are the
+  Data Fiduciary under the Digital Personal Data Protection Act, 2023 and we act as
+  a Data Processor on your instructions. You warrant that:
+</p>
+<ul>
+  <li>you have a lawful basis (normally the candidate’s consent) to collect the data
+      and to put it into the Service;</li>
+  <li>you have given candidates the notice the law requires, and you will pass on any
+      request they make to us about their data;</li>
+  <li>you will not upload special-category or unnecessary data — caste, religion,
+      health, biometrics — into free-text fields;</li>
+  <li>you will not use the Service to source, screen or reject candidates in a way
+      that breaks Indian anti-discrimination or labour law.</li>
+</ul>
+
+<h2 class="h4 mt-4">4. Acceptable use</h2>
+<p>You may not, and may not permit anyone else to:</p>
+<ul>
+  <li>scrape, bulk-export or resell another workspace’s data, or the cross-company
+      talent pool, outside the features we provide;</li>
+  <li>share seats — each recruiter seat is for one named person, and seat-based plans
+      are billed on that basis;</li>
+  <li>upload malware, or files you do not have the right to store;</li>
+  <li>probe, load-test or reverse-engineer the Service, or use the REST API to build a
+      competing product;</li>
+  <li>send candidates unsolicited bulk messages through our email or WhatsApp
+      channels in breach of TRAI/DND rules or the recipient’s own opt-out.</li>
+</ul>
+
+<h2 class="h4 mt-4">5. AI screening — what it is and is not</h2>
+<p>
+  The Service uses a third-party large language model to generate screening questions
+  from a job description, grade free-text answers, summarise a résumé against a role
+  with a fit score, extract structured fields from bulk résumé imports, and summarise
+  recorded video answers. To do this, the relevant text — résumé text, the job
+  description, the candidate’s answers or transcript — is sent to our model provider
+  (currently Anthropic, or Google Gemini where that key is configured instead).
+</p>
+<p>
+  These outputs are <strong>assistive and probabilistic</strong>. They are not a
+  decision, they can be wrong, and they must not be the sole basis on which a
+  candidate is rejected. A human must review before a rejection, an offer, or any
+  other decision with a legal or similarly significant effect. We give no warranty
+  about the accuracy, fairness or fitness of any AI output. If no model key is
+  configured, AI features simply do nothing — the rest of the Service still works.
+</p>
+
+<h2 class="h4 mt-4">6. Background verification</h2>
+<p>
+  Background checks are resold: you order a check package, the candidate is sent a
+  consent link, and only after the candidate consents is the order placed with the
+  verification provider and your account charged. If the candidate does not consent,
+  no check is run and nothing is charged. You must not use a verification report for
+  any purpose other than assessing that candidate for that role.
+</p>
+
+<h2 class="h4 mt-4">7. Third parties we depend on</h2>
+<p>
+  The Service is built on sub-processors: a model provider for AI features (Anthropic
+  or Google Gemini), Resend for transactional email, Razorpay and Stripe for payments,
+  WhatsApp Business Cloud for messaging, Sentry for error diagnostics, PostHog for
+  product analytics on signed-in workspace pages only, and object storage (Amazon S3
+  or Cloudflare R2) for résumés, videos and invoice PDFs. They are listed with their
+  purposes in the <a href="{% url 'web:privacy' %}">Privacy Policy</a>. We are not
+  responsible for their outages, and their terms apply to their part of the service.
+</p>
+
+<h2 class="h4 mt-4">8. Fees, trials and taxes</h2>
+<p>
+  Plans, prices and what each tier includes are shown on the pricing section of our
+  home page and inside your workspace. In summary:
+</p>
+<ul>
+  <li>a <strong>14-day trial</strong> with full features and no charge;</li>
+  <li>a recurring plan fee — per recruiter seat on Starter, flat monthly on Growth and
+      Agency — in Indian rupees;</li>
+  <li>a <strong>placement success fee</strong> per hire on plans that carry one, raised
+      when an application is marked HIRED;</li>
+  <li>metered usage above the plan allowance: AI screens, WhatsApp messages, video
+      minutes;</li>
+  <li>one-off charges you trigger, such as background verification packages.</li>
+</ul>
+<p>
+  We issue a GST invoice per billing month at the prevailing rate (currently 18%),
+  split CGST/SGST or IGST from your billing state. Give us a correct GSTIN and billing
+  state — we cannot reissue an invoice for a financial year that has closed. Payment is
+  taken through Razorpay or Stripe; we never see or store your card details. Unpaid
+  invoices lead to reminders and, eventually, suspension of the workspace. Refunds and
+  cancellation are covered by the
+  <a href="{% url 'web:refunds' %}">Refund &amp; Cancellation Policy</a>.
+</p>
+
+<h2 class="h4 mt-4">9. Your data and ours</h2>
+<p>
+  You keep ownership of everything you put into your workspace. You grant us the
+  licence needed to host, process, transmit and display it in order to run the Service
+  for you — including sending the text described in section 5 to the model provider.
+  We own the Service itself: the software, the interface and our own aggregate,
+  de-identified statistics about how it is used. Where the Service shows salary
+  benchmarks, those are aggregated across workspaces and are only shown when enough
+  distinct records exist that no single company or person can be identified.
+</p>
+
+<h2 class="h4 mt-4">10. Availability and support</h2>
+<p>
+  The Service is provided on a commercially reasonable-efforts basis. There is no
+  uptime SLA, credit scheme or guaranteed response time unless we have signed a
+  separate written agreement with you. We may change, add or remove features; if a
+  change materially reduces what your paid plan includes, you may cancel under the
+  refund policy.
+</p>
+
+<h2 class="h4 mt-4">11. Suspension and termination</h2>
+<p>
+  You may stop using the Service at any time — see “How to cancel” in the refund
+  policy. We may suspend or terminate a workspace for non-payment, for a breach of
+  section 3 or 4, or where required by law. On termination we stop processing your
+  data and will delete or return it on request; see the retention section of the
+  Privacy Policy. Invoices already raised remain payable.
+</p>
+
+<h2 class="h4 mt-4">12. Disclaimers and liability</h2>
+<p>
+  The Service is provided “as is”. To the extent Indian law allows, we exclude implied
+  warranties of merchantability, fitness for a particular purpose and non-infringement,
+  and we are not liable for lost profits, lost business, lost data, or indirect or
+  consequential loss. Our total aggregate liability arising out of or in connection
+  with the Service is limited to the fees you actually paid us in the twelve months
+  before the event giving rise to the claim. Nothing here limits liability that cannot
+  lawfully be limited, including for fraud.
+</p>
+
+<h2 class="h4 mt-4">13. Indemnity</h2>
+<p>
+  You will indemnify us against claims brought by a candidate, a client of yours, or a
+  regulator that arise from data you put into the Service without a lawful basis, or
+  from a hiring decision you made using it.
+</p>
+
+<h2 class="h4 mt-4">14. Changes to these terms</h2>
+<p>
+  We may update these terms. The version and “Last updated” date at the top of this
+  page always identify the current text, and we record the version each user accepted
+  at signup. For a material change we will give notice by email or in the workspace
+  before it takes effect; continuing to use the Service after that is acceptance.
+</p>
+
+<h2 class="h4 mt-4">15. Governing law</h2>
+<p>
+  These terms are governed by the laws of India. The courts at
+  {% if jurisdiction_city %}{{ jurisdiction_city }}{% else %}<span class="badge text-bg-warning">the registered office city — to be filled in</span>{% endif %}
+  have exclusive jurisdiction.
+</p>
+
+<h2 class="h4 mt-4">16. Contact</h2>
+<p>
+  Questions about these terms: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+  Full details are on the <a href="{% url 'web:contact' %}">contact page</a>.
+</p>
+{% endblock %}

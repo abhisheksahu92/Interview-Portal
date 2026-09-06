@@ -1,0 +1,108 @@
+{% extends "web/legal/_policy_base.html" %}
+{% block title %}Contact us · {{ business_name }}{% endblock %}
+{% block meta_description %}How to reach Interview Portal: support and grievance email, registered business address and phone for billing, privacy and data-subject requests.{% endblock %}
+{% block og_description %}How to reach Interview Portal: support and grievance email, registered business address and phone for billing, privacy and data-subject requests.{% endblock %}
+{% block og_title %}Contact · Interview Portal{% endblock %}
+{% block heading %}Contact us{% endblock %}
+{% block policy %}
+
+<p>
+  {{ business_name }} is a hiring platform for IT services, recruitment and staffing firms
+  in India. Use the addresses below for support, billing questions, and privacy or
+  data-subject requests.
+</p>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="h5">Business</h2>
+        <p class="mb-1"><strong>{{ business_name }}</strong></p>
+        <p class="mb-1">
+          Registered entity:
+          {% if legal_entity_name %}{{ legal_entity_name }}
+          {% else %}<span class="badge text-bg-warning">to be filled in</span>{% endif %}
+        </p>
+        <p class="mb-0">
+          GSTIN:
+          {% if gstin %}{{ gstin }}
+          {% else %}<span class="badge text-bg-warning">to be filled in</span>{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="h5">Email</h2>
+        <p class="mb-1">
+          Support and billing:
+          <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+        </p>
+        <p class="mb-0">
+          Privacy, data-subject requests and grievances:
+          <a href="mailto:{{ grievance_email }}">{{ grievance_email }}</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# --------------------------------------------------------------------- #}
+{# LEGALLY REQUIRED — DO NOT SHIP THIS PAGE WITH THESE BLANK.             #}
+{# Razorpay's merchant activation checks that the contact page carries a  #}
+{# real registered address and a working phone number; a live account is  #}
+{# refused (or later suspended) without them. The Grievance Officer name  #}
+{# is required by the DPDP Act 2023. Fill these in in web/legal.py.       #}
+{# --------------------------------------------------------------------- #}
+<div class="card mt-3 border-warning">
+  <div class="card-body">
+    <h2 class="h5">Registered address and phone</h2>
+    {% if registered_address and contact_phone %}
+      <address class="mb-1">{{ registered_address|linebreaksbr }}</address>
+      <p class="mb-0">Phone: <a href="tel:{{ contact_phone }}">{{ contact_phone }}</a></p>
+    {% else %}
+      <div class="alert alert-warning mb-0" role="alert">
+        <strong>Not filled in yet.</strong> The registered business address and a working
+        phone number are required here before this site can take live payments, and the
+        DPDP Act requires a named Grievance Officer. Set
+        <code>REGISTERED_ADDRESS</code>, <code>CONTACT_PHONE</code>,
+        <code>LEGAL_ENTITY_NAME</code>, <code>GSTIN</code>,
+        <code>GRIEVANCE_OFFICER</code> and <code>JURISDICTION_CITY</code> in
+        <code>web/legal.py</code>.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<h2 class="h4 mt-4">Grievance Officer</h2>
+<p>
+  Under the Digital Personal Data Protection Act, 2023 you can raise a complaint about how
+  your personal data is handled with our Grievance Officer:
+  {% if grievance_officer %}
+    <strong>{{ grievance_officer }}</strong>,
+  {% else %}
+    <span class="badge text-bg-warning">name to be filled in</span>,
+  {% endif %}
+  <a href="mailto:{{ grievance_email }}">{{ grievance_email }}</a>.
+  We aim to acknowledge within 7 days and resolve within 30. If you are not satisfied, you
+  may escalate to the Data Protection Board of India.
+</p>
+
+<h2 class="h4 mt-4">What to write to us about</h2>
+<ul>
+  <li><strong>Billing, invoices, GST</strong> — quote the invoice number.</li>
+  <li><strong>Cancellation</strong> — from the workspace owner’s email address; see the
+      <a href="{% url 'web:refunds' %}">Refund &amp; Cancellation Policy</a>.</li>
+  <li><strong>Access, correction or deletion of your data</strong> — from the email address
+      on your account; see the <a href="{% url 'web:privacy' %}">Privacy Policy</a>. These
+      are handled manually, so please be specific about what you want removed.</li>
+  <li><strong>A candidate profile in a company’s workspace</strong> — tell us which company;
+      they decide what happens to it and we will route your request to them.</li>
+  <li><strong>Security issues</strong> — report them privately to
+      <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> rather than in public.</li>
+</ul>
+<p class="ip-muted small">
+  Support is by email. We aim to reply on working days, Monday to Friday.
+</p>
+{% endblock %}

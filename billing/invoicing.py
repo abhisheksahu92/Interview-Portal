@@ -16,7 +16,7 @@ the same lines for the running month without writing anything.
 
 import calendar
 import logging
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.conf import settings
@@ -195,6 +195,8 @@ def create_invoice(
         provider=provider or subscription.provider or "",
         provider_ref=provider_ref or "",
         issued_at=issued_at,
+        due_at=due_date(issued_at),
+        status=Invoice.PAID if paid else Invoice.ISSUED,
         paid_at=issued_at if paid else None,
     )
     if with_pdf:
@@ -206,21 +208,119 @@ def create_invoice(
 
 
 def invoice_for_payment(subscription, *, amount=None, provider_ref="", provider=""):
-    """Issue the invoice that follows a successful payment webhook."""
+    """Issue (once) the invoice that follows a successful payment.
+
+    Razorpay fires several events for a single payment (``order.paid`` and
+    ``subscription.charged``), each with its own delivery id, so the per-event
+    replay guard does not catch them: the gateway reference is the only thing
+    that identifies *the payment*. Keyed on it, a second event returns the
+    invoice already issued instead of burning a second FY sequence number on
+    the same money — two GST invoices for one payment is a GSTR-1 problem.
+    """
     plan = subscription.plan
+    provider = provider or subscription.provider
     if amount is None:
         amount = plan.price_for(subscription.interval)
     if not amount:
         return None
+    if provider_ref:
+        existing = Invoice.objects.filter(
+            company=subscription.company, provider=provider, provider_ref=provider_ref
+        ).first()
+        if existing is not None:
+            return existing
     interval = subscription.get_interval_display().lower()
     return create_invoice(
         subscription.company,
         amount,
         description=f"{plan.name} plan — {interval} subscription",
-        provider=provider or subscription.provider,
+        provider=provider,
         provider_ref=provider_ref,
         paid=True,
     )
+
+
+def due_date(issued_at=None):
+    """When an invoice issued at ``issued_at`` has to be paid by."""
+    issued_at = issued_at or timezone.now()
+    return timezone.localdate(issued_at) + timedelta(days=Invoice.PAYMENT_TERMS_DAYS)
+
+
+def mark_paid(invoice, when=None, *, provider="", provider_ref=""):
+    """Stamp an invoice as collected and let dunning know the debt is settled."""
+    if invoice.is_paid:
+        return invoice
+    invoice.status = Invoice.PAID
+    invoice.paid_at = when or timezone.now()
+    fields = ["status", "paid_at"]
+    if provider:
+        invoice.provider = provider
+        fields.append("provider")
+    if provider_ref:
+        invoice.provider_ref = provider_ref
+        fields.append("provider_ref")
+    invoice.save(update_fields=fields)
+    from billing import dunning
+
+    dunning.settle(invoice.company)
+    return invoice
+
+
+def pdf_attachment(invoice):
+    """``[(name, bytes, mimetype)]`` for the invoice PDF, or ``[]`` when absent."""
+    if not invoice.pdf:
+        try:
+            render_pdf(invoice)
+        except Exception as exc:  # pragma: no cover - never block a bill
+            logger.warning("billing: invoice PDF failed for %s: %s", invoice.number, exc)
+    if not invoice.pdf:
+        return []
+    try:
+        invoice.pdf.open("rb")
+        content = invoice.pdf.read()
+    except (FileNotFoundError, OSError):  # storage lost the file
+        return []
+    finally:
+        invoice.pdf.close()
+    name = f"{invoice.number.replace('/', '-')}.pdf"
+    return [(name, content, "application/pdf")]
+
+
+def notify_issued(invoice):
+    """Tell the company owners the bill is ready, with the PDF attached.
+
+    Without this an invoice was only ever visible to someone who happened to
+    open the billing page, which is why nothing was ever collected.
+    """
+    from billing.notify import billing_url, notify, owner_emails
+
+    period = f"{invoice.period_start:%B %Y}" if invoice.period_start else invoice.description
+    attachments = pdf_attachment(invoice)
+    sent = 0
+    for email in owner_emails(invoice.company):
+        notify(
+            "invoice_issued",
+            email,
+            {
+                "invoice_number": invoice.number,
+                "period": period,
+                "total": str(invoice.total),
+                "gst_rate": str(invoice.gst_rate),
+                "due_at": f"{invoice.due_at:%d %b %Y}" if invoice.due_at else "",
+                "billing_url": billing_url(),
+            },
+            company=invoice.company,
+            subject=f"Invoice {invoice.number} — INR {invoice.total}",
+            body=(
+                f"Invoice {invoice.number} for {period}.\n\n"
+                f"Amount due: INR {invoice.total}"
+                + (f", by {invoice.due_at:%d %b %Y}" if invoice.due_at else "")
+                + f"\n\nPay it here: {billing_url()}"
+            ),
+            attachments=attachments,
+        )
+        sent += 1
+    return sent
 
 
 # --- Monthly bill assembly ----------------------------------------------
@@ -344,6 +444,31 @@ def _ai_overage_line(company, plan, period_start_date):
     )
 
 
+def gateway_invoice_covers(company, subscription, start, end):
+    """True when a paid gateway invoice already collected the plan fee for a period.
+
+    Autopay customers are charged by Razorpay/Stripe directly and the webhook
+    issues a paid invoice with no ``period_start`` — which the monthly builder's
+    period check does not see, so it added a second SUBSCRIPTION line and billed
+    the plan fee twice. A yearly payer is covered for the twelve months that
+    follow their payment, not just the month they paid in.
+    """
+    window_start = start
+    if subscription is not None and subscription.interval == Subscription.YEARLY:
+        window_start = date(start.year - 1, start.month, 1)
+    return (
+        Invoice.objects.filter(
+            company=company,
+            period_start__isnull=True,
+            paid_at__isnull=False,
+            issued_at__gte=_aware(window_start),
+            issued_at__lt=_aware(end),
+        )
+        .exclude(provider_ref="")
+        .exists()
+    )
+
+
 def monthly_lines(company, year, month):
     """Assemble ``(line_items, placement_fees, charges)`` for one month.
 
@@ -358,6 +483,8 @@ def monthly_lines(company, year, month):
     plan = subscription.plan
     lines = []
     plan_line = _subscription_line(subscription, subscription.seats_used, start, last)
+    if plan_line and gateway_invoice_covers(company, subscription, start, end):
+        plan_line = None
     if plan_line:
         lines.append(plan_line)
 
@@ -394,7 +521,7 @@ def lines_subtotal(lines):
     return _q(sum((Decimal(line["total_inr"]) for line in lines), Decimal("0")))
 
 
-def build_monthly_invoice(company, year=None, month=None, *, with_pdf=False):
+def build_monthly_invoice(company, year=None, month=None, *, with_pdf=False, notify=True):
     """Issue (once) the monthly invoice for ``company`` and return it.
 
     Idempotent: a second call for the same period returns the invoice already
@@ -443,6 +570,8 @@ def build_monthly_invoice(company, year=None, month=None, *, with_pdf=False):
             period_start=start,
             provider=subscription.provider or "",
             issued_at=issued_at,
+            due_at=due_date(issued_at),
+            status=Invoice.ISSUED,
         )
         if fees:
             PlacementFee.objects.filter(pk__in=[f.pk for f in fees]).update(
@@ -459,6 +588,11 @@ def build_monthly_invoice(company, year=None, month=None, *, with_pdf=False):
             render_pdf(invoice)
         except Exception as exc:  # pragma: no cover - never block billing
             logger.warning("billing: invoice PDF failed for %s: %s", invoice.number, exc)
+    if notify:
+        try:
+            notify_issued(invoice)
+        except Exception as exc:  # pragma: no cover - a bad mailer must not lose the bill
+            logger.warning("billing: invoice notice failed for %s: %s", invoice.number, exc)
     return invoice
 
 

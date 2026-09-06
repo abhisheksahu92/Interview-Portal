@@ -39,6 +39,7 @@ from web.forms import (
     SkillForm,
     StageForm,
 )
+from web.legal import policy_context
 from web.services.apply import apply_to_job
 
 STAFF_ROLES = (Membership.OWNER, Membership.RECRUITER)
@@ -1255,3 +1256,31 @@ def candidate_resume(request, pk):
         filename=f"resume-{profile.pk}{extension}",
         content_type=content_type,
     )
+
+
+# --------------------------------------------------------------------------
+# Public policy pages
+# --------------------------------------------------------------------------
+def _policy_page(request, template):
+    """Render a policy page for anyone, signed in or not.
+
+    Payment gateways fetch these anonymously during merchant review, so they
+    must never sit behind a login or a tenant.
+    """
+    return render(request, template, policy_context())
+
+
+def terms(request):
+    return _policy_page(request, "web/legal/terms.html")
+
+
+def privacy(request):
+    return _policy_page(request, "web/legal/privacy.html")
+
+
+def refunds(request):
+    return _policy_page(request, "web/legal/refunds.html")
+
+
+def contact(request):
+    return _policy_page(request, "web/legal/contact.html")

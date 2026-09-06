@@ -2,10 +2,18 @@
 {% block title %}Checkout — Interview Portal{% endblock %}
 {% block content %}
 <section class="ip-section" style="max-width:32rem;margin:0 auto">
-  <div class="ip-section__head"><h2>Confirm your upgrade</h2></div>
-  <p class="mb-1"><strong>{{ plan.name }}</strong> — {{ interval|lower }} billing</p>
-  <p class="ip-kpi__value">₹{{ amount_inr|floatformat:0 }}</p>
-  <p class="ip-muted small">18% GST is added on your invoice.</p>
+  <div class="ip-section__head">
+    <h2>{% if invoice %}Pay invoice {{ invoice.number }}{% else %}Confirm your upgrade{% endif %}</h2>
+  </div>
+  {% if invoice %}
+    <p class="mb-1"><strong>{{ invoice.description }}</strong></p>
+    <p class="ip-kpi__value">₹{{ amount_inr|floatformat:2 }}</p>
+    <p class="ip-muted small">Total including GST.</p>
+  {% else %}
+    <p class="mb-1"><strong>{{ plan.name }}</strong> — {{ interval|lower }} billing</p>
+    <p class="ip-kpi__value">₹{{ amount_inr|floatformat:0 }}</p>
+    <p class="ip-muted small">18% GST is added on your invoice.</p>
+  {% endif %}
   <div class="d-flex flex-wrap gap-2">
     <button class="btn btn-primary" id="rzp-pay" type="button">Pay with Razorpay</button>
     <a class="btn btn-outline-secondary" href="{% url 'billing:overview' %}">Cancel</a>
@@ -13,8 +21,6 @@
   <p class="text-danger small mt-3 mb-0 d-none" id="rzp-error"></p>
   <form method="post" action="{{ verify_url }}" id="rzp-verify" class="d-none">
     {% csrf_token %}
-    <input type="hidden" name="plan" value="{{ plan.code }}">
-    <input type="hidden" name="interval" value="{{ interval }}">
     <input type="hidden" name="razorpay_payment_id">
     <input type="hidden" name="razorpay_order_id">
     <input type="hidden" name="razorpay_subscription_id">

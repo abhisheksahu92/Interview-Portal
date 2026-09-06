@@ -14,4 +14,6 @@ urlpatterns = [
     path("razorpay/verify/", views.razorpay_verify, name="razorpay_verify"),
     path("razorpay/webhook/", views.razorpay_webhook, name="razorpay_webhook"),
     path("invoices/<int:pk>/", views.invoice_download, name="invoice_download"),
+    path("invoices/<int:pk>/pay/", views.invoice_pay, name="invoice_pay"),
+    path("invoices/pay/verify/", views.invoice_pay_verify, name="invoice_pay_verify"),
 ]

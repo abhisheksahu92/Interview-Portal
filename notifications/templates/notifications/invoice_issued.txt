@@ -1,0 +1,11 @@
+Hi {{ recipient_name }},
+
+Invoice {{ invoice_number }} for {{ period }} is ready.
+
+Amount due: INR {{ total }} (includes {{ gst_rate }}% GST){% if due_at %}, by {{ due_at }}{% endif %}.
+{% if billing_url %}
+Pay it here: {{ billing_url }}
+{% endif %}
+The PDF is attached for your records.
+
+— {{ site_name }}

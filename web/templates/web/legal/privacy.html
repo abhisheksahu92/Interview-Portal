@@ -1,0 +1,206 @@
+{% extends "web/legal/_policy_base.html" %}
+{% block title %}Privacy Policy · {{ business_name }}{% endblock %}
+{% block meta_description %}What personal data Interview Portal collects from workspace users and candidates, who it is shared with, how long it is kept, and how to exercise your DPDP Act rights.{% endblock %}
+{% block og_description %}What personal data Interview Portal collects from workspace users and candidates, who it is shared with, how long it is kept, and how to exercise your DPDP Act rights.{% endblock %}
+{% block og_title %}Privacy Policy · Interview Portal{% endblock %}
+{% block heading %}Privacy Policy{% endblock %}
+{% block policy %}
+
+<p>
+  This notice explains what personal data {{ business_name }} collects, why, who it goes
+  to, how long we keep it, and what you can ask us to do about it. It is written to meet
+  the itemised-notice requirement of India’s Digital Personal Data Protection Act, 2023
+  (“DPDP Act”).
+</p>
+
+<h2 class="h4 mt-4">1. Two different roles</h2>
+<p>
+  <strong>For workspace users</strong> — owners, recruiters and interviewers — we are the
+  Data Fiduciary: we decide why and how your account data is processed, and this notice
+  is our notice to you.
+</p>
+<p>
+  <strong>For candidate data uploaded by a company</strong> — résumés, contact details,
+  interview feedback, assessment answers, video recordings — the company that runs the
+  workspace is the Data Fiduciary and we are its Data Processor. If you are a candidate
+  and want your data changed or removed from a particular company’s workspace, we will
+  pass your request to that company; we act on their instruction, not our own judgement.
+  Where you created your own candidate account and profile with us directly, we are the
+  Fiduciary for that profile.
+</p>
+
+<h2 class="h4 mt-4">2. What we collect, and why</h2>
+<div class="table-responsive">
+<table class="table table-sm align-top">
+  <thead><tr><th>Data</th><th>Why we process it</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Email address, name, password hash, the workspaces you belong to and your role</td>
+      <td>To create and authenticate your account and scope what you can see.</td>
+    </tr>
+    <tr>
+      <td>Candidate profile: name, email, phone, location, notice period, current and
+          expected salary, skills, résumé file and its extracted text</td>
+      <td>To let a candidate apply once and be assessed for a role, and to let recruiters
+          search their own talent database.</td>
+    </tr>
+    <tr>
+      <td>Application data: stage history, interviewer ratings and written feedback,
+          assessment answers and scores, AI summary and fit score, rejection reasons</td>
+      <td>To run the hiring pipeline the company configured.</td>
+    </tr>
+    <tr>
+      <td>Recorded video answers (one-way video screening) and their transcripts/summaries</td>
+      <td>To let recruiters review a screening answer asynchronously. Recording only
+          happens after the candidate starts it themselves from an invite link.</td>
+    </tr>
+    <tr>
+      <td>Background verification data: identity, address, employment, education and
+          criminal-record check results, plus the candidate’s consent record</td>
+      <td>To fulfil a verification a company ordered, only after the candidate consents
+          through their own link.</td>
+    </tr>
+    <tr>
+      <td>Scheduling data: interviewer availability, interview times, and calendar events
+          where a Google or Microsoft calendar has been connected</td>
+      <td>To schedule interviews and send invites.</td>
+    </tr>
+    <tr>
+      <td>Billing data: plan, seats, metered usage counts, GSTIN, billing state, invoices
+          and payment references</td>
+      <td>To bill the company and issue GST invoices. Card and bank details are handled by
+          the payment gateway and never reach our servers.</td>
+    </tr>
+    <tr>
+      <td>Technical data: IP address, user agent, request paths, timestamps, error traces</td>
+      <td>Security, abuse prevention and debugging.</td>
+    </tr>
+    <tr>
+      <td>Cookies: a session cookie, a CSRF token, and a theme preference in local storage</td>
+      <td>To keep you signed in and to protect forms. We do not use advertising cookies.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 class="h4 mt-4">3. Who we share it with</h2>
+<p>These are our sub-processors. We share the minimum each one needs:</p>
+<div class="table-responsive">
+<table class="table table-sm align-top">
+  <thead><tr><th>Recipient</th><th>What it receives</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Anthropic (Claude), or Google (Gemini) where that key is configured instead</td>
+      <td>The text sent for AI screening: résumé text, the job description, free-text
+          answers and video transcripts. Sent per request over their API; we do not send
+          files, and we rely on their API terms, under which API inputs are not used to
+          train their models. We do not control their practices beyond those terms.</td>
+    </tr>
+    <tr><td>Resend</td><td>Recipient email address and the content of transactional email
+      (invitations, interview invites, notifications).</td></tr>
+    <tr><td>Razorpay and Stripe</td><td>Billing contact, amount, invoice reference. They
+      collect payment details directly from you.</td></tr>
+    <tr><td>WhatsApp Business Cloud (Meta)</td><td>Phone number and message content, only
+      where the company enabled WhatsApp notifications.</td></tr>
+    <tr><td>Sentry</td><td>Error traces, which can contain request metadata and the
+      signed-in user’s id. Off entirely unless a DSN is configured.</td></tr>
+    <tr><td>PostHog</td><td>Product analytics events for <em>signed-in workspace users
+      only</em>. It is deliberately never loaded on candidate-facing pages — careers
+      pages, assessments, offer signing, video screens or BGV consent.</td></tr>
+    <tr><td>Object storage (Amazon S3 or Cloudflare R2)</td><td>Uploaded résumés, video
+      recordings, offer letters and invoice PDFs.</td></tr>
+    <tr><td>Background verification provider</td><td>The candidate identifiers needed for
+      the checks in the ordered package, after consent.</td></tr>
+    <tr><td>Job boards and calendar providers</td><td>Job postings you choose to
+      distribute; interview events on a calendar you connected.</td></tr>
+  </tbody>
+</table>
+</div>
+<p>
+  We do not sell personal data and we do not share it for advertising. We disclose data
+  to a government agency only where a law requires it.
+</p>
+
+<h2 class="h4 mt-4">4. Transfers outside India</h2>
+<p>
+  Some of these processors — the model provider, the email provider, Sentry, Stripe —
+  operate outside India, so data described above may be processed abroad. The application
+  database and uploaded files are hosted in the region the deployment is configured for.
+</p>
+
+<h2 class="h4 mt-4">5. How long we keep it</h2>
+<ul>
+  <li><strong>Workspace and candidate records</strong> — for as long as the workspace is
+      active, because a hiring history is the point of the product. When a workspace is
+      closed we delete or return its data on request.</li>
+  <li><strong>Candidate accounts</strong> — until the candidate asks us to delete them.</li>
+  <li><strong>Invoices, GST records and payment references</strong> — retained for the
+      period Indian tax and company law requires, even after an account closes.</li>
+  <li><strong>Error traces and technical logs</strong> — short-lived, per the retention
+      of the logging and error tools.</li>
+</ul>
+<p>
+  We are being straight with you: there is no automated purge job today. Deletion happens
+  when it is requested, by hand.
+</p>
+
+<h2 class="h4 mt-4">6. Your rights under the DPDP Act</h2>
+<p>You may ask us to:</p>
+<ul>
+  <li><strong>Access</strong> — a summary of the personal data we process about you and
+      who it has been shared with;</li>
+  <li><strong>Correct or complete</strong> — fix data that is wrong, incomplete or out of
+      date;</li>
+  <li><strong>Erase</strong> — delete data we no longer need for the purpose it was
+      collected for, or where you withdraw consent (subject to the retention we are
+      legally required to keep);</li>
+  <li><strong>Withdraw consent</strong> — as easily as it was given; this does not undo
+      processing already carried out;</li>
+  <li><strong>Nominate</strong> — name someone to exercise these rights if you die or
+      become incapacitated;</li>
+  <li><strong>Complain</strong> — to our Grievance Officer, and after that to the Data
+      Protection Board of India.</li>
+</ul>
+<div class="alert alert-info">
+  <strong>How to make a request:</strong> email
+  <a href="mailto:{{ contact_email }}" class="alert-link">{{ contact_email }}</a> from the
+  address on your account. There is no self-service export or delete button in the product
+  yet — we are not claiming one exists. Requests are handled manually and we aim to respond
+  within 30 days. If your data sits in a company’s workspace, we will route the request to
+  that company, since they decide what happens to it.
+</div>
+
+<h2 class="h4 mt-4">7. Grievance Officer</h2>
+<p>
+  {% if grievance_officer %}
+    {{ grievance_officer }} — <a href="mailto:{{ grievance_email }}">{{ grievance_email }}</a>
+  {% else %}
+    <span class="badge text-bg-warning">Named Grievance Officer — to be filled in</span>
+    <br>Contact in the meantime:
+    <a href="mailto:{{ grievance_email }}">{{ grievance_email }}</a>
+  {% endif %}
+</p>
+{# The DPDP Act requires a NAMED officer with contact details. Ships blank on #}
+{# purpose so the owner has to supply a real person before going live.        #}
+
+<h2 class="h4 mt-4">8. Children</h2>
+<p>
+  The Service is for working adults. We do not knowingly process the data of anyone under
+  18. If you believe a child’s data is here, write to us and we will delete it.
+</p>
+
+<h2 class="h4 mt-4">9. Security</h2>
+<p>
+  Traffic is served over HTTPS, passwords are stored as salted hashes, every query is
+  scoped to the workspace it belongs to, and candidate-facing links (offers, booking pages,
+  BGV consent, client portals) are unguessable signed tokens that expire. No system is
+  perfectly secure; if a breach affects your data we will notify you and the Data
+  Protection Board as the law requires.
+</p>
+
+<h2 class="h4 mt-4">10. Changes</h2>
+<p>
+  We will update this notice as the product changes. The version and date at the top show
+  the current text, and we record which version each user accepted at signup.
+</p>
+{% endblock %}

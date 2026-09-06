@@ -29,6 +29,7 @@ def test_candidate_signup_creates_candidate(client):
             "email": "cand@x.com",
             "password1": "sup3r-secret-pw",
             "password2": "sup3r-secret-pw",
+            "accept_policies": "on",
         },
     )
     assert response.status_code == 302
@@ -46,6 +47,7 @@ def test_company_signup_creates_company_owner_and_session(client):
             "email": "own@x.com",
             "password1": "sup3r-secret-pw",
             "password2": "sup3r-secret-pw",
+            "accept_policies": "on",
         },
     )
     assert response.status_code == 302

@@ -8,7 +8,7 @@ import pytest
 from django.urls import reverse
 
 from billing import razorpay_gateway
-from billing.models import Invoice, Plan, Subscription
+from billing.models import Invoice, PendingCheckout, Plan, Subscription
 from billing.services import get_subscription
 from billing.webhooks import handle_razorpay_event
 
@@ -123,9 +123,7 @@ def test_checkout_without_keys_redirects_with_a_message(client, owner, settings)
     settings.RAZORPAY_KEY_ID = ""
     settings.RAZORPAY_KEY_SECRET = ""
     client.force_login(owner)
-    response = client.post(
-        reverse("billing:razorpay_checkout"), {"plan": Plan.GROWTH}, follow=True
-    )
+    response = client.post(reverse("billing:razorpay_checkout"), {"plan": Plan.GROWTH}, follow=True)
     assert any("Razorpay is not configured" in str(m) for m in response.context["messages"])
 
 
@@ -137,6 +135,14 @@ def test_non_owner_cannot_start_razorpay_checkout(client, recruiter, fake_razorp
 def test_verify_activates_the_plan(client, owner, company, settings):
     settings.RAZORPAY_KEY_SECRET = "secret"
     signature = hmac.new(b"secret", b"pay_1|sub_1", hashlib.sha256).hexdigest()
+    # The plan now comes from the checkout we recorded before redirecting, not
+    # from the POST — a caller cannot name their own tier on the way back.
+    PendingCheckout.objects.create(
+        company=company,
+        remote_id="sub_1",
+        plan=Plan.objects.get(code=Plan.GROWTH),
+        interval=Subscription.MONTHLY,
+    )
     client.force_login(owner)
     response = client.post(
         reverse("billing:razorpay_verify"),
@@ -236,3 +242,87 @@ def test_unknown_event_and_unknown_company_are_ignored(company):
     assert handle_razorpay_event(_event("subscription.pending", company)) is None
     orphan = {"event": "subscription.charged", "payload": {"subscription": {"entity": {}}}}
     assert handle_razorpay_event(orphan) is None
+
+
+@pytest.mark.django_db
+def test_verify_ignores_the_plan_in_the_post_body(client, owner, company, settings):
+    """The exploit: pay ₹999 for STARTER, come back claiming AGENCY.
+
+    The callback signature only proves the payment belongs to the order, so the
+    tier must come from the checkout we recorded before redirecting.
+    """
+    settings.RAZORPAY_KEY_SECRET = "secret"
+    signature = hmac.new(b"secret", b"pay_2|sub_2", hashlib.sha256).hexdigest()
+    PendingCheckout.objects.create(
+        company=company,
+        remote_id="sub_2",
+        plan=Plan.objects.get(code=Plan.STARTER),
+        interval=Subscription.MONTHLY,
+    )
+    client.force_login(owner)
+
+    response = client.post(
+        reverse("billing:razorpay_verify"),
+        {
+            "plan": Plan.AGENCY,
+            "razorpay_payment_id": "pay_2",
+            "razorpay_subscription_id": "sub_2",
+            "razorpay_signature": signature,
+        },
+    )
+
+    assert response.status_code == 200
+    assert get_subscription(company).plan.code == Plan.STARTER
+
+
+@pytest.mark.django_db
+def test_a_replayed_callback_cannot_activate_twice(client, owner, company, settings):
+    settings.RAZORPAY_KEY_SECRET = "secret"
+    signature = hmac.new(b"secret", b"pay_3|sub_3", hashlib.sha256).hexdigest()
+    PendingCheckout.objects.create(
+        company=company,
+        remote_id="sub_3",
+        plan=Plan.objects.get(code=Plan.GROWTH),
+        interval=Subscription.MONTHLY,
+    )
+    client.force_login(owner)
+    payload = {
+        "razorpay_payment_id": "pay_3",
+        "razorpay_subscription_id": "sub_3",
+        "razorpay_signature": signature,
+    }
+
+    first = client.post(reverse("billing:razorpay_verify"), payload)
+    second = client.post(reverse("billing:razorpay_verify"), payload)
+
+    assert first.status_code == 200
+    assert second.status_code == 400
+
+
+@pytest.mark.django_db
+def test_another_companys_checkout_cannot_be_claimed(client, owner, company, settings):
+    """A valid triple from any company on the merchant account used to work."""
+    settings.RAZORPAY_KEY_SECRET = "secret"
+    signature = hmac.new(b"secret", b"pay_4|sub_4", hashlib.sha256).hexdigest()
+    from core.models import Company
+
+    other_company = Company.objects.create(name="Rival Staffing")
+    PendingCheckout.objects.create(
+        company=other_company,
+        remote_id="sub_4",
+        plan=Plan.objects.get(code=Plan.AGENCY),
+        interval=Subscription.MONTHLY,
+    )
+    client.force_login(owner)
+
+    response = client.post(
+        reverse("billing:razorpay_verify"),
+        {
+            "razorpay_payment_id": "pay_4",
+            "razorpay_subscription_id": "sub_4",
+            "razorpay_signature": signature,
+        },
+    )
+
+    assert response.status_code == 400
+    assert get_subscription(company).plan.code != Plan.AGENCY

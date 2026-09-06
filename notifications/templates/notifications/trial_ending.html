@@ -1,0 +1,10 @@
+<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+  <p>Hi {{ recipient_name }},</p>
+  <p><strong>{{ company.name }}</strong>'s free trial ends in {{ days_left }} day{{ days_left|pluralize }}, on {{ trial_ends_at }}.</p>
+  <p style="padding:10px 14px;background:#f3f4f6;border-radius:6px;margin:0 0 16px">
+    After that you continue on the <strong>{{ plan_name }}</strong> plan at INR {{ plan_price }} per month.
+  </p>
+  {% if billing_url %}<p><a href="{{ billing_url }}">Choose a plan</a></p>{% endif %}
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+  <p style="font-size:12px;color:#6b7280">&mdash; {{ site_name }}</p>
+</div>

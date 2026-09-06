@@ -1,0 +1,12 @@
+Hi {{ recipient_name }},
+
+{{ company.name }}'s free trial ends in {{ days_left }} day{{ days_left|pluralize }}, on {{ trial_ends_at }}.
+
+After that you continue on the {{ plan_name }} plan at INR {{ plan_price }} per month.
+Add a payment method now so nothing is interrupted.
+{% if billing_url %}
+Choose a plan: {{ billing_url }}
+{% endif %}
+
+— {{ site_name }}
+Manage your notification preferences: {{ unsubscribe_url }}

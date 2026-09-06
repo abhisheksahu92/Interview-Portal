@@ -333,7 +333,9 @@ def test_expire_trials_moves_the_company_to_starter_with_grace(db):
     call_command("expire_trials", verbosity=0)
     subscription = Subscription.objects.get(company=company)
     assert subscription.plan.code == Plan.STARTER
-    assert subscription.status == Subscription.ACTIVE
+    # No card was ever entered, so the company owes money and must be chased.
+    # This used to assert ACTIVE, which is why nobody was ever billed.
+    assert subscription.status == Subscription.PAST_DUE
     assert subscription.in_grace is True
     assert 6 <= (subscription.grace_until - timezone.now()).days <= 7
 
@@ -460,3 +462,75 @@ def test_explicit_year_and_month_are_still_honoured(company, owner, monkeypatch)
     call_command("bill_month", year=2026, month=3)
 
     assert {(y, m) for y, m in billed} == {(2026, 3)}
+
+
+@pytest.mark.django_db
+def test_expired_trial_without_a_card_goes_past_due_so_dunning_chases_it(company, owner):
+    """Landing on ACTIVE meant nobody was ever asked to pay."""
+    from datetime import timedelta
+
+    from django.core.management import call_command
+    from django.utils import timezone
+
+    from billing.models import Subscription
+    from billing.services import get_subscription
+
+    subscription = get_subscription(company)
+    subscription.status = Subscription.TRIALING
+    subscription.trial_ends_at = timezone.now() - timedelta(days=1)
+    subscription.razorpay_customer_id = ""
+    subscription.stripe_customer_id = ""
+    subscription.save()
+
+    call_command("expire_trials")
+
+    subscription.refresh_from_db()
+    assert subscription.status == Subscription.PAST_DUE
+    assert subscription.past_due_since is not None
+
+
+@pytest.mark.django_db
+def test_expired_trial_with_a_card_stays_active(company, owner):
+    from datetime import timedelta
+
+    from django.core.management import call_command
+    from django.utils import timezone
+
+    from billing.models import Subscription
+    from billing.services import get_subscription
+
+    subscription = get_subscription(company)
+    subscription.status = Subscription.TRIALING
+    subscription.trial_ends_at = timezone.now() - timedelta(days=1)
+    subscription.razorpay_customer_id = "cust_live"
+    subscription.save()
+
+    call_command("expire_trials")
+
+    subscription.refresh_from_db()
+    assert subscription.status == Subscription.ACTIVE
+
+
+@pytest.mark.django_db
+def test_trial_ending_reminder_is_sent_once_per_threshold(company, owner, mailoutbox):
+    from datetime import timedelta
+
+    from django.core.management import call_command
+    from django.utils import timezone
+
+    from billing.models import Subscription
+    from billing.services import get_subscription
+
+    subscription = get_subscription(company)
+    subscription.status = Subscription.TRIALING
+    subscription.trial_ends_at = timezone.now() + timedelta(hours=12)
+    subscription.save()
+
+    call_command("expire_trials")
+    first = len(mailoutbox)
+    call_command("expire_trials")
+
+    assert first >= 1
+    assert len(mailoutbox) == first  # a second run must not re-send
+    subscription.refresh_from_db()
+    assert 1 in subscription.trial_warned_days

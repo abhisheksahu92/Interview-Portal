@@ -74,4 +74,9 @@ urlpatterns = [
     path("openings/", views.job_browse, name="job_browse"),
     path("openings/<int:pk>/", views.job_public_detail, name="job_public_detail"),
     path("openings/<int:pk>/apply/", views.job_apply, name="job_apply"),
+    # public policy pages (a payment gateway fetches these anonymously)
+    path("legal/terms/", views.terms, name="terms"),
+    path("legal/privacy/", views.privacy, name="privacy"),
+    path("legal/refunds/", views.refunds, name="refunds"),
+    path("contact/", views.contact, name="contact"),
 ]

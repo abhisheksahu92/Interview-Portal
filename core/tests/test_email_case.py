@@ -29,6 +29,7 @@ def test_candidate_signup_rejects_case_variant_duplicate(client):
             "email": "foo@x.com",
             "password1": "sup3r-secret-pw",
             "password2": "sup3r-secret-pw",
+            "accept_policies": "on",
         },
     )
     assert resp.status_code == 200
@@ -45,6 +46,7 @@ def test_company_signup_lowercases_email(client):
             "email": "Owner@Widgets.COM",
             "password1": "sup3r-secret-pw",
             "password2": "sup3r-secret-pw",
+            "accept_policies": "on",
         },
     )
     assert resp.status_code == 302

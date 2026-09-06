@@ -80,6 +80,14 @@ class User(AbstractUser):
         related_name="+",
         help_text="Last workspace this user had active; restored on the next login.",
     )
+    # Proof of consent, captured at signup. Kept on the user rather than in a
+    # log because it has to survive as long as the account does.
+    policy_version = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="web.legal.POLICY_VERSION accepted at signup.",
+    )
+    policy_accepted_at = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list = []

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{# Shared shell for the four public policy pages: template banner, the single #}
+{# "Last updated" stamp from web/legal.py, and cross-links between them.      #}
+{% block body_attrs %} class="ip-warm"{% endblock %}
+{% block content %}
+<div class="ip-standalone">
+
+  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <strong>This is a template, not legal advice.</strong>
+    It was drafted from how this product actually works, but it has not been
+    reviewed by a lawyer. Have one review it — and fill in the blanks marked on
+    the <a href="{% url 'web:contact' %}" class="alert-link">contact page</a> —
+    before you rely on it or submit it to a payment gateway.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss"></button>
+  </div>
+
+  <h1 class="mb-1">{% block heading %}{% endblock %}</h1>
+  <p class="ip-muted small mb-4">
+    Last updated {{ policy_updated|date:"j F Y" }} · Version {{ policy_version }}
+  </p>
+
+  {% block policy %}{% endblock %}
+
+  <hr class="my-4">
+  <nav class="d-flex flex-wrap gap-3 small" aria-label="Policies">
+    <a href="{% url 'web:terms' %}">Terms of Service</a>
+    <a href="{% url 'web:privacy' %}">Privacy Policy</a>
+    <a href="{% url 'web:refunds' %}">Refund &amp; Cancellation Policy</a>
+    <a href="{% url 'web:contact' %}">Contact</a>
+  </nav>
+</div>
+{% endblock %}

@@ -15,12 +15,21 @@
       <form method="post">
         {% csrf_token %}
         {% for field in form %}
-          <div class="mb-3">
-            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-            {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-          </div>
+          {% if field.name == 'accept_policies' %}
+            {# Consent checkbox: rendered as a check, not a labelled control. #}
+            <div class="form-check mb-3">
+              {{ field }}
+              <label class="form-check-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          {% else %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+              {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          {% endif %}
         {% endfor %}
         {% for e in form.non_field_errors %}<div class="alert alert-danger py-2">{{ e }}</div>{% endfor %}
         <button class="btn btn-primary w-100 mt-4" type="submit">Create company</button>
@@ -28,6 +37,12 @@
     </div>
     <p class="ip-auth-foot">
       Already registered? <a href="{% url 'core:login' %}">Sign in</a>
+    </p>
+    <p class="ip-auth-foot small">
+      <a href="{% url 'web:terms' %}">Terms</a> ·
+      <a href="{% url 'web:privacy' %}">Privacy</a> ·
+      <a href="{% url 'web:refunds' %}">Refunds</a> ·
+      <a href="{% url 'web:contact' %}">Contact</a>
     </p>
   </div>
 {% endblock %}

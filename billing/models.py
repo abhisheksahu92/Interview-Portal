@@ -39,14 +39,10 @@ class Plan(models.Model):
     price_monthly = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     price_monthly_inr = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     price_yearly_inr = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    per_hire_fee_inr = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
+    per_hire_fee_inr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     # Placement-linked pricing (phase 4). ``pricing_model`` decides whether
     # ``price_monthly_inr`` is charged once (FLAT) or per recruiter seat (SEAT).
-    pricing_model = models.CharField(
-        max_length=10, choices=PRICING_MODEL_CHOICES, default=FLAT
-    )
+    pricing_model = models.CharField(max_length=10, choices=PRICING_MODEL_CHOICES, default=FLAT)
     success_fee_inr = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     ai_included = models.PositiveIntegerField(default=0)
     ai_overage_inr = models.DecimalField(max_digits=8, decimal_places=2, default=0)
@@ -131,6 +127,8 @@ class Subscription(models.Model):
     trial_ends_at = models.DateTimeField(null=True, blank=True)
     current_period_end = models.DateTimeField(null=True, blank=True)
     past_due_since = models.DateTimeField(null=True, blank=True)
+    #: Which trial-ending reminders have gone out, so a daily run sends each once.
+    trial_warned_days = models.JSONField(default=list, blank=True)
     #: Set when a trial is downgraded: limits are not enforced until it passes.
     grace_until = models.DateTimeField(null=True, blank=True)
     #: When True, metered usage is refused past the allowance instead of billed.
@@ -213,6 +211,20 @@ class Subscription(models.Model):
         return self.effective_plan.ai_credits_monthly
 
     @property
+    def has_payment_method(self):
+        """True when a gateway holds something we can actually charge.
+
+        A trial that ends without one cannot be auto-collected, so it goes
+        PAST_DUE (and into dunning) instead of silently ACTIVE.
+        """
+        return bool(
+            self.razorpay_subscription_id
+            or self.razorpay_customer_id
+            or self.stripe_subscription_id
+            or self.stripe_customer_id
+        )
+
+    @property
     def billing_state_code(self):
         return str((self.billing_address or {}).get("state_code") or "").strip()
 
@@ -252,9 +264,21 @@ class Invoice(models.Model):
 
     GST_RATE = Decimal("18.00")
 
-    company = models.ForeignKey(
-        "core.Company", on_delete=models.CASCADE, related_name="invoices"
-    )
+    DRAFT = "DRAFT"
+    ISSUED = "ISSUED"
+    PAID = "PAID"
+    VOID = "VOID"
+    STATUS_CHOICES = [
+        (DRAFT, "Draft"),
+        (ISSUED, "Issued"),
+        (PAID, "Paid"),
+        (VOID, "Void"),
+    ]
+
+    #: Days a tenant gets to pay a monthly bill before dunning starts.
+    PAYMENT_TERMS_DAYS = 7
+
+    company = models.ForeignKey("core.Company", on_delete=models.CASCADE, related_name="invoices")
     number = models.CharField(max_length=40, unique=True)
     fy = models.CharField(max_length=10, blank=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -271,11 +295,12 @@ class Invoice(models.Model):
     #: First day of the billed month for monthly bills (None for one-offs).
     period_start = models.DateField(null=True, blank=True)
     pdf = models.FileField(upload_to="invoices/", blank=True)
-    provider = models.CharField(
-        max_length=20, choices=Subscription.PROVIDER_CHOICES, blank=True
-    )
+    provider = models.CharField(max_length=20, choices=Subscription.PROVIDER_CHOICES, blank=True)
     provider_ref = models.CharField(max_length=120, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=ISSUED)
     issued_at = models.DateTimeField(default=timezone.now)
+    #: When payment is expected. Unpaid past this date, dunning takes over.
+    due_at = models.DateField(null=True, blank=True)
     paid_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -298,6 +323,29 @@ class Invoice(models.Model):
     @property
     def is_intra_state(self):
         return self.cgst > 0 or self.sgst > 0
+
+    @property
+    def is_paid(self):
+        return self.status == self.PAID or self.paid_at is not None
+
+    @property
+    def is_payable(self):
+        """True when the tenant still owes this money and can pay it online."""
+        return self.status in {self.DRAFT, self.ISSUED} and not self.is_paid and self.total > 0
+
+    def is_overdue(self, today=None):
+        if self.is_paid or self.status == self.VOID or self.due_at is None:
+            return False
+        return self.due_at < (today or timezone.localdate())
+
+    @property
+    def status_kind(self):
+        """Badge modifier for ``.ip-badge--*`` on the billing overview."""
+        if self.is_paid:
+            return "success"
+        if self.status == self.VOID:
+            return "muted"
+        return "warning" if self.is_overdue() else "accent"
 
 
 class DunningReminder(models.Model):
@@ -414,6 +462,7 @@ class BillingCharge(models.Model):
     SEAT = "SEAT"
     BGV = "BGV"
     PLATFORM_FEE = "PLATFORM_FEE"
+    EXCHANGE_FEE = "EXCHANGE_FEE"
     OTHER = "OTHER"
     KIND_CHOICES = [
         (SUBSCRIPTION, "Subscription"),
@@ -422,6 +471,7 @@ class BillingCharge(models.Model):
         (SEAT, "Seat"),
         (BGV, "Background verification"),
         (PLATFORM_FEE, "Platform fee"),
+        (EXCHANGE_FEE, "Exchange fee"),
         (OTHER, "Other"),
     ]
 
@@ -460,3 +510,65 @@ class BillingCharge(models.Model):
     @property
     def is_invoiced(self):
         return self.invoice_id is not None
+
+
+class PendingCheckout(models.Model):
+    """A checkout we handed to the gateway, recorded *before* the redirect.
+
+    The Checkout callback signature only proves that a payment belongs to an
+    order — not what it was for. Without this row the verify view had to trust
+    the browser's own POST for the plan, so a ₹999 STARTER payment could be
+    replayed as ``plan=AGENCY``. Verify looks the intent up by ``remote_id``,
+    takes plan/amount from here, and claims the row once (``consumed_at``) so a
+    replayed callback cannot activate anything a second time.
+    """
+
+    company = models.ForeignKey(
+        "core.Company", on_delete=models.CASCADE, related_name="pending_checkouts"
+    )
+    #: The gateway's order/subscription id the callback comes back with.
+    remote_id = models.CharField(max_length=120, unique=True)
+    plan = models.ForeignKey(
+        Plan, on_delete=models.PROTECT, null=True, blank=True, related_name="checkouts"
+    )
+    interval = models.CharField(
+        max_length=10, choices=Subscription.INTERVAL_CHOICES, default=Subscription.MONTHLY
+    )
+    amount_inr = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    #: Set when this checkout pays off an existing invoice instead of upgrading.
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="checkouts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    consumed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        indexes = [models.Index(fields=["company", "remote_id"])]
+
+    def __str__(self):
+        return f"{self.remote_id} → {self.plan_id or self.invoice_id}"
+
+    @classmethod
+    def claim(cls, company, remote_id):
+        """Consume the checkout for ``remote_id``, or ``None`` if it cannot be.
+
+        The claim is a single conditional UPDATE, so two callbacks racing on the
+        same order can never both win it.
+        """
+        if not remote_id:
+            return None
+        claimed = cls.objects.filter(
+            company=company, remote_id=str(remote_id), consumed_at__isnull=True
+        ).update(consumed_at=timezone.now())
+        if not claimed:
+            return None
+        return (
+            cls.objects.select_related("plan", "invoice")
+            .filter(company=company, remote_id=str(remote_id))
+            .first()
+        )

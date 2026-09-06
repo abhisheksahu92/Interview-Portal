@@ -1,0 +1,124 @@
+{% extends "web/legal/_policy_base.html" %}
+{% block title %}Refund &amp; Cancellation Policy · {{ business_name }}{% endblock %}
+{% block meta_description %}When Interview Portal subscription fees, placement success fees, AI usage and background checks are refundable, and how to cancel a workspace subscription.{% endblock %}
+{% block og_description %}When Interview Portal subscription fees, placement success fees, AI usage and background checks are refundable, and how to cancel a workspace subscription.{% endblock %}
+{% block og_title %}Refund &amp; Cancellation Policy · Interview Portal{% endblock %}
+{% block heading %}Refund &amp; Cancellation Policy{% endblock %}
+{% block policy %}
+
+<p>
+  This policy covers everything we charge for: the recurring plan fee, placement success
+  fees, metered usage, and one-off charges such as background verification. All prices are
+  in Indian rupees and exclusive of GST, which is added at the prevailing rate (currently
+  18%) on the invoice.
+</p>
+
+<h2 class="h4 mt-4">1. The free trial</h2>
+<p>
+  Every new workspace starts on a <strong>14-day trial</strong> with the full feature set
+  and <strong>no plan fee at all</strong> — nothing is charged while the subscription is in
+  trial, and no card is needed to start. If you do nothing, the trial simply ends.
+</p>
+<p>
+  In the calendar month your trial <em>ends</em>, the plan fee is <strong>prorated by
+  days</strong>: you are billed only for the days after the trial end date, not the whole
+  month. Metered usage and success fees you incur <em>during</em> the trial are still
+  billed — the trial makes the plan free, not the work we pay third parties for.
+</p>
+
+<h2 class="h4 mt-4">2. Subscription fees</h2>
+<ul>
+  <li>The plan fee is billed <strong>per calendar month</strong> — per recruiter seat on
+      Starter, flat on Growth and Agency — or annually if you have taken an annual price.</li>
+  <li>Once a billing period has begun, the plan fee for that period is
+      <strong>non-refundable</strong>, in whole or in part. We do not refund partial months
+      for unused seats, unused AI credits, or a workspace you stopped logging into.</li>
+  <li>Downgrading takes effect from the next billing period. Upgrading takes effect
+      immediately and is billed from that point.</li>
+  <li>Annual plans are non-refundable after the annual period starts. If you cancel, the
+      plan runs to the end of the period you paid for.</li>
+</ul>
+
+<h2 class="h4 mt-4">3. Placement success fees</h2>
+<p>
+  On plans that carry one, a success fee is raised the moment an application is marked
+  <strong>HIRED</strong> in your workspace — that is the event the fee is earned on. It then
+  appears on the next monthly invoice.
+</p>
+<ul>
+  <li>A fee that has been invoiced is <strong>non-refundable</strong>, including if the
+      candidate later resigns, does not join, or the client withdraws the role.</li>
+  <li>If a hire was recorded <strong>by mistake</strong>, tell us before the month’s invoice
+      is issued and we will waive the fee. Once the invoice exists it cannot be unwound —
+      we would have to issue a credit note, which we do only for our own error.</li>
+  <li>Success fees are per hire and are not affected by cancelling your subscription
+      afterwards.</li>
+</ul>
+
+<h2 class="h4 mt-4">4. Metered usage</h2>
+<p>
+  AI screens above your plan allowance, WhatsApp messages and video minutes are billed for
+  what you used, on the monthly invoice. Usage is consumed at the moment it happens and is
+  <strong>non-refundable</strong>. If you believe usage was recorded that you did not cause
+  — a bug, a duplicate submission — write to us within 30 days of the invoice and we will
+  investigate and credit anything genuinely miscounted.
+</p>
+
+<h2 class="h4 mt-4">5. Background verification</h2>
+<p>
+  A verification package is charged <strong>once, at the moment the candidate consents</strong>
+  — not when you order it. So:
+</p>
+<ul>
+  <li>if the candidate never consents, you are never charged;</li>
+  <li>once consent is given and the order goes to the verification provider, the charge is
+      <strong>non-refundable</strong>, because we have already paid the provider for the
+      check — regardless of what the report says;</li>
+  <li>a double submission cannot double-bill you: each order carries an idempotency key.</li>
+</ul>
+
+<h2 class="h4 mt-4">6. Marketplace purchases</h2>
+<p>
+  Paid question packs are digital goods delivered into your workspace immediately on
+  purchase and are non-refundable once delivered.
+</p>
+
+<h2 class="h4 mt-4">7. When we do refund</h2>
+<p>We will refund, without argument:</p>
+<ul>
+  <li>a <strong>duplicate payment</strong> — the same invoice paid twice;</li>
+  <li>an amount charged after a cancellation we had confirmed;</li>
+  <li>a charge caused by <strong>our</strong> billing error.</li>
+</ul>
+<p>
+  Approved refunds go back to the original payment method through the gateway that took
+  the money (Razorpay or Stripe). We initiate them within 5 working days of approving the
+  request; how long the money then takes to appear is your bank’s and the gateway’s
+  timeline, typically 5–10 working days. We do not refund to a different account or by
+  cash. Any GST already remitted is adjusted through a credit note.
+</p>
+
+<h2 class="h4 mt-4">8. How to cancel</h2>
+<p>
+  There is no self-service “cancel subscription” button in the product today, and we are
+  not going to pretend there is. To cancel, email
+  <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> from the workspace owner’s
+  email address, with the workspace name. We will confirm in writing.
+</p>
+<ul>
+  <li>Cancellation takes effect at the <strong>end of the current billing period</strong>.
+      Your workspace stays usable until then; there is no refund for the remainder.</li>
+  <li>Invoices already raised — including success fees, usage and verification charges —
+      remain payable.</li>
+  <li>Tell us at the same time if you want your data deleted or exported; see the
+      <a href="{% url 'web:privacy' %}">Privacy Policy</a>.</li>
+</ul>
+
+<h2 class="h4 mt-4">9. Disputes</h2>
+<p>
+  Raise any invoice dispute within <strong>30 days</strong> of the invoice date at
+  <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>, quoting the invoice number.
+  We would much rather sort it out directly than have you raise a chargeback, which
+  freezes the amount and helps neither of us.
+</p>
+{% endblock %}

@@ -70,6 +70,7 @@ def test_cookie_referral_attaches_on_company_signup(client, reseller):
             "email": "founder@referred.test",
             "password1": "sup3rsecret!x",
             "password2": "sup3rsecret!x",
+            "accept_policies": "on",
         },
     )
     assert response.status_code in (200, 302)

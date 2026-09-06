@@ -1,0 +1,1 @@
+Invoice {{ invoice_number }} for {{ company.name }} — INR {{ total }}

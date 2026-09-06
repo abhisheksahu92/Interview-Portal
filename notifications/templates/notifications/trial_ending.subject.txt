@@ -1,0 +1,1 @@
+Your {{ site_name }} trial ends in {{ days_left }} day{{ days_left|pluralize }}

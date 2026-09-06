@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.urls import reverse
+from django.utils.html import format_html
 
 from core.models import Company, Membership, User
 
@@ -30,7 +32,37 @@ class BaseSignupForm(UserCreationForm):
             field.widget.attrs.setdefault("class", "form-control")
 
 
-class CandidateSignupForm(BaseSignupForm):
+class PolicyConsentMixin(forms.Form):
+    """Explicit consent to the published policies, recorded on the user.
+
+    A payment gateway (and the DPDP Act) wants proof that the person agreed,
+    not a footer link they may never have seen — so this is a required
+    checkbox, unticked by default, and the accepted version is stamped on the
+    User in the signup view.
+    """
+
+    accept_policies = forms.BooleanField(
+        required=True,
+        error_messages={
+            "required": "You must accept the Terms of Service and Privacy Policy to continue."
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        field = self.fields["accept_policies"]
+        # BaseSignupForm defaults every widget to .form-control; a checkbox is
+        # the one field where Bootstrap wants a different class.
+        field.widget.attrs["class"] = "form-check-input"
+        field.label = format_html(
+            'I agree to the <a href="{}" target="_blank" rel="noopener">Terms of Service</a> '
+            'and the <a href="{}" target="_blank" rel="noopener">Privacy Policy</a>.',
+            reverse("web:terms"),
+            reverse("web:privacy"),
+        )
+
+
+class CandidateSignupForm(PolicyConsentMixin, BaseSignupForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.is_candidate = True
@@ -39,7 +71,7 @@ class CandidateSignupForm(BaseSignupForm):
         return user
 
 
-class CompanySignupForm(BaseSignupForm):
+class CompanySignupForm(PolicyConsentMixin, BaseSignupForm):
     company_name = forms.CharField(max_length=150, label="Company name")
 
     field_order = ["company_name", "email", "first_name", "last_name"]

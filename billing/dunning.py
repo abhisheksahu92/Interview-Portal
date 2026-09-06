@@ -3,6 +3,11 @@
 Reminders go out on day 1, 3 and 7 after a subscription went PAST_DUE; on day 7
 (and after) the company is downgraded to FREE. Every step is recorded in
 ``DunningReminder`` so the management command is idempotent.
+
+A subscription goes PAST_DUE two ways: the gateway told us a charge failed, or
+:func:`flag_overdue_invoices` found an invoice we issued ourselves that is past
+its due date and still unpaid. The second case is what makes an unpaid monthly
+bill chaseable at all — before it, only gateway failures were ever dunned.
 """
 
 import logging
@@ -11,7 +16,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
-from billing.models import DunningReminder, Subscription
+from billing.models import DunningReminder, Invoice, Subscription
 from billing.services import free_plan
 
 logger = logging.getLogger(__name__)
@@ -20,6 +25,78 @@ logger = logging.getLogger(__name__)
 REMINDER_DAYS = (1, 3, 7)
 #: Day on which an unpaid subscription drops back to FREE.
 DOWNGRADE_DAY = 7
+
+
+def unpaid_overdue_invoices(company, today=None):
+    """Invoices this company was billed for and has not paid on time."""
+    today = today or timezone.localdate()
+    return Invoice.objects.filter(
+        company=company,
+        status__in=[Invoice.DRAFT, Invoice.ISSUED],
+        paid_at__isnull=True,
+        due_at__lt=today,
+    )
+
+
+def flag_overdue_invoices(now=None):
+    """Mark companies with an overdue invoice PAST_DUE. Returns the count.
+
+    ``past_due_since`` is dated from the *oldest* overdue invoice, so a bill
+    that has been outstanding for a week enters the ladder where it belongs
+    rather than restarting at day 0.
+    """
+    now = now or timezone.now()
+    today = timezone.localdate(now)
+    flagged = 0
+    overdue = (
+        Invoice.objects.filter(
+            status__in=[Invoice.DRAFT, Invoice.ISSUED],
+            paid_at__isnull=True,
+            due_at__lt=today,
+        )
+        .order_by("company_id", "due_at")
+        .values_list("company_id", "due_at")
+    )
+    oldest = {}
+    for company_id, due_at in overdue:
+        oldest.setdefault(company_id, due_at)
+    if not oldest:
+        return 0
+    for subscription in Subscription.objects.filter(company_id__in=oldest).select_related(
+        "company", "plan"
+    ):
+        if subscription.status in {Subscription.PAST_DUE, Subscription.CANCELED}:
+            continue
+        due_at = oldest[subscription.company_id]
+        subscription.status = Subscription.PAST_DUE
+        subscription.past_due_since = subscription.past_due_since or _aware(due_at)
+        subscription.save(update_fields=["status", "past_due_since", "updated_at"])
+        flagged += 1
+    return flagged
+
+
+def settle(company):
+    """Clear PAST_DUE once nothing is overdue any more (called when paid)."""
+    subscription = Subscription.objects.filter(company=company).first()
+    if subscription is None or subscription.status != Subscription.PAST_DUE:
+        return None
+    if unpaid_overdue_invoices(company).exists():
+        return subscription
+    subscription.status = Subscription.ACTIVE
+    subscription.past_due_since = None
+    subscription.save(update_fields=["status", "past_due_since", "updated_at"])
+    subscription.dunning_reminders.all().delete()
+    return subscription
+
+
+def _aware(day):
+    """Midnight of ``day`` in the current timezone."""
+    from datetime import datetime, time
+
+    stamp = datetime.combine(day, time.min)
+    if timezone.is_naive(stamp):
+        stamp = timezone.make_aware(stamp)
+    return stamp
 
 
 def days_past_due(subscription, now=None):
@@ -95,6 +172,7 @@ def downgrade(subscription):
 def run(now=None):
     """Process every past-due subscription. Returns ``(sent, downgraded)``."""
     now = now or timezone.now()
+    flag_overdue_invoices(now)
     sent = downgraded = 0
     queryset = Subscription.objects.filter(
         status=Subscription.PAST_DUE, past_due_since__isnull=False

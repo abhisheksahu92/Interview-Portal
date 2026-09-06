@@ -12,6 +12,7 @@ import logging
 from datetime import UTC, datetime
 
 from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 
 from billing.models import Plan, ProcessedWebhookEvent, Subscription
@@ -146,6 +147,7 @@ def _price_from_subscription_object(obj):
     return None
 
 
+@transaction.atomic
 def handle_event(event):
     """Dispatch one verified Stripe event. Returns the touched Subscription."""
     event = _as_dict(event)
@@ -280,6 +282,7 @@ def _razorpay_interval(event, fallback):
     return fallback
 
 
+@transaction.atomic
 def handle_razorpay_event(event, event_id=None):
     """Apply one verified Razorpay event. Returns the touched Subscription.
 

@@ -464,11 +464,11 @@ def test_tick_runs_oldest_due_sources_within_budget(monkeypatch):
 
     Source.objects.update(enabled=False)  # the seed migration ships 50 live rows
     now = timezone.now()
-    fresh = Source.objects.create(slug="fresh", name="F", kind=Source.API, last_run_at=now)
-    stale = Source.objects.create(
+    Source.objects.create(slug="fresh", name="F", kind=Source.API, last_run_at=now)
+    Source.objects.create(
         slug="stale", name="S", kind=Source.API, last_run_at=now - timedelta(days=1)
     )
-    never = Source.objects.create(slug="never", name="N", kind=Source.API)
+    Source.objects.create(slug="never", name="N", kind=Source.API)
     ran = []
     monkeypatch.setattr(
         services, "run_source", lambda s, **kw: ran.append(s.slug) or {"status": "OK", "created": 0}

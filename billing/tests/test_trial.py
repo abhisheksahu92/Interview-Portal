@@ -53,11 +53,13 @@ def test_expire_trials_command_is_idempotent(trial_company):
     )
     call_command("expire_trials", verbosity=0)
     subscription = Subscription.objects.get(company=trial_company)
-    assert subscription.status == Subscription.ACTIVE
+    # This fixture never entered a card, so the company owes money and is
+    # chased. Asserting ACTIVE here is what let trials run on for free.
+    assert subscription.status == Subscription.PAST_DUE
     assert subscription.plan.code == Plan.STARTER
     assert subscription.in_trial is False
     call_command("expire_trials", verbosity=0)
-    assert Subscription.objects.get(company=trial_company).status == Subscription.ACTIVE
+    assert Subscription.objects.get(company=trial_company).status == Subscription.PAST_DUE
 
 
 def test_expire_trials_leaves_running_trials_alone(trial_company):

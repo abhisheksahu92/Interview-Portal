@@ -15,7 +15,7 @@ from billing import gateway, invoicing, razorpay_gateway, webhooks
 from billing import usage as usage_module
 from billing.forms import BillingDetailsForm
 from billing.limits import usage as job_usage
-from billing.models import Invoice, Plan, Subscription
+from billing.models import Invoice, PendingCheckout, Plan, Subscription
 from billing.services import get_subscription, pro_plan, sellable_plans
 from core.models import Membership
 from core.permissions import role_required
@@ -150,6 +150,21 @@ def razorpay_checkout(request):
         subscription.razorpay_subscription_id = remote["id"]
     subscription.save()
 
+    # Written before the redirect: the callback signature proves only that a
+    # payment belongs to this order, so verify reads plan and amount from here
+    # and never from the POST it is handed.
+    PendingCheckout.objects.update_or_create(
+        remote_id=remote["id"],
+        defaults={
+            "company": request.company,
+            "plan": plan,
+            "interval": interval,
+            "amount_inr": plan.price_for(interval) or 0,
+            "invoice": None,
+            "consumed_at": None,
+        },
+    )
+
     options = razorpay_gateway.checkout_options(
         company=request.company,
         plan=plan,
@@ -171,13 +186,15 @@ def razorpay_checkout(request):
     )
 
 
-@login_required
-@role_required(Membership.OWNER)
-@require_POST
-def razorpay_verify(request):
-    """Verify the Checkout callback signature and activate the plan."""
-    subscription = get_subscription(request.company)
-    plan = _requested_plan(request, default_code=subscription.plan.code)
+def _claim_checkout(request):
+    """``(pending, payment_id, error_response)`` for a Checkout callback.
+
+    The signature proves the payment belongs to the order — nothing more. What
+    the money was *for* comes from the :class:`PendingCheckout` written before
+    the redirect, matched on the id the gateway hands back, scoped to this
+    company and claimed exactly once. Without that, any valid callback triple
+    could be replayed with a different ``plan``.
+    """
     payment_id = request.POST.get("razorpay_payment_id") or ""
     order_id = request.POST.get("razorpay_order_id") or ""
     remote_sub_id = request.POST.get("razorpay_subscription_id") or ""
@@ -191,17 +208,56 @@ def razorpay_verify(request):
         )
     except (razorpay_gateway.SignatureInvalid, razorpay_gateway.RazorpayUnavailable) as exc:
         logger.warning("billing: razorpay payment rejected: %s", exc)
-        return JsonResponse({"ok": False, "error": "signature verification failed"}, status=400)
+        return None, payment_id, JsonResponse(
+            {"ok": False, "error": "signature verification failed"}, status=400
+        )
+    pending = PendingCheckout.claim(request.company, remote_sub_id or order_id)
+    if pending is None:
+        logger.warning(
+            "billing: no unconsumed checkout for %s (company %s)",
+            remote_sub_id or order_id,
+            request.company.pk,
+        )
+        return None, payment_id, JsonResponse(
+            {"ok": False, "error": "unknown or already completed checkout"}, status=400
+        )
+    return pending, payment_id, None
 
-    if plan is not None:
-        subscription.plan = plan
+
+@login_required
+@role_required(Membership.OWNER)
+@require_POST
+def razorpay_verify(request):
+    """Verify the Checkout callback and activate the plan that was paid for."""
+    pending, payment_id, error = _claim_checkout(request)
+    if error is not None:
+        return error
+    if pending.invoice_id:
+        return JsonResponse(
+            {"ok": False, "error": "that checkout pays an invoice"}, status=400
+        )
+
+    subscription = get_subscription(request.company)
+    if pending.plan_id:
+        subscription.plan = pending.plan
+    subscription.interval = pending.interval
     subscription.provider = RAZORPAY
     subscription.status = Subscription.ACTIVE
     subscription.past_due_since = None
     subscription.trial_ends_at = None
+    remote_sub_id = request.POST.get("razorpay_subscription_id") or ""
     if remote_sub_id:
         subscription.razorpay_subscription_id = remote_sub_id
     subscription.save()
+    # This path issued nothing before, so an upgrade paid by card left no GST
+    # invoice at all. The webhook may cover the same payment; both go through
+    # invoice_for_payment, which is keyed on the payment reference.
+    invoicing.invoice_for_payment(
+        subscription,
+        amount=pending.amount_inr,
+        provider_ref=payment_id,
+        provider=RAZORPAY,
+    )
     return JsonResponse({"ok": True, "redirect": reverse("billing:overview") + "?upgraded=1"})
 
 
@@ -234,6 +290,72 @@ def razorpay_webhook(request):
 
 
 # --- Invoices ------------------------------------------------------------
+
+
+@login_required
+@role_required(Membership.OWNER)
+@require_POST
+def invoice_pay(request, pk):
+    """Start a Razorpay order for one outstanding invoice."""
+    invoice = get_object_or_404(Invoice, pk=pk, company=request.company)
+    if not invoice.is_payable:
+        messages.info(request, f"Invoice {invoice.number} is not outstanding.")
+        return redirect("billing:overview")
+    if not razorpay_gateway.is_configured():
+        messages.error(request, "Razorpay is not configured on this server.")
+        return redirect("billing:overview")
+    try:
+        remote = razorpay_gateway.create_invoice_order(
+            company=request.company, invoice=invoice
+        )
+    except razorpay_gateway.RazorpayUnavailable as exc:
+        logger.warning("billing: razorpay unavailable: %s", exc)
+        messages.error(request, "Razorpay is not available right now.")
+        return redirect("billing:overview")
+
+    subscription = get_subscription(request.company)
+    PendingCheckout.objects.update_or_create(
+        remote_id=remote["id"],
+        defaults={
+            "company": request.company,
+            "plan": None,
+            "interval": subscription.interval,
+            "amount_inr": invoice.total,
+            "invoice": invoice,
+            "consumed_at": None,
+        },
+    )
+    options = razorpay_gateway.invoice_checkout_options(
+        company=request.company, invoice=invoice, ref=remote["id"]
+    )
+    return render(
+        request,
+        "billing/razorpay_checkout.html",
+        {
+            "options": options,
+            "invoice": invoice,
+            "amount_inr": invoice.total,
+            "verify_url": reverse("billing:invoice_pay_verify"),
+        },
+    )
+
+
+@login_required
+@role_required(Membership.OWNER)
+@require_POST
+def invoice_pay_verify(request):
+    """Stamp the invoice paid once its Checkout callback verifies."""
+    pending, payment_id, error = _claim_checkout(request)
+    if error is not None:
+        return error
+    if not pending.invoice_id:
+        return JsonResponse(
+            {"ok": False, "error": "that checkout is not for an invoice"}, status=400
+        )
+    invoicing.mark_paid(
+        pending.invoice, provider=RAZORPAY, provider_ref=payment_id or ""
+    )
+    return JsonResponse({"ok": True, "redirect": reverse("billing:overview") + "?paid=1"})
 
 
 @login_required
