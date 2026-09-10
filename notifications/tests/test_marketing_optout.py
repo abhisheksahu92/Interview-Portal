@@ -22,6 +22,7 @@ def test_essential_events_are_the_documented_set():
             "interview_cancelled",
             "invitation",
             "payment_failed",
+            "invoice_issued",
             "usage_warning",
         }
     )
