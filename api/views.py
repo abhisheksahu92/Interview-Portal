@@ -3,13 +3,14 @@
 import csv
 from datetime import datetime, time
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
 from django.http import StreamingHttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -19,10 +20,12 @@ from rest_framework.views import APIView
 from api.mixins import CompanyScopedViewSetMixin
 from api.permissions import (
     HasApiFeature,
+    IsCandidateOwner,
     IsCompanyMember,
     IsInterviewer,
     IsRecruiterOrOwner,
 )
+from assessments import services as assessment_services
 from api.serializers import (
     ApplicationReviewSerializer,
     ApplicationSerializer,
@@ -157,6 +160,11 @@ class CandidateProfileViewSet(viewsets.ModelViewSet):
     serializer_class = CandidateProfileSerializer
     queryset = CandidateProfile.objects.select_related("user").prefetch_related("skills")
 
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [permissions.IsAuthenticated()]
+        return [IsCandidateOwner()]
+
     def get_queryset(self):
         user = self.request.user
         companies = list(user.companies)
@@ -195,6 +203,11 @@ class ApplicationViewSet(CompanyScopedViewSetMixin, viewsets.ModelViewSet):
         "job", "candidate__user", "current_stage"
     ).prefetch_related("reviews")
     company_field = "job__company"
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve", "review"):
+            return [IsCompanyMember()]
+        return [IsRecruiterOrOwner()]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -348,6 +361,8 @@ class AttemptViewSet(
         if existing is not None:
             if existing.submitted_at is not None:
                 raise ValidationError("This assessment has already been submitted.")
+            if existing.is_expired:
+                raise ValidationError("The time limit for this assessment has expired.")
             return Response(AttemptSerializer(existing).data)
         attempt = Attempt.objects.create(
             assessment=assessment, application=application
@@ -365,12 +380,10 @@ class AttemptViewSet(
         serializer = AttemptSubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         answers = serializer.validated_data.get("answers")
-        if answers is not None:
-            attempt.answers = {str(k): v for k, v in answers.items()}
-        attempt.submitted_at = timezone.now()
-        attempt.save()
-        attempt.grade()
-        attempt.refresh_from_db()
+        try:
+            attempt = assessment_services.submit_attempt(attempt, answers=answers)
+        except DjangoValidationError as exc:
+            raise ValidationError("; ".join(exc.messages))
         return Response(AttemptSerializer(attempt).data)
 
 

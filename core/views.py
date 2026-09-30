@@ -53,6 +53,14 @@ def candidate_signup(request):
         user = form.save()
         _stamp_policy_consent(user)
         auth_login(request, user)
+        try:
+            from core.slack import send_slack_message
+            send_slack_message(
+                "signups",
+                f":bust_in_silhouette: *New Candidate Signup*: {user.email}"
+            )
+        except Exception:
+            pass
         messages.success(request, "Welcome! Your candidate account is ready.")
         return redirect("/")
     return render(
@@ -69,6 +77,14 @@ def company_signup(request):
         _stamp_policy_consent(user)
         auth_login(request, user)
         set_active_company(request, form.company)
+        try:
+            from core.slack import send_slack_message
+            send_slack_message(
+                "signups",
+                f":office: *New Company Signup*: *{form.company.name}* by {user.email}"
+            )
+        except Exception:
+            pass
         messages.success(request, f"Company '{form.company.name}' created.")
         return redirect("/")
     return render(
@@ -208,6 +224,26 @@ def permission_denied(request, exception=None, template_name="403.html"):
         "is_owner": is_owner,
     }
     return render(request, template_name, context, status=403)
+
+
+def server_error(request, template_name="500.html"):
+    """handler500 that sends an immediate alert to Slack #ip-system-errors and files a Jira issue."""
+    path = request.path if request else "Unknown path"
+    user = getattr(request, "user", "Anonymous")
+    try:
+        from core.slack import send_slack_message
+        send_slack_message(
+            "system_errors",
+            f":rotating_light: *HTTP 500 Internal Server Error*\n• Path: `{path}`\n• User: `{user}`"
+        )
+    except Exception:
+        pass
+    try:
+        from core.jira import file_system_error_issue
+        file_system_error_issue(path, str(user))
+    except Exception:
+        pass
+    return render(request, template_name, status=500)
 
 
 # --------------------------------------------------------------------------

@@ -1,241 +1,996 @@
 {% extends "base.html" %}
-{% block title %}Interview Portal — multi-tenant hiring pipelines with AI screening{% endblock %}
-{% block meta_description %}Run hiring pipelines, screen candidates with AI, and bill placements with GST invoices. Built for small Indian IT services and staffing firms.{% endblock %}
-{% block og_title %}Interview Portal - hiring pipelines with AI screening{% endblock %}
+{% block title %}Interview Portal — AI-Powered Hiring Pipelines & Assessment Platform{% endblock %}
+{% block meta_description %}Automate candidate screening with AI résumé fit scores, run interactive hiring kanban pipelines, and conduct timed skills assessments. Built for modern recruiting teams and staffing firms.{% endblock %}
+{% block og_title %}Interview Portal — The Visual AI Hiring Operating System{% endblock %}
 {% block body_attrs %} class="ip-warm"{% endblock %}
 {% block main_class %}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Modern SaaS Showcase & Interactive Styles */
+:root {
+  --hero-glow: rgba(99, 102, 241, 0.12);
+  --accent-glow: rgba(124, 58, 237, 0.15);
+  --card-glass: rgba(255, 255, 255, 0.85);
+  --card-border: rgba(0, 0, 0, 0.08);
+}
+
+[data-bs-theme="dark"] {
+  --hero-glow: rgba(99, 102, 241, 0.25);
+  --accent-glow: rgba(139, 92, 246, 0.25);
+  --card-glass: rgba(26, 29, 36, 0.8);
+  --card-border: rgba(255, 255, 255, 0.1);
+}
+
+.ip-hero-modern {
+  position: relative;
+  padding: 4.5rem 0 3.5rem;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% -10%, var(--hero-glow) 0%, transparent 60%);
+}
+
+.ip-badge-glow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+.ip-headline {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+.ip-headline-gradient {
+  background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-bs-theme="dark"] .ip-headline-gradient {
+  background: linear-gradient(135deg, #f8fafc 0%, #a5b4fc 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ip-subheadline {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--bs-secondary-color);
+  max-width: 680px;
+  margin: 0 auto 2.2rem;
+}
+
+/* Floating Window Mockup */
+.ip-window-frame {
+  background: var(--card-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.18), 0 0 35px var(--accent-glow);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ip-window-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid var(--card-border);
+}
+
+[data-bs-theme="dark"] .ip-window-topbar {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ip-dots {
+  display: flex;
+  gap: 6px;
+}
+.ip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.ip-dot-red { background: #ff5f56; }
+.ip-dot-yellow { background: #ffbd2e; }
+.ip-dot-green { background: #27c93f; }
+
+.ip-preview-nav {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem 1.25rem;
+  background: rgba(0, 0, 0, 0.015);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.ip-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ip-tab-btn:hover {
+  color: var(--bs-body-color);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-bs-theme="dark"] .ip-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ip-tab-btn.active {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.ip-tab-content {
+  display: none;
+  padding: 1.5rem;
+  animation: fadeInTab 0.3s ease-in-out forwards;
+}
+
+.ip-tab-content.active {
+  display: block;
+}
+
+@keyframes fadeInTab {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Kanban Preview Styles */
+.ip-demo-kanban {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 991px) {
+  .ip-demo-kanban {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 576px) {
+  .ip-demo-kanban {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ip-demo-col {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  padding: 0.9rem;
+  border: 1px solid var(--card-border);
+}
+
+[data-bs-theme="dark"] .ip-demo-col {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.ip-demo-col-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bs-secondary-color);
+  margin-bottom: 0.8rem;
+}
+
+.ip-demo-card {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.85rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ip-demo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.ip-score-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ip-score-high {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.ip-score-mid {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* Interactive Sandbox */
+.ip-sandbox {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.ip-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+}
+
+@media (max-width: 991px) {
+  .ip-feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ip-card-feature {
+  background: var(--card-glass);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 2rem;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.ip-card-feature:hover {
+  transform: translateY(-4px);
+  border-color: #6366f1;
+  box-shadow: 0 16px 32px -8px rgba(99, 102, 241, 0.12);
+}
+
+.ip-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.15));
+  color: #6366f1;
+}
+
+.ip-glow-card {
+  position: relative;
+  background: var(--card-glass);
+  border: 2px solid #6366f1;
+  box-shadow: 0 0 35px rgba(99, 102, 241, 0.18);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
-<section class="ip-hero">
-  <div class="container">
-    <div class="ip-lp-hero">
-      <div>
-        <span class="ip-pill"><span class="dot" aria-hidden="true"></span> Multi-tenant hiring, AI-assisted</span>
-        <h1>Hiring pipelines <span class="accent">your whole team can actually run</span></h1>
-        <p class="ip-lede">
-          Every company gets its own workspace: configurable pipeline stages, a shared
-          kanban board, structured interview reviews, and AI screening that summarises
-          each résumé against the role and scores fit before anyone opens a CV.
-        </p>
-        <div class="ip-lp-ctas">
-          <a class="btn btn-primary btn-lg" href="{% url 'core:company_signup' %}">Start hiring — Create a company</a>
-          <a class="btn btn-outline-secondary btn-lg" href="{% url 'core:candidate_signup' %}">Looking for a job? Sign up</a>
-        </div>
-        <ul class="ip-signals">
-          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> GST invoices</li>
-          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Data in India</li>
-          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> WhatsApp updates</li>
-        </ul>
-        <p class="ip-muted small mt-3 mb-0">
-          No credit card needed to start ·
-          <a href="{% url 'web:job_browse' %}">Browse open roles</a>
-        </p>
-      </div>
+<!-- Hero Section -->
+<section class="ip-hero-modern">
+  <div class="container text-center">
+    <div class="ip-badge-glow">
+      <i class="bi bi-stars"></i> Next-Generation AI Recruitment & Assessment Platform
+    </div>
+    
+    <h1 class="ip-headline">
+      Stop guessing on CVs.<br>
+      <span class="ip-headline-gradient">Screen, test, and hire with clarity.</span>
+    </h1>
+    
+    <p class="ip-subheadline">
+      Experience the hiring operating system built for modern teams: automated AI résumé matching,
+      visual stage kanban, timed technical assessments, and structured interviewer scorecards in one shared workspace.
+    </p>
 
-      <div class="ip-lp-side">
-        <div class="ip-bento__tile ip-bento__tile--lime">
-          <div class="ip-price">
+    <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mb-4">
+      <a class="btn btn-primary btn-lg px-4 py-3 shadow-sm d-inline-flex align-items-center gap-2" href="{% url 'core:company_signup' %}">
+        <span>Create a company</span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+      <a class="btn btn-outline-secondary btn-lg px-4 py-3 d-inline-flex align-items-center gap-2" href="#interactive-preview">
+        <i class="bi bi-play-circle"></i>
+        <span>Explore Live UI Tour</span>
+      </a>
+      <a class="btn btn-link text-decoration-none" href="{% url 'core:candidate_signup' %}">
+        Looking for a job? Sign up &rarr;
+      </a>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 text-muted small mb-5">
+      <span><i class="bi bi-check-circle-fill text-success me-1"></i> Instant 0–100 AI Fit Scoring</span>
+      <span><i class="bi bi-check-circle-fill text-success me-1"></i> Interactive Stage Kanban</span>
+      <span><i class="bi bi-check-circle-fill text-success me-1"></i> Timed Candidate MCQ & Text Tests</span>
+      <span><i class="bi bi-check-circle-fill text-success me-1"></i> GST Invoices & India Data Residency</span>
+    </div>
+
+    <!-- Live Interactive Window Mockup -->
+    <div class="container px-md-4" id="interactive-preview">
+      <div class="ip-window-frame text-start">
+        
+        <!-- Top window control bar -->
+        <div class="ip-window-topbar">
+          <div class="d-flex align-items-center gap-3">
+            <div class="ip-dots">
+              <span class="ip-dot ip-dot-red"></span>
+              <span class="ip-dot ip-dot-yellow"></span>
+              <span class="ip-dot ip-dot-green"></span>
+            </div>
+            <span class="badge bg-secondary-subtle text-secondary small px-2 py-1">
+              <i class="bi bi-lock-fill me-1"></i> interview-portal.app/workspace/demo-staffing/
+            </span>
+          </div>
+          <div class="small text-muted d-none d-sm-block">
+            <span class="badge bg-success-subtle text-success me-1">LIVE SIMULATION</span> Demo Staffing Workspace
+          </div>
+        </div>
+
+        <!-- Tabbed Navigation to Show Each Experience -->
+        <div class="ip-preview-nav">
+          <button class="ip-tab-btn active" data-tab="tab-kanban" onclick="switchTab(this, 'tab-kanban')">
+            <i class="bi bi-kanban"></i> 1. Visual Kanban Pipeline
+          </button>
+          <button class="ip-tab-btn" data-tab="tab-ai" onclick="switchTab(this, 'tab-ai')">
+            <i class="bi bi-stars"></i> 2. AI Résumé Match Engine
+          </button>
+          <button class="ip-tab-btn" data-tab="tab-assessment" onclick="switchTab(this, 'tab-assessment')">
+            <i class="bi bi-stopwatch"></i> 3. Candidate Assessment View
+          </button>
+          <button class="ip-tab-btn" data-tab="tab-review" onclick="switchTab(this, 'tab-review')">
+            <i class="bi bi-check2-square"></i> 4. Interviewer Scorecard
+          </button>
+        </div>
+
+        <!-- TAB 1: Visual Kanban Pipeline -->
+        <div id="tab-kanban" class="ip-tab-content active">
+          <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <div class="ip-price__amount">₹1,499<small>/mo</small></div>
-              <p class="ip-price__note">Starter plan · billed in INR, GST invoice included</p>
+              <h5 class="fw-bold mb-0">Requisition: Senior Django Developer</h5>
+              <p class="text-muted small mb-0">4 Active Applications · 6 Configured Stages · AI Screening Enabled</p>
             </div>
-            <span class="ip-price__mark" aria-hidden="true"><i class="bi bi-cash-stack"></i></span>
+            <span class="badge bg-primary-subtle text-primary">Drag-and-Drop Active</span>
+          </div>
+
+          <div class="ip-demo-kanban">
+            <!-- Stage 1: Applied -->
+            <div class="ip-demo-col">
+              <div class="ip-demo-col-header">
+                <span>Applied</span>
+                <span class="badge bg-secondary-subtle text-secondary">2</span>
+              </div>
+              <div class="ip-demo-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="fw-bold">Asha Rao</div>
+                  <span class="ip-score-pill ip-score-high"><i class="bi bi-stars"></i> 94%</span>
+                </div>
+                <div class="small text-muted mb-2">7 yrs exp · Pune · Python, Django, DRF</div>
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="badge bg-light text-dark border">Notice: 15 days</span>
+                  <span class="text-success small fw-semibold">Shortlist &rarr;</span>
+                </div>
+              </div>
+              <div class="ip-demo-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="fw-bold">Vikram Patel</div>
+                  <span class="ip-score-pill ip-score-mid"><i class="bi bi-stars"></i> 78%</span>
+                </div>
+                <div class="small text-muted mb-2">4 yrs exp · Remote · Python, FastAPI</div>
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="badge bg-light text-dark border">Notice: 30 days</span>
+                  <span class="text-primary small fw-semibold">Review</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 2: Screening Assessment -->
+            <div class="ip-demo-col">
+              <div class="ip-demo-col-header">
+                <span>Skills Assessment</span>
+                <span class="badge bg-secondary-subtle text-secondary">1</span>
+              </div>
+              <div class="ip-demo-card border-primary">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="fw-bold">Ben Cooper</div>
+                  <span class="ip-score-pill ip-score-high"><i class="bi bi-patch-check"></i> 100% MCQ</span>
+                </div>
+                <div class="small text-muted mb-2">Assessment: Python Basics & SQL</div>
+                <div class="progress mb-2" style="height: 5px;">
+                  <div class="progress-bar bg-success" style="width: 100%"></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="text-success"><i class="bi bi-check2-all"></i> Passed Test</span>
+                  <span class="badge bg-primary text-white">To Tech Round</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 3: Technical Interview -->
+            <div class="ip-demo-col">
+              <div class="ip-demo-col-header">
+                <span>Technical Interview</span>
+                <span class="badge bg-secondary-subtle text-secondary">1</span>
+              </div>
+              <div class="ip-demo-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="fw-bold">Chen Wei</div>
+                  <span class="ip-score-pill ip-score-high"><i class="bi bi-stars"></i> 91%</span>
+                </div>
+                <div class="small text-muted mb-2">Scheduled: Today, 5:30 PM (IST)</div>
+                <div class="d-flex align-items-center gap-1 text-primary small mb-2">
+                  <i class="bi bi-camera-video"></i> <span>Google Meet Attached</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="badge bg-warning-subtle text-warning-emphasis">L2 Stage</span>
+                  <span class="text-muted">Interviewer: Ira</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 4: Offer -->
+            <div class="ip-demo-col">
+              <div class="ip-demo-col-header">
+                <span>Offer Stage</span>
+                <span class="badge bg-secondary-subtle text-secondary">1</span>
+              </div>
+              <div class="ip-demo-card border-success">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="fw-bold">Deepak Verma</div>
+                  <span class="badge bg-success-subtle text-success">ACCEPTED</span>
+                </div>
+                <div class="small text-muted mb-2">CTC: ₹24,00,000 · Joining: Oct 1</div>
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="text-muted"><i class="bi bi-file-earmark-check"></i> Signed</span>
+                  <span class="badge bg-success text-white">Hired</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="ip-bento__tile" aria-label="Example pipeline">
-          <div class="ip-preview__head">
-            <strong>Active pipeline</strong>
-            <span class="ip-badge ip-badge--light">Senior Django Developer</span>
-          </div>
-          <div class="ip-preview__cols">
-            <div class="ip-preview__col">
-              <div class="ip-preview__coltitle">Screening <span class="ip-num">2</span></div>
-              <div class="ip-mini">
-                <div class="ip-mini__row">
-                  <span class="ip-mini__name">Rahul S.</span>
-                  <span class="ip-mini__score">86</span>
+        <!-- TAB 2: AI Résumé Match Engine -->
+        <div id="tab-ai" class="ip-tab-content">
+          <div class="row g-4">
+            <div class="col-lg-6">
+              <div class="card h-100 shadow-sm border">
+                <div class="card-header bg-body-tertiary fw-bold d-flex justify-content-between">
+                  <span><i class="bi bi-file-earmark-person me-1"></i> Candidate Résumé Extract</span>
+                  <span class="badge bg-light text-dark border">PDF Parsed in 0.4s</span>
                 </div>
-                <div class="ip-mini__meta">7 yrs · Pune · 30-day notice</div>
-              </div>
-              <div class="ip-mini">
-                <div class="ip-mini__row">
-                  <span class="ip-mini__name">Aditi K.</span>
-                  <span class="ip-mini__score">74</span>
+                <div class="card-body font-monospace small">
+                  <p class="fw-bold mb-1 text-primary">Rahul Sharma &bull; Lead Backend Architect</p>
+                  <p class="text-muted mb-2">Pune, India &bull; 8 Years Experience &bull; Current CTC: ₹22 LPA</p>
+                  <hr class="my-2">
+                  <p class="mb-1 fw-semibold">Summary:</p>
+                  <p class="text-muted">Architected high-throughput Django REST services serving 12M daily requests. Led database sharding on PostgreSQL, Redis caching layers, and multi-tenant authorization security.</p>
+                  <p class="mb-1 fw-semibold">Skills:</p>
+                  <div class="d-flex flex-wrap gap-1 mb-2">
+                    <span class="badge bg-secondary-subtle text-secondary">Python 3.12</span>
+                    <span class="badge bg-secondary-subtle text-secondary">Django ORM</span>
+                    <span class="badge bg-secondary-subtle text-secondary">Celery</span>
+                    <span class="badge bg-secondary-subtle text-secondary">PostgreSQL</span>
+                    <span class="badge bg-secondary-subtle text-secondary">Docker / K8s</span>
+                  </div>
                 </div>
-                <div class="ip-mini__meta">5 yrs · Remote</div>
               </div>
             </div>
-            <div class="ip-preview__col">
-              <div class="ip-preview__coltitle">Interview <span class="ip-num">1</span></div>
-              <div class="ip-mini ip-mini--soft">
-                <div class="ip-mini__row">
-                  <span class="ip-mini__name">Priya M.</span>
-                  <span class="ip-mini__score">92</span>
+
+            <div class="col-lg-6">
+              <div class="card h-100 shadow-sm border border-primary">
+                <div class="card-header bg-primary-subtle text-primary fw-bold d-flex justify-content-between align-items-center">
+                  <span><i class="bi bi-cpu me-1"></i> Automated AI Fit Assessment</span>
+                  <span class="badge bg-success fs-6 px-3 py-1">94 / 100 Match</span>
                 </div>
-                <div class="ip-mini__meta">L2 · Today, 6:00 PM</div>
-              </div>
-              <div class="ip-mini">
-                <div class="ip-mini__row">
-                  <span class="ip-mini__name">Offer stage</span>
-                  <span class="ip-mini__meta">awaiting signature</span>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-bold mb-1">
+                      <span>Core Skill Match</span>
+                      <span class="text-success">98%</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-success" style="width: 98%"></div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-bold mb-1">
+                      <span>Seniority & System Design</span>
+                      <span class="text-primary">92%</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-primary" style="width: 92%"></div>
+                    </div>
+                  </div>
+
+                  <div class="p-3 bg-body-tertiary rounded-3 small mb-3">
+                    <p class="fw-bold text-success mb-1"><i class="bi bi-check-circle-fill me-1"></i> Key Strengths:</p>
+                    <ul class="mb-2 ps-3 text-muted">
+                      <li>Extensive PostgreSQL query optimization directly matches job requirement.</li>
+                      <li>Proven track record architecting multi-tenant RBAC systems.</li>
+                      <li>Expected salary within budgeted requisition range.</li>
+                    </ul>
+                    <p class="fw-bold text-warning-emphasis mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> Recommendation:</p>
+                    <p class="mb-0 text-muted">Advance directly to Stage 2 Technical Interview. Candidate demonstrates senior expertise.</p>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-sm w-100"><i class="bi bi-check-lg"></i> Advance to Technical</button>
+                    <button class="btn btn-outline-danger btn-sm"><i class="bi bi-x-lg"></i> Reject</button>
+                  </div>
                 </div>
-                <div class="ip-mini__meta">Sent 2 days ago</div>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- TAB 3: Candidate Assessment Simulator -->
+        <div id="tab-assessment" class="ip-tab-content">
+          <div class="card shadow-sm border">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary">Candidate Test Interface</span>
+                <span class="small fw-semibold">Assessment: Python Basics & Django Architecture</span>
+              </div>
+              <div class="badge bg-danger fs-6 px-3 py-1">
+                <i class="bi bi-clock-history me-1"></i> Time Remaining: 14:38
+              </div>
+            </div>
+
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-center small text-muted mb-2">
+                <span>Question 3 of 10</span>
+                <span>Pass mark: 70%</span>
+              </div>
+              <div class="progress mb-4" style="height: 6px;">
+                <div class="progress-bar bg-primary" style="width: 30%"></div>
+              </div>
+
+              <h5 class="fw-bold mb-3">Which Django queryset method is evaluated immediately rather than lazily?</h5>
+              
+              <div class="list-group mb-4">
+                <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3">
+                  <input class="form-check-input mt-0" type="radio" name="demoq" checked>
+                  <div>
+                    <span class="fw-semibold">count()</span>
+                    <div class="small text-muted">Executes a SQL SELECT COUNT(*) query and returns an integer immediately.</div>
+                  </div>
+                </label>
+                <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3">
+                  <input class="form-check-input mt-0" type="radio" name="demoq">
+                  <div>
+                    <span class="fw-semibold">filter()</span>
+                    <div class="small text-muted">Returns a new clone QuerySet that is not evaluated until iterated over.</div>
+                  </div>
+                </label>
+                <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3">
+                  <input class="form-check-input mt-0" type="radio" name="demoq">
+                  <div>
+                    <span class="fw-semibold">select_related()</span>
+                    <div class="small text-muted">Returns a QuerySet with SQL JOIN specifications.</div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <button class="btn btn-outline-secondary btn-sm">&larr; Previous Question</button>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-primary btn-sm px-4">Next Question &rarr;</button>
+                  <button class="btn btn-success btn-sm px-3">Finish & Submit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Interviewer Review & Scorecard -->
+        <div id="tab-review" class="ip-tab-content">
+          <div class="card shadow-sm border">
+            <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center py-2">
+              <div>
+                <span class="fw-bold">Technical Interview Scorecard &bull; Candidate: Asha Rao</span>
+                <span class="text-muted small ms-2">Role: Senior Django Developer</span>
+              </div>
+              <span class="badge bg-info-subtle text-info-emphasis">Interviewer Queue</span>
+            </div>
+            
+            <div class="card-body p-4">
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <h6 class="fw-bold mb-3">Structured Competency Ratings:</h6>
+                  
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-semibold mb-1">
+                      <span>System Architecture & Django Internals</span>
+                      <span class="text-warning">★★★★★ (5/5)</span>
+                    </div>
+                    <div class="text-muted small">Flawlessly explained Django ORM query optimization and database transactions.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-semibold mb-1">
+                      <span>Problem Solving & Data Structures</span>
+                      <span class="text-warning">★★★★☆ (4/5)</span>
+                    </div>
+                    <div class="text-muted small">Solved concurrency problem using Redis distributed locks.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-semibold mb-1">
+                      <span>Communication & Team Collaboration</span>
+                      <span class="text-warning">★★★★★ (5/5)</span>
+                    </div>
+                    <div class="text-muted small">Clear articulation, structured thinking, proactive questions.</div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <h6 class="fw-bold mb-2">Interviewer Feedback:</h6>
+                  <textarea class="form-control form-control-sm mb-3" rows="4" readonly>Strong technical hire. Has practical experience with the exact tech stack we use. Recommend fast-tracking to final managerial round with zero hesitation.</textarea>
+                  
+                  <h6 class="fw-bold mb-2">Stage Decision:</h6>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-success w-100 py-2 fw-bold">
+                      <i class="bi bi-check-circle me-1"></i> PASS (Advance)
+                    </button>
+                    <button class="btn btn-warning w-100 py-2 fw-bold">
+                      <i class="bi bi-pause-circle me-1"></i> HOLD
+                    </button>
+                    <button class="btn btn-danger w-100 py-2 fw-bold">
+                      <i class="bi bi-x-circle me-1"></i> FAIL
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </section>
 
-<section class="ip-band ip-band--alt">
-  <div class="container">
-    <p class="ip-eyebrow text-center mb-3">Trusted by 300+ recruiting teams</p>
-    <div class="ip-trust">
-      <span>Techhire</span>
-      <span>Agency.io</span>
-      <span>Talentforce</span>
-      <span>Recruitco</span>
-      <span>Nexus Staffing</span>
-    </div>
-  </div>
-</section>
-
+<!-- Value Pillars / Feature Grid -->
 <section class="ip-band">
   <div class="container">
-    <div class="row g-3">
-      <div class="col-md-4">
-        <div class="ip-feature">
-          <span class="ip-feature__icon" aria-hidden="true"><i class="bi bi-kanban"></i></span>
-          <h3>Configurable pipelines</h3>
-          <p>
-            Screening, assessment, L1/L2, HR, offer — rename, reorder or drop stages per
-            job, mark the ones that require an online assessment, then work the board.
-          </p>
+    <div class="text-center mb-5">
+      <span class="text-primary fw-bold text-uppercase small tracking-wide">Core Architecture</span>
+      <h2 class="h2 fw-bold mt-1">Everything your recruiting team needs in one platform</h2>
+      <p class="text-muted max-w-lg mx-auto">Designed to eliminate fragmented tools, lost CV attachments, and untracked hiring decisions.</p>
+    </div>
+
+    <div class="ip-feature-grid">
+      <!-- Feature 1 -->
+      <div class="ip-card-feature">
+        <div class="ip-icon-box">
+          <i class="bi bi-kanban"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Custom Stage Kanban</h4>
+        <p class="text-muted mb-3">
+          Configure stage rules per requisition: automated candidate progression, mandatory assessment triggers, and stage-specific review requirements.
+        </p>
+        <ul class="list-unstyled text-muted small mb-0">
+          <li><i class="bi bi-check2 text-primary me-1"></i> Visual drag-and-drop pipelines</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Multi-tenant data isolation</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Automated rejection & advancement emails</li>
+        </ul>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="ip-card-feature">
+        <div class="ip-icon-box">
+          <i class="bi bi-stars"></i>
+        </div>
+        <h4 class="fw-bold mb-2">AI Résumé Match & Scoring</h4>
+        <p class="text-muted mb-3">
+          Instantly evaluate incoming CVs against the role requirements. Get a transparent 0–100 fit score with key strengths, missing skills, and interview question prompts.
+        </p>
+        <ul class="list-unstyled text-muted small mb-0">
+          <li><i class="bi bi-check2 text-primary me-1"></i> PDF & Word résumé extraction</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Anti-bias structured scoring</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> AI interview prompt generation</li>
+        </ul>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="ip-card-feature">
+        <div class="ip-icon-box">
+          <i class="bi bi-stopwatch"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Built-in Skills Assessments</h4>
+        <p class="text-muted mb-3">
+          Stop hiring based on claims alone. Author timed technical assessments, test MCQ and code comprehension, and auto-grade candidates before the first interview.
+        </p>
+        <ul class="list-unstyled text-muted small mb-0">
+          <li><i class="bi bi-check2 text-primary me-1"></i> Server-side authoritative clock</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Auto-grading & pass mark gates</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Question bank management by skill</li>
+        </ul>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="ip-card-feature">
+        <div class="ip-icon-box">
+          <i class="bi bi-people"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Clean Interviewer Workflows</h4>
+        <p class="text-muted mb-3">
+          Interviewers see only the candidates assigned to them with a clean review queue. One-click PASS/FAIL/HOLD buttons keep pipelines moving without friction.
+        </p>
+        <ul class="list-unstyled text-muted small mb-0">
+          <li><i class="bi bi-check2 text-primary me-1"></i> Dedicated interviewer queue</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Structured competency rubrics</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Strict RBAC access control</li>
+        </ul>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="ip-card-feature">
+        <div class="ip-icon-box">
+          <i class="bi bi-whatsapp"></i>
+        </div>
+        <h4 class="fw-bold mb-2">WhatsApp & Email Notifications</h4>
+        <p class="text-muted mb-3">
+          Keep candidates engaged with real-time updates directly on WhatsApp and email when they move stages, receive assessment invites, or receive offers.
+        </p>
+        <ul class="list-unstyled text-muted small mb-0">
+          <li><i class="bi bi-check2 text-primary me-1"></i> Automated test invite links</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Interview scheduling reminders</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Offer signature tracking</li>
+        </ul>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="ip-card-feature">
+        <div class="ip-icon-box">
+          <i class="bi bi-receipt"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Indian Billing & GST Compliance</h4>
+        <p class="text-muted mb-3">
+          Purpose-built for Indian agencies and tech firms. Full GST invoicing, Razorpay/Stripe billing in INR, and data hosted in local data centers.
+        </p>
+        <ul class="list-unstyled text-muted small mb-0">
+          <li><i class="bi bi-check2 text-primary me-1"></i> Compliant GST tax invoices</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Billed in INR with UPI & cards</li>
+          <li><i class="bi bi-check2 text-primary me-1"></i> Candidate PII data protection</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="ip-band ip-band--alt" id="pricing">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="text-primary fw-bold text-uppercase small tracking-wide">Simple, Predictable Pricing</span>
+      <h2 class="h2 fw-bold mt-1">Metered strictly on open jobs</h2>
+      <p class="text-muted mb-0">Unlimited team members, candidates, and assessments on every plan.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      <!-- Starter -->
+      <div class="col-md-6 col-lg-4">
+        <div class="ip-card-feature h-100 d-flex flex-column justify-content-between">
+          <div>
+            <h5 class="fw-bold mb-1">Starter</h5>
+            <p class="text-muted small">Ideal for early-stage teams hiring their first core roles.</p>
+            <div class="my-3">
+              <span class="fs-1 fw-bold">₹1,499</span>
+              <span class="text-muted">/ month</span>
+            </div>
+            <hr>
+            <ul class="list-unstyled small d-grid gap-2 text-muted mb-4">
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> <strong>3</strong> active open jobs</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> Unlimited candidate applications</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> Visual stage kanban board</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> Timed assessment creator</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> GST invoices & analytics</li>
+            </ul>
+          </div>
+          <a class="btn btn-outline-secondary w-100 py-2 fw-semibold" href="{% url 'core:company_signup' %}">
+            Get started free
+          </a>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="ip-feature">
-          <span class="ip-feature__icon" aria-hidden="true"><i class="bi bi-stars"></i></span>
-          <h3>AI screening</h3>
-          <p>
-            Generate skill-tagged question banks from a job description, grade free-text
-            answers, and get a 0–100 fit score per application — degrading gracefully
-            when no AI key is configured.
-          </p>
+
+      <!-- Growth -->
+      <div class="col-md-6 col-lg-4">
+        <div class="ip-card-feature ip-glow-card h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <h5 class="fw-bold mb-0">Growth</h5>
+              <span class="badge bg-primary px-2 py-1">MOST POPULAR</span>
+            </div>
+            <p class="text-muted small">For fast-growing companies and continuous hiring.</p>
+            <div class="my-3">
+              <span class="fs-1 fw-bold text-primary">₹4,999</span>
+              <span class="text-muted">/ month</span>
+            </div>
+            <hr>
+            <ul class="list-unstyled small d-grid gap-2 mb-4">
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> <strong>25</strong> active open jobs</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> <strong>AI Résumé screening & fit scoring</strong></li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> Automated AI question generator</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> Public careers portal</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> WhatsApp updates & offer letters</li>
+            </ul>
+          </div>
+          <a class="btn btn-primary w-100 py-2 fw-bold shadow-sm" href="{% url 'core:company_signup' %}">
+            Start with Growth
+          </a>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="ip-feature">
-          <span class="ip-feature__icon" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
-          <h3>Candidate portal</h3>
-          <p>
-            Candidates keep one profile and résumé, apply in a click from the public job
-            board, take timed assessments, and watch every stage of their application.
-          </p>
+
+      <!-- Agency -->
+      <div class="col-md-6 col-lg-4">
+        <div class="ip-card-feature h-100 d-flex flex-column justify-content-between">
+          <div>
+            <h5 class="fw-bold mb-1">Agency & Staffing</h5>
+            <p class="text-muted small">For recruitment agencies, staffing firms, and RPOs.</p>
+            <div class="my-3">
+              <span class="fs-1 fw-bold">₹12,999</span>
+              <span class="text-muted">/ month</span>
+            </div>
+            <hr>
+            <ul class="list-unstyled small d-grid gap-2 text-muted mb-4">
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> <strong>200</strong> active open jobs</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> Multi-client portal & submissions</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> White-label agency branding</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> Full REST API & webhooks</li>
+              <li><i class="bi bi-check2-circle text-primary me-2"></i> Dedicated priority support</li>
+            </ul>
+          </div>
+          <a class="btn btn-outline-secondary w-100 py-2 fw-semibold" href="{% url 'core:company_signup' %}">
+            Talk to sales
+          </a>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="ip-band ip-band--alt">
-  <div class="container">
-    <p class="ip-eyebrow mb-2">How it works</p>
-    <h2 class="h4 mb-4">Three steps from sign-up to signed offer</h2>
-    <div class="ip-steps">
-      <div class="ip-step">
-        <span class="ip-step__n" aria-hidden="true">1</span>
-        <div>
-          <h3>Create your workspace</h3>
-          <p>Register the company, post a job, and a default six-stage pipeline is seeded for you.</p>
+<!-- Interactive FAQ Section -->
+<section class="ip-band">
+  <div class="container" style="max-width: 800px;">
+    <div class="text-center mb-5">
+      <h2 class="h3 fw-bold">Frequently Asked Questions</h2>
+      <p class="text-muted">Everything you need to know about setting up and running your hiring workspace.</p>
+    </div>
+
+    <div class="accordion" id="faqAccordion">
+      <div class="accordion-item mb-2 border rounded">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+            How does the AI résumé fit scoring work?
+          </button>
+        </h2>
+        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body text-muted small">
+            When a candidate submits a PDF or Word résumé, our engine parses the skills, work history, and achievements, comparing them directly against the job requirements and must-have criteria. It generates an unbiased 0–100 score along with key strengths and potential flags.
+          </div>
         </div>
       </div>
-      <div class="ip-step">
-        <span class="ip-step__n" aria-hidden="true">2</span>
-        <div>
-          <h3>Candidates apply</h3>
-          <p>They apply from the public openings board with a reusable profile and résumé, and get scored on arrival.</p>
+
+      <div class="accordion-item mb-2 border rounded">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+            Is candidate data kept confidential and secure?
+          </button>
+        </h2>
+        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body text-muted small">
+            Yes. Every company has an isolated tenant boundary. Other companies cannot see your candidate pool or requisition data. Candidate PII is protected with strict object-level permissions and encrypted tokens.
+          </div>
         </div>
       </div>
-      <div class="ip-step">
-        <span class="ip-step__n" aria-hidden="true">3</span>
-        <div>
-          <h3>Your team decides</h3>
-          <p>Recruiters triage on the kanban board; interviewers work a review queue with PASS / FAIL / HOLD.</p>
+
+      <div class="accordion-item mb-2 border rounded">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+            Can our interviewers see financial and billing information?
+          </button>
+        </h2>
+        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body text-muted small">
+            No. The system uses strict Role-Based Access Control (RBAC). Interviewers can only see assigned candidate resumes and submit interview scores. Only Company Owners can manage billing, plans, and team memberships.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item mb-2 border rounded">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+            Do you provide GST compliant invoices?
+          </button>
+        </h2>
+        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body text-muted small">
+            Yes! All payments are processed in Indian Rupees (INR) with automated GST invoicing containing your organization's GSTIN, billing address, and HSN/SAC codes.
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="ip-band" id="pricing">
-  <div class="container">
-    <div class="text-center mb-4">
-      <p class="ip-eyebrow mb-2">Pricing</p>
-      <h2 class="h4 mb-2">Metered on open jobs, nothing else</h2>
-      <p class="ip-muted mb-0">Unlimited members, candidates and assessments on every plan.</p>
-    </div>
-    <div class="row g-3 justify-content-center">
-      <div class="col-md-6 col-lg-4">
-        <div class="ip-plan h-100">
-          <div class="ip-plan__name">Starter</div>
-          <div class="ip-plan__price"><span class="ip-plan__inr">₹1,499</span> <span>/ month</span></div>
-          <p class="ip-muted small mb-0">For your first few roles.</p>
-          <ul class="ip-plan__list">
-            <li><i class="bi bi-check2" aria-hidden="true"></i> 3 open jobs</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> Configurable pipelines and assessments</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> Analytics and GST invoices</li>
-          </ul>
-          <div class="ip-plan__cta">
-            <a class="btn btn-outline-secondary w-100" href="{% url 'core:company_signup' %}">Get started free</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-4">
-        <div class="ip-plan is-current h-100">
-          <div class="d-flex align-items-center gap-2">
-            <span class="ip-plan__name">Growth</span>
-            <span class="ip-badge ip-badge--accent">Most popular</span>
-          </div>
-          <div class="ip-plan__price"><span class="ip-plan__inr">₹4,999</span> <span>/ month</span></div>
-          <p class="ip-muted small mb-0">For teams hiring continuously.</p>
-          <ul class="ip-plan__list">
-            <li><i class="bi bi-check2" aria-hidden="true"></i> 25 open jobs</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> AI screening and résumé fit scores</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> Careers page, offers and WhatsApp updates</li>
-          </ul>
-          <div class="ip-plan__cta">
-            <a class="btn btn-primary w-100" href="{% url 'core:company_signup' %}">Start with Growth</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-4">
-        <div class="ip-plan h-100">
-          <div class="ip-plan__name">Agency</div>
-          <div class="ip-plan__price"><span class="ip-plan__inr">₹12,999</span> <span>/ month</span></div>
-          <p class="ip-muted small mb-0">For staffing firms and RPOs.</p>
-          <ul class="ip-plan__list">
-            <li><i class="bi bi-check2" aria-hidden="true"></i> 200 open jobs</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> Client portal, video screens and white-label</li>
-            <li><i class="bi bi-check2" aria-hidden="true"></i> REST API, marketplace and integrations</li>
-          </ul>
-          <div class="ip-plan__cta">
-            <a class="btn btn-outline-secondary w-100" href="{% url 'core:company_signup' %}">Talk to us</a>
-          </div>
-        </div>
-      </div>
+<!-- Final Call to Action -->
+<section class="ip-band text-center" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.12)); border-top: 1px solid var(--card-border);">
+  <div class="container py-4" style="max-width: 650px;">
+    <h2 class="h2 fw-bold mb-3">Ready to transform your hiring workflow?</h2>
+    <p class="text-muted mb-4">Set up your workspace in 60 seconds. Post a job, seed your first pipeline, and start screening candidates with AI today.</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a class="btn btn-primary btn-lg px-4 py-3 shadow" href="{% url 'core:company_signup' %}">
+        Create a company free &rarr;
+      </a>
+      <a class="btn btn-outline-secondary btn-lg px-4 py-3" href="{% url 'web:job_browse' %}">
+        Browse Openings
+      </a>
     </div>
   </div>
 </section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchTab(btn, tabId) {
+  // Update buttons
+  document.querySelectorAll('.ip-tab-btn').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  btn.classList.add('active');
+
+  // Update tabs
+  document.querySelectorAll('.ip-tab-content').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  var target = document.getElementById(tabId);
+  if (target) {
+    target.classList.add('active');
+  }
+}
+</script>
 {% endblock %}
 
 {% block after_main %}
 <footer class="ip-footer">
   <div class="container d-flex flex-wrap justify-content-between gap-3">
-    <span>© Interview Portal — multi-tenant hiring for small IT and staffing firms.</span>
+    <span>© Interview Portal — The AI Hiring Operating System.</span>
     <span class="d-flex flex-wrap gap-3">
       <a href="{% url 'web:job_browse' %}">Open roles</a>
       <a href="{% url 'core:login' %}">Sign in</a>
