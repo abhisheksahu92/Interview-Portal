@@ -78,6 +78,8 @@ env = environ.Env(
     JIRA_TOKEN=(str, ""),
     # --- Notion Integration ---
     NOTIONPAT=(str, ""),
+    # --- Google Jules AI Agent Integration ---
+    JULES_KEY=(str, ""),
     # --- Phase 4: background verification resale; blank key = mock provider.
     BGV_PROVIDER=(str, "mock"),
     BGV_API_KEY=(str, ""),
@@ -306,6 +308,9 @@ JIRA_TOKEN = env("JIRA_TOKEN")
 
 # Notion Integration
 NOTIONPAT = env("NOTIONPAT")
+
+# Google Jules Integration
+JULES_KEY = env("JULES_KEY")
 
 # Object storage for user uploads (resumes). If AWS S3 / Cloudflare R2 bucket is
 # explicitly configured, it overrides the default storage.
