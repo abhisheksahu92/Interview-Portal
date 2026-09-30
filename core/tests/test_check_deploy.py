@@ -16,7 +16,8 @@ PROD = dict(
     COMPANY_GSTIN="27AAAAA0000A1Z5",
     COMPANY_STATE_CODE="27",
     ANTHROPIC_API_KEY="a",
-    INTEGRATIONS_ENCRYPTION_KEY="e",
+    IMAGEKIT_PRIVATE_KEY="",
+    IMAGEKIT_URL_ENDPOINT="",
     # The test suite itself runs on SQLite, which is a deploy blocker; a
     # realistic production check needs a real database engine configured.
     DATABASES={"default": {"ENGINE": "django.db.backends.postgresql"}},

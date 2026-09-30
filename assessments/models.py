@@ -6,8 +6,17 @@ from django.db import models
 from django.utils import timezone
 
 
-class Question(models.Model):
+from core.tenancy import TenantModel
+
+
+class Question(TenantModel):
     """A single bank question, owned by a company and optionally skill-tagged."""
+
+    company = models.ForeignKey(
+        "core.Company",
+        on_delete=models.CASCADE,
+        related_name="questions",
+    )
 
     MCQ = "MCQ"
     TEXT = "TEXT"
@@ -23,9 +32,6 @@ class Question(models.Model):
     MARKETPLACE = "MARKETPLACE"
     SOURCE_CHOICES = [(MANUAL, "Manual"), (AI, "AI generated"), (MARKETPLACE, "Marketplace")]
 
-    company = models.ForeignKey(
-        "core.Company", on_delete=models.CASCADE, related_name="questions"
-    )
     skill = models.ForeignKey(
         "jobs.Skill",
         on_delete=models.SET_NULL,

@@ -52,7 +52,32 @@ env = environ.Env(
     COMPANY_GSTIN=(str, ""),
     COMPANY_STATE_CODE=(str, ""),
     SITE_URL=(str, "http://127.0.0.1:8000"),
+    REDIS_URL=(str, "redis://127.0.0.1:6379/0"),
     INTEGRATIONS_ENCRYPTION_KEY=(str, ""),
+    # --- Media Storage: ImageKit & Cloudinary ---
+    IMAGEKIT_ID=(str, ""),
+    IMAGEKIT_URL_ENDPOINT=(str, ""),
+    IMAGEKIT_PUBLIC_KEY=(str, ""),
+    IMAGEKIT_PRIVATE_KEY=(str, ""),
+    CLOUDINARY_CLOUD_NAME=(str, ""),
+    CLOUDINARY_API_KEY=(str, ""),
+    CLOUDINARY_API_SECRET=(str, ""),
+    # --- Slack Integration ---
+    SLACK_BOT_TOKEN=(str, ""),
+    SLACK_APP_TOKEN=(str, ""),
+    SLACK_SIGNING_SECRET=(str, ""),
+    SLACK_CHANNEL_ALERTS=(str, ""),
+    SLACK_CHANNEL_SIGNUPS=(str, ""),
+    SLACK_CHANNEL_INTERVIEWS=(str, ""),
+    SLACK_CHANNEL_OFFERS=(str, ""),
+    SLACK_CHANNEL_SYSTEM_ERRORS=(str, ""),
+    SLACK_CHANNEL_PAYMENTS=(str, ""),
+    # --- Jira Integration ---
+    JIRA_URL=(str, ""),
+    JIRA_EMAIL=(str, ""),
+    JIRA_TOKEN=(str, ""),
+    # --- Notion Integration ---
+    NOTIONPAT=(str, ""),
     # --- Phase 4: background verification resale; blank key = mock provider.
     BGV_PROVIDER=(str, "mock"),
     BGV_API_KEY=(str, ""),
@@ -156,12 +181,20 @@ WSGI_APPLICATION = "interview_portal.wsgi.application"
 ASGI_APPLICATION = "interview_portal.asgi.application"
 
 # --- Database -------------------------------------------------------------
-DATABASES = {
-    "default": env.db_url(
-        "DATABASE_URL",
-        default=f"sqlite:///{BASE_DIR / 'db_v2.sqlite3'}",
-    )
-}
+if TESTING and not os.environ.get("USE_PROD_DB_FOR_TESTS"):
+    DATABASES = {
+        "default": env.db_url(
+            "TEST_DATABASE_URL",
+            default="sqlite:///:memory:",
+        )
+    }
+else:
+    DATABASES = {
+        "default": env.db_url(
+            "DATABASE_URL",
+            default=f"sqlite:///{BASE_DIR / 'db_v2.sqlite3'}",
+        )
+    }
 
 # Persistent connections: managed Postgres has a low connection cap, but
 # CONN_MAX_AGE must stay 0 under pytest (it breaks test-database teardown).
@@ -171,6 +204,30 @@ DATABASES["default"]["CONN_MAX_AGE"] = env.int(
 DATABASES["default"]["CONN_HEALTH_CHECKS"] = not (DEBUG or TESTING)
 if DATABASES["default"].get("ENGINE", "").endswith("postgresql"):
     DATABASES["default"].setdefault("OPTIONS", {}).setdefault("connect_timeout", 5)
+
+# --- Caching & Sessions (Redis / Valkey) -----------------------------------
+REDIS_URL = env("REDIS_URL")
+
+if TESTING or not REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "interview-portal-test-cache",
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "KEY_PREFIX": "ip",
+            "TIMEOUT": 300,
+        }
+    }
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+QUEUE_SYNCHRONOUS = TESTING
+
 
 # --- Auth -----------------------------------------------------------------
 AUTH_USER_MODEL = "core.User"
@@ -217,13 +274,41 @@ _STATIC_BACKEND = (
 STATIC_ROOT.mkdir(parents=True, exist_ok=True)
 
 STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "default": {"BACKEND": "core.storage.ImageKitStorage"},
     "staticfiles": {"BACKEND": _STATIC_BACKEND},
 }
 
-# Object storage for user uploads (resumes). Only active when a bucket is
-# configured, so local dev and tests keep using the filesystem. Works with S3
-# and Cloudflare R2 (AWS_S3_ENDPOINT_URL + AWS_S3_REGION_NAME=auto).
+IMAGEKIT_ID = env("IMAGEKIT_ID")
+IMAGEKIT_URL_ENDPOINT = env("IMAGEKIT_URL_ENDPOINT")
+IMAGEKIT_PUBLIC_KEY = env("IMAGEKIT_PUBLIC_KEY")
+IMAGEKIT_PRIVATE_KEY = env("IMAGEKIT_PRIVATE_KEY")
+CLOUDINARY_CLOUD_NAME = env("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = env("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = env("CLOUDINARY_API_SECRET")
+
+# Slack Integration
+SLACK_BOT_TOKEN = env("SLACK_BOT_TOKEN")
+SLACK_APP_TOKEN = env("SLACK_APP_TOKEN")
+SLACK_SIGNING_SECRET = env("SLACK_SIGNING_SECRET")
+SLACK_CHANNELS = {
+    "alerts": env("SLACK_CHANNEL_ALERTS"),
+    "signups": env("SLACK_CHANNEL_SIGNUPS"),
+    "interviews": env("SLACK_CHANNEL_INTERVIEWS"),
+    "offers": env("SLACK_CHANNEL_OFFERS"),
+    "system_errors": env("SLACK_CHANNEL_SYSTEM_ERRORS"),
+    "payments": env("SLACK_CHANNEL_PAYMENTS"),
+}
+
+# Jira Integration
+JIRA_URL = env("JIRA_URL")
+JIRA_EMAIL = env("JIRA_EMAIL")
+JIRA_TOKEN = env("JIRA_TOKEN")
+
+# Notion Integration
+NOTIONPAT = env("NOTIONPAT")
+
+# Object storage for user uploads (resumes). If AWS S3 / Cloudflare R2 bucket is
+# explicitly configured, it overrides the default storage.
 AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
 if AWS_STORAGE_BUCKET_NAME:
     STORAGES["default"] = {
@@ -399,6 +484,10 @@ LOGGING = {
         # assessments.ai logs when ANTHROPIC_API_KEY is missing — keep it visible.
         "assessments": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "billing": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        # KAN-10: hiring pipeline events — always INFO so they appear in Render logs.
+        "hiring": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        # KAN-9: AI gateway selection, latency and fallback events.
+        "core.llm": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
 

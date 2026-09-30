@@ -8,6 +8,8 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from core.models import Membership
+from core.analytics import capture as ph_capture
+from core.observe import hiring_event
 
 from .models import Application, Job, StageReview
 
@@ -37,22 +39,56 @@ def apply_to_job(job, candidate_profile):
         raise ValidationError("This job is not open for applications.")
     if Application.objects.filter(job=job, candidate=candidate_profile).exists():
         raise ValidationError("You have already applied to this job.")
-    return Application.objects.create(
+    application = Application.objects.create(
         job=job,
         candidate=candidate_profile,
         current_stage=job.first_stage,
         status=Application.ACTIVE,
     )
+    hiring_event(
+        "application.created",
+        application_id=application.pk,
+        job_id=job.pk,
+        company_id=job.company_id,
+        candidate_id=candidate_profile.pk,
+        stage_id=application.current_stage_id,
+    )
+    ph_capture(
+        distinct_id=str(candidate_profile.user_id),
+        event="application_submitted",
+        properties={
+            "application_id": application.pk,
+            "job_id": job.pk,
+            "company_id": job.company_id,
+        },
+    )
+    return application
 
 
 def advance_application(application):
     """Move an application forward one stage (or hire it at the last stage)."""
-    return application.advance()
+    result = application.advance()
+    hiring_event(
+        "application.advanced",
+        application_id=application.pk,
+        job_id=application.job_id,
+        company_id=application.job.company_id,
+        new_stage_id=application.current_stage_id,
+        new_status=application.status,
+    )
+    return result
 
 
 def reject_application(application):
     """Reject an application."""
-    return application.reject()
+    result = application.reject()
+    hiring_event(
+        "application.rejected",
+        application_id=application.pk,
+        job_id=application.job_id,
+        company_id=application.job.company_id,
+    )
+    return result
 
 
 @transaction.atomic
@@ -70,6 +106,17 @@ def record_review(application, stage, reviewer, decision, rating=None, feedback=
         stage=stage,
         reviewer=reviewer,
         defaults={"decision": decision, "rating": rating, "feedback": feedback or ""},
+    )
+
+    hiring_event(
+        "stage.reviewed",
+        application_id=application.pk,
+        job_id=application.job_id,
+        company_id=application.job.company_id,
+        stage_id=stage.pk,
+        reviewer_id=reviewer.pk,
+        decision=decision,
+        rating=rating or "",
     )
 
     role = reviewer.role_in(application.company)

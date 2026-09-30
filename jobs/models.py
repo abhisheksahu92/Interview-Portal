@@ -4,10 +4,11 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.functions import Lower
 
+from core.tenancy import TenantQuerySet
 from jobs.validators import validate_resume_file
 
 
-class SkillQuerySet(models.QuerySet):
+class SkillQuerySet(TenantQuerySet):
     def distinct_by_name(self):
         """One Skill per distinct (case-insensitive) name — the lowest pk wins.
 
@@ -48,6 +49,12 @@ class Skill(models.Model):
         return self.name
 
 
+class JobQuerySet(TenantQuerySet):
+    """Scoped querysets for jobs."""
+    def open(self):
+        return self.filter(status=Job.OPEN)
+
+
 class Job(models.Model):
     """An open role at a company."""
 
@@ -59,6 +66,8 @@ class Job(models.Model):
         (CONTRACT, "Contract"),
         (INTERN, "Intern"),
     ]
+
+    objects = JobQuerySet.as_manager()
 
     DRAFT = "DRAFT"
     OPEN = "OPEN"
@@ -135,6 +144,13 @@ class Job(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            # Recruiter dashboard and board: filter by company + status is the
+            # most common query pattern. Covers both OPEN listing and CLOSED filter.
+            models.Index(fields=["company", "status"], name="job_company_status_idx"),
+            # Public board listing is almost always filtered to OPEN status alone.
+            models.Index(fields=["status", "created_at"], name="job_status_created_idx"),
+        ]
 
     def __str__(self):
         return self.title
@@ -284,6 +300,14 @@ class CandidateProfile(models.Model):
         return full or self.user.email
 
 
+class ApplicationQuerySet(models.QuerySet):
+    """Scoped querysets for applications reached via job__company."""
+    def for_company(self, company):
+        if company is None:
+            return self.none()
+        return self.filter(job__company=company)
+
+
 class Application(models.Model):
     """A candidate's application to a job, tracked through the pipeline."""
 
@@ -297,6 +321,8 @@ class Application(models.Model):
         (HIRED, "Hired"),
         (WITHDRAWN, "Withdrawn"),
     ]
+
+    objects = ApplicationQuerySet.as_manager()
 
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="applications")
     candidate = models.ForeignKey(
@@ -322,6 +348,16 @@ class Application(models.Model):
             models.UniqueConstraint(
                 fields=["job", "candidate"], name="uniq_application_per_job_candidate"
             )
+        ]
+        indexes = [
+            # Recruiter pipeline board: filter by job + status (e.g. all ACTIVE
+            # for a given job).  job_id is already covered by the FK index, but
+            # the composite makes status filtering free.
+            models.Index(fields=["job", "status"], name="app_job_status_idx"),
+            # Candidate history page: all applications for a given candidate.
+            models.Index(fields=["candidate", "created_at"], name="app_candidate_created_idx"),
+            # Analytics / reporting: filter by status within a date range.
+            models.Index(fields=["status", "created_at"], name="app_status_created_idx"),
         ]
 
     def __str__(self):
