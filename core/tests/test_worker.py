@@ -16,6 +16,7 @@ def failing_job():
     raise RuntimeError("Intentional task failure")
 
 
+@pytest.mark.django_db
 def test_worker_burst_empty():
     out = StringIO()
     call_command("run_worker", burst=True, stdout=out)
@@ -24,6 +25,7 @@ def test_worker_burst_empty():
     assert "Worker shutdown gracefully" in output
 
 
+@pytest.mark.django_db
 def test_worker_processes_enqueued_task():
     # Enqueue a task
     out = StringIO()
@@ -46,6 +48,7 @@ def test_worker_processes_enqueued_task():
     assert "Total tasks processed: 1" in output
 
 
+@pytest.mark.django_db
 def test_worker_handles_and_reports_task_exception():
     out = StringIO()
     with patch("core.management.commands.run_worker.dequeue") as mock_dequeue:
