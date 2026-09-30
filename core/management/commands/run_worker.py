@@ -94,6 +94,16 @@ class Command(BaseCommand):
                 )
                 try:
                     mark_failed(task, exc)
+                    # If task exceeded retries and went to DLQ, dispatch Jules session
+                    if task.get("retries", 0) >= task.get("max_retries", 3):
+                        import traceback
+                        from core.jules import dispatch_bug_fix_task
+                        dispatch_bug_fix_task(
+                            title=f"Worker Failure in {func_name}",
+                            error_summary=f"Worker task {func_name} failed: {exc}",
+                            traceback_str=traceback.format_exc(),
+                            path=func_name,
+                        )
                 except Exception as dlq_err:
                     logger.error("Failed to mark task failed in queue: %s", dlq_err)
             finally:

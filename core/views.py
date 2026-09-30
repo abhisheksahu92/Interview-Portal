@@ -243,6 +243,18 @@ def server_error(request, template_name="500.html"):
         file_system_error_issue(path, str(user))
     except Exception:
         pass
+    try:
+        import traceback
+        from core.jules import dispatch_bug_fix_task
+        exc_str = traceback.format_exc()
+        dispatch_bug_fix_task(
+            title=f"500 Internal Error on {path[:60]}",
+            error_summary=f"HTTP 500 error encountered on {path} by {user}",
+            traceback_str=exc_str,
+            path=path,
+        )
+    except Exception:
+        pass
     return render(request, template_name, status=500)
 
 
