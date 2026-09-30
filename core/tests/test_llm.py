@@ -28,10 +28,11 @@ class CircuitBreakerTest(TestCase):
         _clear_all_cooldowns()
         llm._mark_provider_cooling_down("anthropic", 60)
         llm._mark_provider_cooling_down("gemini", 60)
-        # Patch key functions to make anthropic/gemini appear configured
+        # Patch key functions to make anthropic/gemini appear configured and ollama explicitly enabled
         with mock.patch("core.llm._anthropic_key", return_value="key-a"):
             with mock.patch("core.llm._gemini_key", return_value="key-g"):
-                provider = llm.active_provider()
+                with mock.patch("core.llm._ollama_enabled", return_value=True):
+                    provider = llm.active_provider()
         # Both cooling down, should fall to ollama
         self.assertEqual(provider, "ollama")
         _clear_all_cooldowns()
@@ -94,8 +95,9 @@ class FallbackChainTest(TestCase):
 
         with mock.patch("core.llm._anthropic_key", return_value="key-a"):
             with mock.patch("core.llm._gemini_key", return_value="key-g"):
-                with mock.patch("core.llm._complete_ollama", return_value="result-local") as mo:
-                    result = llm.complete("hello")
+                with mock.patch("core.llm._ollama_enabled", return_value=True):
+                    with mock.patch("core.llm._complete_ollama", return_value="result-local") as mo:
+                        result = llm.complete("hello")
 
         self.assertEqual(result, "result-local")
         mo.assert_called_once()

@@ -67,8 +67,8 @@ def _gemini_key():
 
 
 def _ollama_enabled():
-    """Ollama is always available as a local fallback; can be disabled via settings."""
-    return getattr(settings, "OLLAMA_ENABLED", True)
+    """Ollama local fallback is opt-in via OLLAMA_ENABLED=True (disabled by default in production)."""
+    return bool(getattr(settings, "OLLAMA_ENABLED", False))
 
 
 # ---------------------------------------------------------------------------
@@ -259,7 +259,7 @@ def _complete_ollama(system, prompt, max_tokens, model):
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=120) as response:
+        with urllib.request.urlopen(request, timeout=10) as response:
             payload = json.load(response)
         text = payload.get("response", "")
         # Strip <think>…</think> blocks from reasoning models
