@@ -50,6 +50,15 @@ PostgreSQL supports dynamic session variables via `current_setting('app.current_
 4. **PostgREST Hardening**:
    - `REVOKE ALL ON TABLE <table_name> FROM anon, public;` on all company-sensitive tables to block direct unauthenticated scraping.
 
+### C. Architectural Boundary: User Identity (`core_user`)
+- **Policy**: `core_user` has `USING (TRUE) WITH CHECK (TRUE)` for authenticated roles.
+- **Rationale**: User identity, credential verification, and account creation precede tenant resolution (`app.current_company_id` is necessarily null during initial unauthenticated requests like login and signup). Attempting to isolate `core_user` by `last_company_id` at the RLS level breaks authentication, multi-company account switching, and candidate portal access.
+- **Enforcement Layers**: Tenant boundaries for user records are deliberately enforced at the **application layer**:
+  1. `Membership` model joins (`core.models.Membership`) which *are* strictly isolated by company.
+  2. Role-based view guards (`@role_required`, `role_in(company)`).
+  3. API tenant scoping (`CompanyScopedViewSetMixin`, `get_queryset().for_company()`).
+  4. Candidate PII encapsulation (`jobs_candidateprofile` is bounded to `user_id`, preventing cross-company member snooping).
+
 ---
 
 ## 3. Operational Deployment & Maintenance
