@@ -29,6 +29,22 @@ def set_active_company(request, company):
     return company
 
 
+from django.db import connection
+
+
+def set_database_tenant_context(company_id=None):
+    """Set Postgres session configuration app.current_company_id for Supabase RLS."""
+    if connection.vendor == "postgresql":
+        try:
+            with connection.cursor() as cursor:
+                if company_id:
+                    cursor.execute("SET app.current_company_id = %s;", [str(company_id)])
+                else:
+                    cursor.execute("RESET app.current_company_id;")
+        except Exception:
+            pass
+
+
 class TenantMiddleware:
     """Attach the active tenant to every request as ``request.company``.
 
@@ -43,7 +59,13 @@ class TenantMiddleware:
 
     def __call__(self, request):
         request.company = self.resolve_company(request)
-        return self.get_response(request)
+        if getattr(request, "company", None):
+            set_database_tenant_context(request.company.pk)
+        try:
+            response = self.get_response(request)
+        finally:
+            set_database_tenant_context(None)
+        return response
 
     def resolve_company(self, request):
         user = getattr(request, "user", None)

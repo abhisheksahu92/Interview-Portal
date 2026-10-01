@@ -43,6 +43,15 @@ def send_event(
     except Exception:  # ImportError, or the app not ready yet
         notifications_send = None
 
+    try:
+        from core.slack import send_slack_message
+        send_slack_message(
+            "offers",
+            f":page_with_curl: *Offer Notification*: {event.replace('_', ' ').title()} sent to {getattr(recipient, 'email', recipient)}"
+        )
+    except Exception:
+        pass
+
     if callable(notifications_send):
         try:
             notifications_send(event, recipient, payload, company=company)

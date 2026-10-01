@@ -86,6 +86,13 @@ def on_application_saved(sender, instance, created, **kwargs):
     if _changed(instance, "status", Application.HIRED):
         _safe_emit(company, APPLICATION_HIRED, payloads.application_data(instance))
         _on_hired(instance)
+        try:
+            from core.jira import file_hiring_milestone_issue
+            cname = getattr(instance.candidate_user, "email", f"Candidate #{instance.pk}")
+            jtitle = getattr(instance.job, "title", "Job Opening")
+            file_hiring_milestone_issue("Candidate Hired", cname, jtitle, company.name)
+        except Exception:
+            pass
     prev_stage = _prev(instance, "current_stage_id")
     if instance.current_stage_id and prev_stage != instance.current_stage_id:
         _safe_emit(company, APPLICATION_STAGE_CHANGED, payloads.application_data(instance))
@@ -106,6 +113,13 @@ def on_offer_saved(sender, instance, created, **kwargs):
     if created or not _changed(instance, "status", sender.ACCEPTED):
         return
     _safe_emit(instance.company, OFFER_ACCEPTED, payloads.offer_data(instance))
+    try:
+        from core.jira import file_hiring_milestone_issue
+        cname = getattr(instance.application.candidate_user, "email", f"Candidate #{instance.application_id}")
+        jtitle = getattr(instance.application.job, "title", "Job Opening")
+        file_hiring_milestone_issue("Offer Accepted", cname, jtitle, instance.company.name)
+    except Exception:
+        pass
 
 
 # --- scheduling.Interview ------------------------------------------------

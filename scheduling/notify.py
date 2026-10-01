@@ -110,6 +110,15 @@ def notify(event, recipient, interview, extra=None, request=None):
     context = interview_context(interview, extra, request)
     company = interview.company
     try:
+        from core.slack import send_slack_message
+        label = _SUBJECTS.get(event, event.replace("_", " ").title())
+        send_slack_message(
+            "interviews",
+            f":calendar: *Interview Event*: {label} for *{context.get('job_title')}* ({context.get('company_name')}) | Status: {context.get('status')}"
+        )
+    except Exception:
+        pass
+    try:
         from notifications import send as notifications_send  # late import by design
 
         notifications_send(event, recipient, context, company)

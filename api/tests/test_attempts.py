@@ -1,10 +1,10 @@
-"""Attempt start/submit with MCQ grading (AI calls mocked)."""
-
+from datetime import timedelta
 from unittest import mock
 
 import pytest
+from django.utils import timezone
 
-from assessments.models import Assessment, Question
+from assessments.models import Assessment, Attempt, Question
 
 
 @pytest.fixture
@@ -169,3 +169,55 @@ def test_assessment_and_question_endpoints_scoped(
     assert auth(recruiter_b).get("/api/v1/assessments/").data["count"] == 0
     assert auth(recruiter_a).get("/api/v1/questions/").data["count"] == 2
     assert auth(recruiter_b).get("/api/v1/questions/").data["count"] == 0
+
+
+@pytest.mark.django_db
+def test_submit_past_deadline_scores_zero(auth, candidate, application, assessment):
+    assessment.time_limit_minutes = 10
+    assessment.save()
+
+    client = auth(candidate.user)
+    start = client.post(
+        "/api/v1/attempts/start/",
+        {"assessment": assessment.pk, "application": application.pk},
+        format="json",
+    )
+    attempt_id = start.data["id"]
+    attempt = Attempt.objects.get(pk=attempt_id)
+    attempt.started_at = timezone.now() - timedelta(minutes=20)
+    attempt.save(update_fields=["started_at"])
+
+    ids = [q.pk for q in assessment.questions.order_by("pk")]
+    resp = client.post(
+        f"/api/v1/attempts/{attempt_id}/submit/",
+        {"answers": {str(ids[0]): 1, str(ids[1]): 0}},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert float(resp.data["score_percent"]) == 0.0
+    assert resp.data["passed"] is False
+    assert resp.data["ai_feedback"] == "Time limit exceeded"
+
+
+@pytest.mark.django_db
+def test_start_expired_attempt_is_rejected(auth, candidate, application, assessment):
+    assessment.time_limit_minutes = 10
+    assessment.save()
+
+    client = auth(candidate.user)
+    start = client.post(
+        "/api/v1/attempts/start/",
+        {"assessment": assessment.pk, "application": application.pk},
+        format="json",
+    )
+    attempt = Attempt.objects.get(pk=start.data["id"])
+    attempt.started_at = timezone.now() - timedelta(minutes=20)
+    attempt.save(update_fields=["started_at"])
+
+    resp = client.post(
+        "/api/v1/attempts/start/",
+        {"assessment": assessment.pk, "application": application.pk},
+        format="json",
+    )
+    assert resp.status_code == 400
+    assert "expired" in str(resp.data).lower()

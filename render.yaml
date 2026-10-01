@@ -43,16 +43,20 @@ services:
       - key: DATABASE_URL          # Neon pooled connection string
         sync: false
 
-      # --- Cloudflare R2 (S3-compatible) ---------------------------------
-      - key: AWS_STORAGE_BUCKET_NAME
-        value: interview-portal-media
-      - key: AWS_S3_REGION_NAME
-        value: auto
-      - key: AWS_S3_ENDPOINT_URL   # https://<account-id>.r2.cloudflarestorage.com
+      # --- Media Storage: ImageKit & Cloudinary -------------------------
+      - key: IMAGEKIT_ID
         sync: false
-      - key: AWS_ACCESS_KEY_ID
+      - key: IMAGEKIT_URL_ENDPOINT
         sync: false
-      - key: AWS_SECRET_ACCESS_KEY
+      - key: IMAGEKIT_PUBLIC_KEY
+        sync: false
+      - key: IMAGEKIT_PRIVATE_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
         sync: false
 
       # --- Crypto ---------------------------------------------------------
@@ -91,9 +95,38 @@ services:
       - key: COMPANY_STATE_CODE
         sync: false
 
-      # --- AI ---------------------------------------------------------------
+      # --- AI & Cache -----------------------------------------------------
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: interview-portal-redis
+          property: connectionString
+
+  # Dedicated Background Worker for AI screening, emails, webhooks, and notifications.
+  - type: worker
+    name: interview-portal-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: singapore
+    dockerCommand: python manage.py run_worker
+    envVars:
+      - fromGroup: interview-portal-shared
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: interview-portal-redis
+          property: connectionString
+
+  # Redis / Valkey service for in-memory caching, sessions, and job queues.
+  - type: redis
+    name: interview-portal-redis
+    plan: starter
+    region: singapore
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []  # Internal cluster access only
 
   # Trials, dunning, reminders, offer expiry, webhook delivery, video jobs.
   # Without this, nothing bills and no reminder is ever sent.
@@ -121,9 +154,7 @@ services:
     envVars:
       - fromGroup: interview-portal-shared
 
-# Shared env group so the two cron jobs reuse the web service's configuration.
-# Create it in the dashboard as "interview-portal-shared" and add the same
-# DATABASE_URL / R2 / crypto / email / Razorpay values.
+# Shared env group so workers and cron jobs reuse the web service's configuration.
 envVarGroups:
   - name: interview-portal-shared
     envVars:
@@ -131,3 +162,9 @@ envVarGroups:
         value: interview_portal.settings
       - key: DEBUG
         value: "False"
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: interview-portal-redis
+          property: connectionString
+

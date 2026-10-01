@@ -332,11 +332,28 @@ def handle_razorpay_event(event, event_id=None):
                 provider_ref=pay_entity.get("id") or sub_entity.get("id") or "",
                 provider=Subscription.RAZORPAY,
             )
+            try:
+                from core.slack import send_slack_message
+                amount = pay_entity.get("amount", 0) / 100 if pay_entity.get("amount") else "N/A"
+                send_slack_message(
+                    "payments",
+                    f":white_check_mark: *Payment Captured*: ₹{amount} for *{subscription.company.name}* (Plan: {subscription.plan.name})"
+                )
+            except Exception:
+                pass
 
     elif name in {"subscription.halted", "payment.failed"}:
         subscription.status = Subscription.PAST_DUE
         subscription.past_due_since = subscription.past_due_since or timezone.now()
         subscription.save()
+        try:
+            from core.slack import send_slack_message
+            send_slack_message(
+                "payments",
+                f":x: *Payment Failed*: Subscription for *{subscription.company.name}* is now {subscription.status}"
+            )
+        except Exception:
+            pass
 
     elif name in {"subscription.cancelled", "subscription.completed"}:
         subscription.plan = free_plan()
@@ -344,5 +361,13 @@ def handle_razorpay_event(event, event_id=None):
         subscription.razorpay_subscription_id = ""
         subscription.current_period_end = None
         subscription.save()
+        try:
+            from core.slack import send_slack_message
+            send_slack_message(
+                "payments",
+                f":warning: *Subscription {name}*: *{subscription.company.name}* reverted to Free plan"
+            )
+        except Exception:
+            pass
 
     return subscription

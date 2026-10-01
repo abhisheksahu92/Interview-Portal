@@ -29,6 +29,7 @@ REVENUE = [
     ("COMPANY_STATE_CODE", "GST is split as inter-state for every customer"),
     ("ANTHROPIC_API_KEY", "AI screening degrades to manual for everyone"),
     ("INTEGRATIONS_ENCRYPTION_KEY", "HRMS credentials cannot be stored"),
+    ("REDIS_URL", "Redis/Valkey cache, sessions and queue fall back to in-memory/synchronous"),
 ]
 
 
@@ -73,10 +74,14 @@ class Command(BaseCommand):
                 "so all data is lost on the next deploy"
             )
 
-        if not _get("AWS_STORAGE_BUCKET_NAME"):
+        has_s3 = bool(_get("AWS_STORAGE_BUCKET_NAME"))
+        has_imagekit_cloudinary = bool(
+            _get("IMAGEKIT_PRIVATE_KEY") and _get("IMAGEKIT_URL_ENDPOINT")
+        )
+        if not (has_s3 or has_imagekit_cloudinary):
             errors.append(
-                "AWS_STORAGE_BUCKET_NAME is not set: resumes and videos would "
-                "be written to a container disk that is wiped on redeploy"
+                "Neither AWS_STORAGE_BUCKET_NAME nor IMAGEKIT credentials are set: "
+                "resumes and media would be written to a container disk that is wiped on redeploy"
             )
 
         backend = _get("EMAIL_BACKEND") or ""
