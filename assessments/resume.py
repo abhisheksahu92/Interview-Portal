@@ -29,7 +29,7 @@ def _read_bytes(file_field):
             try:
                 file_field.close()
             except Exception:
-                pass
+                logger.warning("Could not close resume file %r.", getattr(file_field, "name", "?"), exc_info=True)
     except Exception:
         logger.warning("Could not read resume file %r.", getattr(file_field, "name", "?"))
         return b""

@@ -21,7 +21,6 @@ Public API (unchanged):
 import json
 import logging
 import time
-import urllib.error
 import urllib.request
 
 from django.conf import settings

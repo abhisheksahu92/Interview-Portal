@@ -9,9 +9,9 @@ class Command(BaseCommand):
     def handle(self,*args,**kwargs):    
         try:
             CandidateQuestionModel.objects.all().delete()
-            python_json_data_file = os.path.join(os.getcwd(), 'candidate\management\commands\questionnaire_python.json')
-            python_json_data_file_1 = os.path.join(os.getcwd(), 'candidate\management\commands\questionnaire_python_2.json')
-            java_json_data_file = os.path.join(os.getcwd(), 'candidate\management\commands\questionnaire_java.json')
+            python_json_data_file = os.path.join(os.getcwd(), r'candidate\management\commands\questionnaire_python.json')
+            python_json_data_file_1 = os.path.join(os.getcwd(), r'candidate\management\commands\questionnaire_python_2.json')
+            java_json_data_file = os.path.join(os.getcwd(), r'candidate\management\commands\questionnaire_java.json')
             with open(python_json_data_file, "r") as read_file:
                 question_data = json.load(read_file)
                 questions = question_data['questions']

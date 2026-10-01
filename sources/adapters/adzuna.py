@@ -3,7 +3,7 @@
 Skipped cleanly when ``ADZUNA_APP_ID``/``ADZUNA_APP_KEY`` are unset.
 """
 
-import urllib.parse
+from urllib.parse import urlencode
 
 from django.conf import settings
 
@@ -31,7 +31,7 @@ class AdzunaAdapter(Adapter):
     def fetch(self, source):
         app_id, app_key = credentials()
         country = source.config.get("country") or "in"
-        query = urllib.parse.urlencode(
+        query = urlencode(
             {
                 "app_id": app_id,
                 "app_key": app_key,

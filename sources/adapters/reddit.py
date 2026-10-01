@@ -6,7 +6,6 @@ unavailable and the runner marks the source SKIPPED rather than failing.
 """
 
 import base64
-import urllib.parse
 
 from django.conf import settings
 
@@ -39,7 +38,7 @@ class RedditAdapter(Adapter):
     def token(self):
         client_id, secret = credentials()
         basic = base64.b64encode(f"{client_id}:{secret}".encode()).decode()
-        payload = urllib.parse.urlencode({"grant_type": "client_credentials"}).encode()
+        payload = b"grant_type=client_credentials"
         response = get(
             TOKEN_URL,
             headers={

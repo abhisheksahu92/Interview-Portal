@@ -46,7 +46,7 @@ class Command(BaseCommand):
         for application in queryset.iterator():
             try:
                 score = ai.summarize_fit(application)
-            except Exception as exc:  # pragma: no cover - AI is best-effort
+            except Exception as exc:
                 score = None
                 self.stderr.write(f"application {application.pk}: {exc}")
             if score is None:
