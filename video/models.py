@@ -13,6 +13,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+from core.storage import CloudinaryVideoStorage
+
 # Upload limits enforced by the upload view and the model validators.
 MAX_RESPONSE_BYTES = 200 * 1024 * 1024  # 200 MB
 ALLOWED_MIME_TYPES = ("video/webm", "video/mp4")
@@ -226,7 +228,9 @@ class VideoResponse(models.Model):
         VideoQuestion, on_delete=models.CASCADE, related_name="responses"
     )
     file = models.FileField(
-        upload_to="video/%Y/%m/", validators=[validate_response_file]
+        upload_to="video/%Y/%m/",
+        storage=CloudinaryVideoStorage(),
+        validators=[validate_response_file],
     )
     duration_seconds = models.PositiveIntegerField(default=0)
     mime = models.CharField(max_length=100, blank=True)

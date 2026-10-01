@@ -68,3 +68,17 @@ def test_missing_only_and_no_matches(monkeypatch, application):
 def test_failures_are_counted(monkeypatch, application):
     monkeypatch.setattr("assessments.ai.summarize_fit", lambda app: None)
     assert "Scored 0/1 applications (1 skipped)." in run("--all")
+
+@pytest.mark.django_db
+def test_exception_during_scoring(monkeypatch, application):
+    def fake(app):
+        raise Exception("AI is unreachable")
+
+    monkeypatch.setattr("assessments.ai.summarize_fit", fake)
+
+    out = StringIO()
+    err = StringIO()
+    call_command("rescore_applications", "--all", stdout=out, stderr=err)
+
+    assert f"application {application.pk}: AI is unreachable" in err.getvalue()
+    assert "Scored 0/1 applications (1 skipped)." in out.getvalue()

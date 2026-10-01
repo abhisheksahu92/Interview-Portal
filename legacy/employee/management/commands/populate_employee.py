@@ -14,7 +14,7 @@ class Command(BaseCommand):
             user_data.delete()
             emp_data.delete()
             
-            file_path = os.path.join(os.getcwd(), 'employee\management\commands\data_file.json')
+            file_path = os.path.join(os.getcwd(), r'employee\management\commands\data_file.json')
             with open(file_path, "r") as read_file:
                 data = json.load(read_file)
                 for emp_data in data['data']:

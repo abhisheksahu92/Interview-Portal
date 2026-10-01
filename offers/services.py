@@ -6,6 +6,8 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
 
+from core.analytics import capture as ph_capture
+from core.observe import hiring_event
 from jobs.models import Application
 from offers import notify
 from offers.models import Offer, OfferEvent, OfferTemplate
@@ -13,6 +15,7 @@ from offers.pdf import PdfUnavailable, offer_pdf_bytes, offer_pdf_filename
 from offers.rendering import offer_context, render_body
 
 logger = logging.getLogger(__name__)
+
 
 
 def render_offer(offer, save=False):
@@ -102,6 +105,22 @@ def send_offer(offer, request=None, resend=False):
     offer.viewed_at = None if resend else offer.viewed_at
     offer.save(update_fields=["status", "sent_at", "viewed_at", "updated_at"])
     offer.log(OfferEvent.RESENT if resend else OfferEvent.SENT, to=offer.candidate_user.email)
+    hiring_event(
+        "offer.resent" if resend else "offer.sent",
+        offer_id=offer.pk,
+        application_id=offer.application_id,
+        company_id=offer.company_id,
+        candidate_email=offer.candidate_user.email,
+    )
+    ph_capture(
+        distinct_id=str(offer.company_id),
+        event="offer_sent",
+        properties={
+            "offer_id": offer.pk,
+            "application_id": offer.application_id,
+            "resend": resend,
+        },
+    )
     return offer
 
 
@@ -154,6 +173,22 @@ def accept_offer(offer, signed_name, request=None):
         application.status = Application.HIRED
         application.save(update_fields=["status", "updated_at"])
 
+    hiring_event(
+        "offer.accepted",
+        offer_id=offer.pk,
+        application_id=offer.application_id,
+        company_id=offer.company_id,
+        signed_name=offer.signed_name,
+    )
+    ph_capture(
+        distinct_id=str(offer.company_id),
+        event="offer_accepted",
+        properties={
+            "offer_id": offer.pk,
+            "application_id": offer.application_id,
+            "job_id": offer.application.job_id,
+        },
+    )
     _notify_recruiter(offer, "accepted")
     return offer
 
@@ -177,6 +212,12 @@ def decline_offer(offer, reason="", request=None):
         ]
     )
     offer.log(OfferEvent.DECLINED, reason=offer.decline_reason, ip=offer.signed_ip)
+    hiring_event(
+        "offer.declined",
+        offer_id=offer.pk,
+        application_id=offer.application_id,
+        company_id=offer.company_id,
+    )
     _notify_recruiter(offer, "declined")
     return offer
 

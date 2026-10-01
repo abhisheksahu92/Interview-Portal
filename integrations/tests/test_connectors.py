@@ -2,7 +2,7 @@
 
 import pytest
 
-from integrations.connectors import ADAPTERS, adapter_for
+from integrations.connectors import ADAPTERS, KekaConnector, adapter_class, adapter_for
 from integrations.connectors.base import ConnectorResult, employee_payload
 from integrations.models import ConnectorConfig, ConnectorRun
 from integrations.services import probe_connection, start_background_check
@@ -235,3 +235,11 @@ def test_configs_are_scoped_to_their_company(company, other_company):
     make(company, ConnectorConfig.KEKA, api_key="k")
     assert ConnectorConfig.objects.for_company(other_company).count() == 0
     assert ConnectorConfig.objects.for_company(None).count() == 0
+
+
+def test_adapter_class_returns_correct_class_for_known_kind():
+    assert adapter_class(ConnectorConfig.KEKA) is KekaConnector
+
+
+def test_adapter_class_returns_none_for_unknown_kind():
+    assert adapter_class("UNKNOWN_KIND") is None

@@ -73,14 +73,11 @@ def assessment_url_for(application):
 
 
 def _company_jobs(request):
-    return for_company(Job.objects.all(), getattr(request, "company", None))
+    return Job.objects.for_company(getattr(request, "company", None))
 
 
 def _company_applications(request):
-    company = getattr(request, "company", None)
-    if company is None:
-        return Application.objects.none()
-    return Application.objects.filter(job__company=company)
+    return Application.objects.for_company(getattr(request, "company", None))
 
 
 def _require_member(request):

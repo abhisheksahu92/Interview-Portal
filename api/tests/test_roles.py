@@ -59,3 +59,38 @@ def test_candidate_cannot_see_other_candidates(auth, candidate, application, db)
     resp = auth(candidate.user).get("/api/v1/candidates/")
     ids = [c["id"] for c in resp.data["results"]]
     assert other.pk not in ids
+
+
+@pytest.mark.django_db
+def test_interviewer_cannot_update_or_delete_application(
+    auth, interviewer_a, application
+):
+    resp = auth(interviewer_a).patch(
+        f"/api/v1/applications/{application.pk}/",
+        {"status": "HIRED"},
+        format="json",
+    )
+    assert resp.status_code == 403
+
+    resp = auth(interviewer_a).delete(f"/api/v1/applications/{application.pk}/")
+    assert resp.status_code == 403
+
+
+@pytest.mark.django_db
+def test_company_member_cannot_update_or_delete_candidate_profile(
+    auth, recruiter_a, candidate, application
+):
+    # Recruiter has read visibility into the applicant's profile
+    resp = auth(recruiter_a).get(f"/api/v1/candidates/{candidate.pk}/")
+    assert resp.status_code == 200
+
+    # But cannot modify or delete it via REST endpoints
+    resp = auth(recruiter_a).patch(
+        f"/api/v1/candidates/{candidate.pk}/",
+        {"headline": "Hacked"},
+        format="json",
+    )
+    assert resp.status_code == 403
+
+    resp = auth(recruiter_a).delete(f"/api/v1/candidates/{candidate.pk}/")
+    assert resp.status_code == 403

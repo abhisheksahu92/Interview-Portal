@@ -27,7 +27,7 @@ class Command(BaseCommand):
             self.delete_files()
             source_choices = ['Referral','Job Portal','Walk In']
             skill_choices = ['Python', 'Java']
-            with open('media\documents\Abhishek_Sahu_Python_4.pdf','rb') as file_ref:
+            with open(r'media\documents\Abhishek_Sahu_Python_4.pdf','rb') as file_ref:
                 for index in range(50):
                     fake = Faker('en_IN')
                     username = User.objects.create_user(

@@ -5,6 +5,7 @@ any SDK/API/parse failure) it logs a warning and returns ``None``/``[]`` instead
 of raising into a request.
 """
 
+import contextlib
 import json
 import logging
 import re
@@ -114,16 +115,12 @@ def _extract_json(text):
     if text.startswith("```"):
         text = re.sub(r"^```[a-zA-Z]*\n?", "", text)
         text = re.sub(r"```$", "", text).strip()
-    try:
+    with contextlib.suppress(ValueError):
         return json.loads(text)
-    except ValueError:
-        pass
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if match:
-        try:
+        with contextlib.suppress(ValueError):
             return json.loads(match.group(0))
-        except ValueError:
-            pass
     logger.warning("Could not parse JSON from the model response.")
     return None
 

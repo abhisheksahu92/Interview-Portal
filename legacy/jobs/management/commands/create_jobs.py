@@ -12,7 +12,7 @@ class Command(BaseCommand):
         contact_info = '''
             Abhishek Sahu
             9880907530'''
-        jobs_json_data_file = os.path.join(os.getcwd(), 'jobs\management\commands\job_data.json')
+        jobs_json_data_file = os.path.join(os.getcwd(), r'jobs\management\commands\job_data.json')
         with open(jobs_json_data_file, "r") as read_file:
                 job_data = json.load(read_file)
                 jobs = job_data['jobs']

@@ -4,15 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 
 
-def for_company(qs, company):
-    """Scope a queryset to a company.
+from core.tenancy import for_company
 
-    Returns an empty queryset when ``company`` is None so a missing tenant can
-    never leak another tenant's rows.
-    """
-    if company is None:
-        return qs.none()
-    return qs.filter(company=company)
 
 
 class CompanyRequiredMixin(LoginRequiredMixin):

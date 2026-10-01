@@ -82,8 +82,9 @@ def find_name(text, filename=""):
 def name_from_filename(filename):
     """"asha_rao_resume.pdf" -> "Asha Rao"."""
     stem = os.path.splitext(os.path.basename(filename or ""))[0]
+    stem = re.sub(r"[\s_.\-]+", " ", stem)
     stem = re.sub(r"(?i)\b(resume|cv|profile|final|updated|copy|\d+)\b", " ", stem)
-    words = [w for w in re.split(r"[\s_.\-]+", stem) if w]
+    words = [w for w in stem.split() if w]
     return " ".join(w.capitalize() for w in words)[:150]
 
 

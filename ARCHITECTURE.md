@@ -5,10 +5,14 @@ for small IT services / staffing firms, with AI-assisted screening.
 
 ## Stack
 - Django 5.x, Python 3.12, Django REST Framework, HTMX + Bootstrap 5 (CDN) for UI, django-environ for settings.
-- DB: PostgreSQL in prod (DATABASE_URL); SQLite fallback for local dev/tests.
-- Anthropic Python SDK for AI features (agent working on it must load the `claude-api` skill).
+- DB: PostgreSQL via Supabase (pooler: pgBouncer, port 6543); SQLite fallback for local dev/tests. Row-Level Security enabled on all tables (see `docs/supabase_rls_policies.sql` and `docs/security/SUPABASE_RLS_STRATEGY.md`).
+- Redis / Valkey: lightweight job queue (`core/queue.py`), Django cache backend, session cache. See `docs/DEPLOYMENT.md` for key namespaces.
+- Background worker: `python manage.py run_worker` — handles ai, email, notify, webhook, default queues.
+- AI provider gateway (`core/llm.py`): Anthropic → Gemini → Ollama fallback chain with Redis-backed circuit breaker. Never raises; always returns text or None.
+- Observability: structured `hiring_event()` log lines (`core/observe.py`) + Sentry breadcrumbs for all pipeline transitions. PostHog server-side capture (`core/analytics.py`) for funnel analytics.
 - pytest + pytest-django (parallel via pytest-xdist, `-n auto` in pyproject addopts), ruff, GitHub Actions CI.
 - Scheduled work: one `manage.py run_periodic` entry point runs every maintenance command in order, logging failures.
+- Deployment: Render (web + worker + Redis). See `docs/DEPLOYMENT.md` for the full runbook.
 
 ## Apps (each agent owns ONLY its app directory unless told otherwise)
 - `core/`        — Company (tenant), CustomUser (email login), Membership(user, company, role: OWNER/RECRUITER/INTERVIEWER), TenantMiddleware (request.company), base templates, auth views. [Foundation agent]

@@ -17,18 +17,46 @@ logger = logging.getLogger(__name__)
 
 def score_application(application):
     """Best-effort AI fit summary/score for ``application``. Never raises."""
-    from django.conf import settings
+    from core.observe import hiring_event
 
-    if not (getattr(settings, "ANTHROPIC_API_KEY", "") or ""):
-        logger.debug("No ANTHROPIC_API_KEY; skipping AI fit scoring.")
+    if not _llm_configured():
+        logger.debug("No LLM provider configured; skipping AI fit scoring.")
         return None
     try:
         from assessments import ai
 
-        return ai.summarize_fit(application)
+        result = ai.summarize_fit(application)
+        hiring_event(
+            "ai.scoring.completed",
+            application_id=application.pk,
+            job_id=application.job_id,
+            company_id=application.job.company_id,
+            has_result=bool(result),
+        )
+        return result
     except Exception:  # pragma: no cover - AI is strictly best-effort
         logger.warning("AI fit scoring failed for application %s", application.pk,
                        exc_info=True)
+        from core.observe import hiring_event as _he
+        _he("ai.scoring.failed", application_id=application.pk)
+        return None
+
+
+def _llm_configured():
+    """Return True when at least one LLM provider is usable."""
+    try:
+        from core import llm
+        return llm.is_configured()
+    except Exception:
+        return False
+
+
+def async_score_application(application_id):
+    """Worker task: score an application in the background."""
+    try:
+        application = Application.objects.get(pk=application_id)
+        return score_application(application)
+    except Application.DoesNotExist:
         return None
 
 
@@ -39,4 +67,5 @@ def _score_new_application(sender, instance, created, **kwargs):
         return
     if kwargs.get("raw"):  # loaddata / fixtures
         return
-    score_application(instance)
+    from core.queue import enqueue
+    enqueue("assessments.signals.async_score_application", instance.pk, queue="ai")

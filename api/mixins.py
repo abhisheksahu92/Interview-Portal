@@ -9,19 +9,13 @@ from core.models import Company
 COMPANY_HEADER = "X-Company"
 
 
-def _company_path(model):
-    """How to reach the owning company from ``model``, or None if it is shared.
+from core.tenancy import get_company_lookup
 
-    Some models hold the FK directly (Question.company); others reach it
-    through their parent (PipelineStage -> job -> company).
-    """
-    for path, first in (("company", "company"), ("job__company", "job")):
-        try:
-            model._meta.get_field(first)
-        except FieldDoesNotExist:
-            continue
-        return path
-    return None
+
+def _company_path(model):
+    """How to reach the owning company from ``model``, or None if it is shared."""
+    return get_company_lookup(model)
+
 
 
 def scope_related_fields(serializer, company):
